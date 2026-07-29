@@ -1,27 +1,7 @@
-# Dependencies
-node_modules/
-
-# Build output
-dist/
-
-# Environment
+node_modules
+dist
 .env
 .env.local
-.env.*.local
-
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-
-# OS
+target
+*.wasm
 .DS_Store
-Thumbs.db
-
-# Logs
-*.log
-npm-debug.log*
-
-# Contract build artifacts
-contracts/*/target/
