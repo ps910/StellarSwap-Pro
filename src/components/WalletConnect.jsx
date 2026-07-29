@@ -1,11 +1,13 @@
 import { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { WALLET_OPTIONS, connectWallet } from '../lib/walletKit';
 import { getBalances, truncateAddress, formatAmount } from '../lib/stellar';
-import { WalletNotFoundError, classifyError, getErrorToast } from '../lib/errors';
+import { classifyError, getErrorToast } from '../lib/errors';
 
 /**
  * WalletConnect — Multi-wallet connection component
  * Shows wallet selector modal with Freighter, xBull, LOBSTR
+ * Uses React Portal to render modal at document.body level (avoids stacking context issues)
  */
 export default function WalletConnect({ publicKey, balances, onConnect, onDisconnect, onError }) {
   const [showModal, setShowModal] = useState(false);
@@ -50,15 +52,9 @@ export default function WalletConnect({ publicKey, balances, onConnect, onDiscon
     );
   }
 
-  // ── Disconnected State ──
-  return (
-    <>
-      <button className="wallet-btn" onClick={() => setShowModal(true)} id="connect-wallet-btn">
-        <span>🔗</span>
-        Connect Wallet
-      </button>
-
-      {showModal && (
+  // ── Modal rendered via Portal at body level ──
+  const walletModal = showModal
+    ? createPortal(
         <div className="wallet-modal-overlay" onClick={() => setShowModal(false)}>
           <div className="wallet-modal" onClick={e => e.stopPropagation()}>
             <h2 className="wallet-modal__title">Connect Wallet</h2>
@@ -93,8 +89,19 @@ export default function WalletConnect({ publicKey, balances, onConnect, onDiscon
               Cancel
             </button>
           </div>
-        </div>
-      )}
+        </div>,
+        document.body
+      )
+    : null;
+
+  // ── Disconnected State ──
+  return (
+    <>
+      <button className="wallet-btn" onClick={() => setShowModal(true)} id="connect-wallet-btn">
+        <span>🔗</span>
+        Connect Wallet
+      </button>
+      {walletModal}
     </>
   );
 }
