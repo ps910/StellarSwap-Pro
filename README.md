@@ -68,11 +68,13 @@ graph TD
 
 ## 📸 Screenshots
 
-| Feature | Preview Screenshot |
+| Feature | Preview |
 |---|---|
-| **Desktop Swap & Escrow Terminal** | ![Desktop Preview](./docs/screenshots/app_preview.png) |
+| **Desktop Landing Page** | ![Desktop Landing](./docs/screenshots/app_preview.png) |
+| **Mobile Responsive (375px)** | ![Mobile View](./docs/screenshots/mobile_responsive.png) |
 | **Multi-Wallet Selection Modal** | ![Wallet Modal](./docs/screenshots/wallet_options.png) |
-| **User Feedback & Rating Widget** | ![Feedback Widget](./docs/screenshots/app_preview.png) |
+| **Connected Dashboard (Swap + Escrow)** | ![Dashboard](./docs/screenshots/connected_dashboard.png) |
+| **4-Step Transaction Tracker** | ![Transaction Tracker](./docs/screenshots/transaction_tracker.png) |
 
 ---
 
