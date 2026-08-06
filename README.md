@@ -2,7 +2,7 @@
 
 [![Stellar Testnet](https://img.shields.io/badge/Stellar-Testnet-cyan?style=for-the-badge&logo=stellar)](https://stellar.expert/explorer/testnet)
 [![Soroban Rust](https://img.shields.io/badge/Soroban-Rust%20v22-blue?style=for-the-badge&logo=rust)](https://soroban.stellar.org)
-[![Vercel Deploy](https://img.shields.io/badge/Deployed-Vercel-black?style=for-the-badge&logo=vercel)](https://stellarswap-pro.vercel.app)
+[![Vercel Deploy](https://img.shields.io/badge/Deployed-Vercel-black?style=for-the-badge&logo=vercel)](https://stellar-swap-pro.vercel.app)
 [![License: MIT](https://img.shields.io/badge/License-MIT-emerald.svg?style=for-the-badge)](./LICENSE)
 
 **StellarSwap+** is a production-ready, non-custodial Web3 application built for the **Stellar Ecosystem (Level 4 / Green Belt)**. It delivers a fast, low-cost native Stellar path payment DEX interface combined with a custom **Soroban Rust Escrow Vault**, multi-wallet connection (`@stellar/freighter-api`, `@albedo-link/intent`), real-time RPC telemetry, React error boundaries, Web Vitals monitoring, and production deployment infrastructure.
@@ -16,7 +16,7 @@
 | Public GitHub repository | ✅ | [github.com/ps910/StellarSwap-Pro](https://github.com/ps910/StellarSwap-Pro) |
 | README with complete documentation | ✅ | This file |
 | Minimum 15+ meaningful commits | ✅ | `git log --oneline` |
-| Live demo link | ✅ | [stellarswap-pro.vercel.app](https://stellarswap-pro.vercel.app) |
+| Live demo link | ✅ | [stellar-swap-pro.vercel.app](https://stellar-swap-pro.vercel.app) |
 | Smart contracts deployed on Testnet | ✅ | See [Deployed Contracts](#-deployed-smart-contracts--verifiable-testnet-data) |
 | Mobile responsive design | ✅ | Tested at 375px breakpoint |
 | Proper loading states & error handling | ✅ | ErrorBoundary, TransactionTracker, ErrorModal |
