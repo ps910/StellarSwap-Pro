@@ -7,7 +7,7 @@ export interface WalletState {
   balanceUsdc: string;
 }
 
-export type WalletType = 'freighter' | 'albedo' | 'lobstr' | 'xbull' | 'rabet';
+export type WalletType = 'albedo' | 'demo' | 'freighter' | 'lobstr' | 'xbull' | 'rabet';
 
 export interface WalletOption {
   id: WalletType;

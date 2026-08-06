@@ -62,8 +62,9 @@ export const AppContent: React.FC = () => {
   });
 
   const [installedWallets, setInstalledWallets] = useState<Record<WalletType, boolean>>({
-    freighter: false,
     albedo: true,
+    demo: true,
+    freighter: false,
     lobstr: false,
     xbull: false,
     rabet: false,
