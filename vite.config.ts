@@ -13,4 +13,19 @@ export default defineConfig({
       buffer: 'buffer',
     },
   },
+  build: {
+    target: 'es2020',
+    sourcemap: true,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // Split vendor chunks for better caching
+          'vendor-react': ['react', 'react-dom'],
+          'vendor-stellar': ['@stellar/stellar-sdk'],
+          'vendor-icons': ['lucide-react'],
+        },
+      },
+    },
+  },
 });
+
