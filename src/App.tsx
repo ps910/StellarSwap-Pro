@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { WalletState, WalletType, AppError, TxStatus, ContractEvent, PoolReserves, EscrowItem } from './types';
 import { SUPPORTED_WALLETS, checkInstalledWallets, connectWallet, parseWalletError } from './services/wallet';
 import { fetchPoolReserves, executeContractSwap, executeContractDeposit } from './services/contract';
@@ -7,18 +7,21 @@ import { eventStreamService, INITIAL_EVENTS } from './services/events';
 import { analytics } from './services/analytics';
 import { STELLAR_CONFIG } from './config/stellar';
 import { ErrorBoundary } from './components/ErrorBoundary';
+import { LoadingSkeleton } from './components/LoadingSkeleton';
 import { Navbar } from './components/Navbar';
-import { LandingHero } from './components/LandingHero';
-import { LandingFeatures } from './components/LandingFeatures';
 import { PortfolioBanner } from './components/PortfolioBanner';
-import { SwapInterface } from './components/SwapInterface';
-import { EscrowInterface } from './components/EscrowInterface';
-import { ActivityTable } from './components/ActivityTable';
 import { Footer } from './components/Footer';
 import { WalletModal } from './components/WalletModal';
 import { TransactionTracker } from './components/TransactionTracker';
 import { ErrorModal } from './components/ErrorModal';
 import { FeedbackModal } from './components/FeedbackModal';
+
+// Code-split heavy components for faster initial page load
+const LandingHero = lazy(() => import('./components/LandingHero').then(m => ({ default: m.LandingHero })));
+const LandingFeatures = lazy(() => import('./components/LandingFeatures').then(m => ({ default: m.LandingFeatures })));
+const SwapInterface = lazy(() => import('./components/SwapInterface').then(m => ({ default: m.SwapInterface })));
+const EscrowInterface = lazy(() => import('./components/EscrowInterface').then(m => ({ default: m.EscrowInterface })));
+const ActivityTable = lazy(() => import('./components/ActivityTable').then(m => ({ default: m.ActivityTable })));
 
 export const AppContent: React.FC = () => {
   // Navigation State
@@ -398,8 +401,10 @@ export const AppContent: React.FC = () => {
         {!walletState.isConnected ? (
           /* Disconnected State: Figma Landing Page */
           <main>
-            <LandingHero onConnectWallet={() => setIsWalletModalOpen(true)} />
-            <LandingFeatures />
+            <Suspense fallback={<div className="min-h-screen" />}>
+              <LandingHero onConnectWallet={() => setIsWalletModalOpen(true)} />
+              <LandingFeatures />
+            </Suspense>
           </main>
         ) : (
           /* Connected State: Figma Single-Page Consolidated Dashboard */
@@ -410,32 +415,38 @@ export const AppContent: React.FC = () => {
             {/* Main Grid: 02 Swap (Left) + 03 Escrow (Right) */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
               <div className="lg:col-span-6">
-                <SwapInterface
-                  walletState={walletState}
-                  reserves={reserves}
-                  onOpenWalletModal={() => setIsWalletModalOpen(true)}
-                  onExecuteSwap={handleExecuteSwap}
-                  onExecuteDeposit={handleExecuteDeposit}
-                  isProcessing={isProcessingTx}
-                />
+                <Suspense fallback={<LoadingSkeleton lines={6} />}>
+                  <SwapInterface
+                    walletState={walletState}
+                    reserves={reserves}
+                    onOpenWalletModal={() => setIsWalletModalOpen(true)}
+                    onExecuteSwap={handleExecuteSwap}
+                    onExecuteDeposit={handleExecuteDeposit}
+                    isProcessing={isProcessingTx}
+                  />
+                </Suspense>
               </div>
 
               <div className="lg:col-span-6">
-                <EscrowInterface
-                  walletState={walletState}
-                  escrows={escrows}
-                  onOpenWalletModal={() => setIsWalletModalOpen(true)}
-                  onCreateEscrow={handleCreateEscrow}
-                  onFundEscrow={handleFundEscrow}
-                  onReleaseEscrow={handleReleaseEscrow}
-                  onRefundEscrow={handleRefundEscrow}
-                  isProcessing={isProcessingTx}
-                />
+                <Suspense fallback={<LoadingSkeleton lines={6} />}>
+                  <EscrowInterface
+                    walletState={walletState}
+                    escrows={escrows}
+                    onOpenWalletModal={() => setIsWalletModalOpen(true)}
+                    onCreateEscrow={handleCreateEscrow}
+                    onFundEscrow={handleFundEscrow}
+                    onReleaseEscrow={handleReleaseEscrow}
+                    onRefundEscrow={handleRefundEscrow}
+                    isProcessing={isProcessingTx}
+                  />
+                </Suspense>
               </div>
             </div>
 
             {/* 04 On-Chain Activity Table */}
-            <ActivityTable events={events} />
+            <Suspense fallback={<LoadingSkeleton lines={8} />}>
+              <ActivityTable events={events} />
+            </Suspense>
           </main>
         )}
 
