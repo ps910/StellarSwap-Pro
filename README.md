@@ -15,14 +15,15 @@
 |---|---|---|
 | Public GitHub repository | ✅ | [github.com/ps910/StellarSwap-Pro](https://github.com/ps910/StellarSwap-Pro) |
 | README with complete documentation | ✅ | This file |
-| Minimum 15+ meaningful commits | ✅ | `git log --oneline` |
+| Minimum 15+ meaningful commits | ✅ (24 commits) | `git log --oneline` |
 | Live demo link | ✅ | [stellar-swap-pro.vercel.app](https://stellar-swap-pro.vercel.app) |
 | Smart contracts deployed on Testnet | ✅ | See [Deployed Contracts](#-deployed-smart-contracts--verifiable-testnet-data) |
 | Mobile responsive design | ✅ | Tested at 375px breakpoint |
 | Proper loading states & error handling | ✅ | ErrorBoundary, TransactionTracker, ErrorModal |
-| Monitoring & analytics integration | ✅ | Sentry SDK + Web Vitals + PostHog hooks |
-| Proof of 10+ user wallet interactions | ✅ | [`docs/user-testing.md`](./docs/user-testing.md) |
-| User feedback collection | ✅ | FeedbackModal with localStorage persistence |
+| Monitoring & analytics integration | ✅ | Sentry SDK + Web Vitals + Vercel Observability |
+| Demo video link | ✅ | [`docs/demo-video.md`](./docs/demo-video.md) |
+| Proof of 10+ user wallet interactions | ✅ (11 txs) | [`docs/user-testing.md`](./docs/user-testing.md) |
+| Basic user feedback summary | ✅ (4.9/5.0) | [`docs/user-testing.md`](./docs/user-testing.md) |
 | Production deployment | ✅ | Vercel with security headers and CSP |
 
 ---
@@ -45,7 +46,7 @@ graph TD
     subgraph Production Infrastructure
         Sentry
         WebVitals[Web Vitals Monitor]
-        Analytics[PostHog Analytics]
+        Analytics[Vercel Observability]
         Vercel[Vercel CDN Deploy]
     end
     
@@ -75,6 +76,7 @@ graph TD
 | **Multi-Wallet Selection Modal** | ![Wallet Modal](./docs/screenshots/wallet_options.png) |
 | **Connected Dashboard (Swap + Escrow)** | ![Dashboard](./docs/screenshots/connected_dashboard.png) |
 | **4-Step Transaction Tracker** | ![Transaction Tracker](./docs/screenshots/transaction_tracker.png) |
+| **Analytics & Monitoring Setup** | ![Analytics & Monitoring](./docs/screenshots/analytics_monitoring.png) |
 
 ---
 
