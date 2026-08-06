@@ -11,6 +11,7 @@ import { STELLAR_CONFIG } from '../config/stellar';
 import { PoolReserves, TxStatus } from '../types';
 import { signTransaction as signWithFreighter } from '@stellar/freighter-api';
 import albedo from '@albedo-link/intent';
+import { withRetry } from './rpc';
 
 const rpcServer = new rpc.Server(STELLAR_CONFIG.rpcUrl);
 const horizonServer = new Horizon.Server(STELLAR_CONFIG.horizonUrl);
@@ -19,55 +20,60 @@ const horizonServer = new Horizon.Server(STELLAR_CONFIG.horizonUrl);
  * Fetch reserve balances for XLM and USDC from the deployed Soroban contract
  */
 export async function fetchPoolReserves(contractId: string): Promise<PoolReserves> {
-  try {
-    const contract = new Contract(contractId);
-    const xlmSymbol = nativeToScVal('XLM', { type: 'symbol' });
-    const usdcSymbol = nativeToScVal('USDC', { type: 'symbol' });
+  return withRetry(
+    async () => {
+      try {
+        const contract = new Contract(contractId);
+        const xlmSymbol = nativeToScVal('XLM', { type: 'symbol' });
+        const usdcSymbol = nativeToScVal('USDC', { type: 'symbol' });
 
-    const dummyAccount = new Account('GAAZI4TCR3TY5OJHCTJC2A4QSYRZPBW64EGLYJFMGWYVJ3M2B36JGG4A', '0');
+        const dummyAccount = new Account('GAAZI4TCR3TY5OJHCTJC2A4QSYRZPBW64EGLYJFMGWYVJ3M2B36JGG4A', '0');
 
-    const xlmRes = await rpcServer.simulateTransaction(
-      new TransactionBuilder(dummyAccount, {
-        fee: '100',
-        networkPassphrase: STELLAR_CONFIG.networkPassphrase,
-      })
-        .addOperation(contract.call('get_reserve', xlmSymbol))
-        .setTimeout(30)
-        .build()
-    );
+        const xlmRes = await rpcServer.simulateTransaction(
+          new TransactionBuilder(dummyAccount, {
+            fee: '100',
+            networkPassphrase: STELLAR_CONFIG.networkPassphrase,
+          })
+            .addOperation(contract.call('get_reserve', xlmSymbol))
+            .setTimeout(30)
+            .build()
+        );
 
-    const usdcRes = await rpcServer.simulateTransaction(
-      new TransactionBuilder(dummyAccount, {
-        fee: '100',
-        networkPassphrase: STELLAR_CONFIG.networkPassphrase,
-      })
-        .addOperation(contract.call('get_reserve', usdcSymbol))
-        .setTimeout(30)
-        .build()
-    );
+        const usdcRes = await rpcServer.simulateTransaction(
+          new TransactionBuilder(dummyAccount, {
+            fee: '100',
+            networkPassphrase: STELLAR_CONFIG.networkPassphrase,
+          })
+            .addOperation(contract.call('get_reserve', usdcSymbol))
+            .setTimeout(30)
+            .build()
+        );
 
-    let xlmVal = 100500;
-    let usdcVal = 9950.25;
+        let xlmVal = 100500;
+        let usdcVal = 9950.25;
 
-    if (rpc.Api.isSimulationSuccess(xlmRes) && xlmRes.result?.retval) {
-      xlmVal = Number(scValToNative(xlmRes.result.retval)) / 10_000_000;
-    }
-    if (rpc.Api.isSimulationSuccess(usdcRes) && usdcRes.result?.retval) {
-      usdcVal = Number(scValToNative(usdcRes.result.retval)) / 10_000_000;
-    }
+        if (rpc.Api.isSimulationSuccess(xlmRes) && xlmRes.result?.retval) {
+          xlmVal = Number(scValToNative(xlmRes.result.retval)) / 10_000_000;
+        }
+        if (rpc.Api.isSimulationSuccess(usdcRes) && usdcRes.result?.retval) {
+          usdcVal = Number(scValToNative(usdcRes.result.retval)) / 10_000_000;
+        }
 
-    return {
-      xlm: xlmVal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
-      usdc: usdcVal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
-      feeBps: 30,
-    };
-  } catch (err) {
-    return {
-      xlm: '100,500.00',
-      usdc: '9,950.25',
-      feeBps: 30,
-    };
-  }
+        return {
+          xlm: xlmVal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
+          usdc: usdcVal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
+          feeBps: 30,
+        };
+      } catch (err) {
+        return {
+          xlm: '100,500.00',
+          usdc: '9,950.25',
+          feeBps: 30,
+        };
+      }
+    },
+    { maxRetries: 2, operationName: 'fetch_pool_reserves' }
+  );
 }
 
 /**
