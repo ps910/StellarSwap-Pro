@@ -106,6 +106,7 @@ export const AppContent: React.FC = () => {
         balanceUsdc: (Math.random() * 800 + 100).toFixed(2),
       });
 
+      analytics.identifyUser(address);
       analytics.track('wallet_connected', { walletId, address });
       setIsWalletModalOpen(false);
     } catch (err: any) {
@@ -479,7 +480,7 @@ export const AppContent: React.FC = () => {
         isOpen={isFeedbackModalOpen}
         onClose={() => setIsFeedbackModalOpen(false)}
         onSubmit={(rating, comment) => {
-          console.log('Feedback submitted:', { rating, comment });
+          analytics.persistFeedback(rating, comment, walletState.address || undefined);
         }}
       />
     </div>

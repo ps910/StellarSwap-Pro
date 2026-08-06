@@ -4,14 +4,55 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="https://stellar.org/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Stellar DEX & Soroban Multi-Wallet Hub</title>
-    <meta name="description" content="Level 2 Stellar DEX Token Swap with Soroban Smart Contract & Multi-Wallet Integration" />
+    <title>StellarSwap+ — Production DEX & Soroban Escrow Vault | Level 4 Green Belt</title>
+    <meta name="description" content="Non-custodial path payment DEX and Soroban Escrow Vault on Stellar Testnet. Multi-wallet support, real-time RPC event feeds, and production-grade monitoring." />
+
+    <!-- Open Graph / Social Meta Tags -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="StellarSwap+ — Stellar DEX & Soroban Escrow Vault" />
+    <meta property="og:description" content="Production-ready non-custodial DEX with Soroban smart contracts, multi-wallet integration, and real-time analytics." />
+    <meta property="og:url" content="https://stellarswap-pro.vercel.app" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+    <!-- Sentry Error Monitoring SDK -->
+    <script
+      src="https://browser.sentry-cdn.com/8.40.0/bundle.min.js"
+      integrity="sha384-placeholder"
+      crossorigin="anonymous"
+    ></script>
+    <script>
+      if (typeof Sentry !== 'undefined') {
+        Sentry.init({
+          dsn: window.__SENTRY_DSN__ || '',
+          environment: 'testnet',
+          release: 'stellarswap-plus@4.0.0',
+          tracesSampleRate: 0.2,
+          replaysSessionSampleRate: 0.1,
+          beforeSend(event) {
+            // Scrub wallet addresses from error reports
+            if (event.extra) {
+              for (const key of Object.keys(event.extra)) {
+                const val = String(event.extra[key] || '');
+                if (val.startsWith('G') && val.length === 56) {
+                  event.extra[key] = val.slice(0, 8) + '...' + val.slice(-4);
+                }
+              }
+            }
+            return event;
+          },
+        });
+        console.log('[Sentry] Error monitoring initialized for StellarSwap+');
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
+
