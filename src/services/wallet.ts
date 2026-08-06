@@ -68,12 +68,12 @@ export async function connectWallet(walletId: WalletType): Promise<string> {
       const isConnRes = await checkFreighter();
       const isConn = typeof isConnRes === 'boolean' ? isConnRes : !!(isConnRes as any)?.isConnected;
       if (!isConn) {
-        throw parseWalletError(new Error('FREIGHTER_NOT_INSTALLED'));
+        throw new Error('FREIGHTER_NOT_INSTALLED');
       }
       const addrRes = await getFreighterAddress();
       const address = typeof addrRes === 'string' ? addrRes : (addrRes as any)?.address;
       if (!address) {
-        throw parseWalletError(new Error('USER_CANCELLED'));
+        throw new Error('USER_CANCELLED');
       }
       return address;
     } else if (walletId === 'albedo') {
@@ -81,28 +81,31 @@ export async function connectWallet(walletId: WalletType): Promise<string> {
       return res.pubkey;
     } else if (walletId === 'rabet') {
       const rabet = (window as any).rabet;
-      if (!rabet) throw parseWalletError(new Error('RABET_NOT_INSTALLED'));
+      if (!rabet) throw new Error('RABET_NOT_INSTALLED');
       const res = await rabet.connect();
       return res.publicKey;
     } else if (walletId === 'xbull') {
       const xbull = (window as any).xBull;
-      if (!xbull) throw parseWalletError(new Error('XBULL_NOT_INSTALLED'));
+      if (!xbull) throw new Error('XBULL_NOT_INSTALLED');
       const address = await xbull.connect();
       return address;
     } else if (walletId === 'lobstr') {
       const lobstr = (window as any).lobstr;
-      if (!lobstr) throw parseWalletError(new Error('LOBSTR_NOT_INSTALLED'));
+      if (!lobstr) throw new Error('LOBSTR_NOT_INSTALLED');
       const address = await lobstr.getPublicKey();
       return address;
     }
 
-    throw parseWalletError(new Error('UNKNOWN_WALLET'));
+    throw new Error('UNKNOWN_WALLET');
   } catch (err: any) {
-    throw parseWalletError(err);
+    if (err && typeof err === 'object' && 'type' in err && 'title' in err) {
+      throw err;
+    }
+    throw parseWalletError(err, 'connect');
   }
 }
 
-export function parseWalletError(error: any): AppError {
+export function parseWalletError(error: any, context: 'connect' | 'tx' = 'tx'): AppError {
   const msg = error?.message || String(error || '');
 
   if (
@@ -114,7 +117,7 @@ export function parseWalletError(error: any): AppError {
       type: 'WALLET_NOT_FOUND',
       title: 'Wallet Extension Not Installed',
       message: 'The selected Stellar wallet extension was not detected in your browser.',
-      actionHint: 'Please install the wallet extension from Chrome Web Store or choose Albedo Web Wallet.',
+      actionHint: 'Please install the browser extension or select Albedo Web Wallet which requires no extension.',
       rawDetails: msg,
     };
   }
@@ -125,8 +128,18 @@ export function parseWalletError(error: any): AppError {
     msg.includes('rejected') ||
     msg.includes('closed') ||
     msg.includes('declined') ||
-    msg.includes('User denied')
+    msg.includes('User denied') ||
+    msg.includes('user_declined')
   ) {
+    if (context === 'connect') {
+      return {
+        type: 'USER_REJECTED',
+        title: 'Wallet Connection Declined',
+        message: 'The connection request was closed or declined in your wallet prompt.',
+        actionHint: 'Click "Connect Wallet" again and approve the request in your wallet popup, or select Albedo Web Wallet.',
+        rawDetails: msg,
+      };
+    }
     return {
       type: 'USER_REJECTED',
       title: 'Transaction Signature Rejected',
@@ -153,9 +166,9 @@ export function parseWalletError(error: any): AppError {
 
   return {
     type: 'UNKNOWN',
-    title: 'Wallet Interaction Failed',
+    title: context === 'connect' ? 'Wallet Connection Failed' : 'Wallet Interaction Failed',
     message: 'An unexpected issue occurred while communicating with the Stellar wallet.',
-    actionHint: 'Check browser extension permissions or select a different wallet.',
+    actionHint: 'Check browser popup permissions or select Albedo Web Wallet.',
     rawDetails: msg,
   };
 }

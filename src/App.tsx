@@ -111,7 +111,7 @@ export const AppContent: React.FC = () => {
       setIsWalletModalOpen(false);
     } catch (err: any) {
       analytics.captureError(err, { walletId });
-      const parsed = parseWalletError(err);
+      const parsed = parseWalletError(err, 'connect');
       setActiveError(parsed);
     } finally {
       setIsConnecting(false);
