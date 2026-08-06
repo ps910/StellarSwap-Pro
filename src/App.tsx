@@ -6,6 +6,7 @@ import { INITIAL_ESCROWS, executeCreateEscrow, executeFundEscrow, executeRelease
 import { eventStreamService, INITIAL_EVENTS } from './services/events';
 import { analytics } from './services/analytics';
 import { STELLAR_CONFIG } from './config/stellar';
+import { fetchAccountBalances, AccountBalancesData } from './services/accountBalances';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { LoadingSkeleton } from './components/LoadingSkeleton';
 import { Navbar } from './components/Navbar';
@@ -96,6 +97,21 @@ export const AppContent: React.FC = () => {
   // Escrows State
   const [escrows, setEscrows] = useState<EscrowItem[]>(INITIAL_ESCROWS);
 
+  // Live Horizon Account Balances State
+  const [balancesData, setBalancesData] = useState<AccountBalancesData | null>(null);
+
+  const handleRefreshBalances = async (addressOverride?: string) => {
+    const targetAddr = addressOverride || walletState.address;
+    if (!targetAddr) return;
+    const data = await fetchAccountBalances(targetAddr, true);
+    setBalancesData(data);
+    setWalletState((prev) => ({
+      ...prev,
+      balanceXlm: data.funded ? data.xlmSpendable : '0.00',
+      balanceUsdc: data.funded && data.usdcBalance !== '0' ? data.usdcBalance : prev.balanceUsdc,
+    }));
+  };
+
   // 1. Initial Load: Check installed extensions & load pool reserves
   useEffect(() => {
     checkInstalledWallets().then(setInstalledWallets);
@@ -115,6 +131,18 @@ export const AppContent: React.FC = () => {
     };
   }, []);
 
+  // Poll balances every 15s when wallet is connected
+  useEffect(() => {
+    if (!walletState.isConnected || !walletState.address) return;
+
+    handleRefreshBalances(walletState.address);
+    const interval = setInterval(() => {
+      handleRefreshBalances(walletState.address!);
+    }, 15000);
+
+    return () => clearInterval(interval);
+  }, [walletState.isConnected, walletState.address]);
+
   // Handle Multi-Wallet Selection & Connection
   const handleSelectWallet = async (walletId: WalletType) => {
     setIsConnecting(true);
@@ -127,10 +155,11 @@ export const AppContent: React.FC = () => {
         address,
         walletId,
         walletName: selectedWallet?.name || walletId,
-        balanceXlm: (Math.random() * 2000 + 500).toFixed(2),
-        balanceUsdc: (Math.random() * 800 + 100).toFixed(2),
+        balanceXlm: '1,500.00',
+        balanceUsdc: '250.00',
       });
 
+      handleRefreshBalances(address);
       analytics.identifyUser(address);
       analytics.track('wallet_connected', { walletId, address });
       setIsWalletModalOpen(false);
@@ -436,7 +465,11 @@ export const AppContent: React.FC = () => {
           /* Connected State: Figma Single-Page Consolidated Dashboard */
           <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
             {/* 01 Portfolio Banner */}
-            <PortfolioBanner walletState={walletState} />
+            <PortfolioBanner
+              walletState={walletState}
+              balancesData={balancesData}
+              onRefreshBalances={() => handleRefreshBalances()}
+            />
 
             {/* Main Grid: 02 Swap (Left) + 03 Escrow (Right) */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
