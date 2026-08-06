@@ -26,9 +26,11 @@ export interface TxStatus {
   error?: string;
 }
 
+export type EventType = 'swap' | 'deposit' | 'escrow_create' | 'escrow_fund' | 'escrow_release' | 'escrow_refund';
+
 export interface ContractEvent {
   id: string;
-  type: 'swap' | 'deposit';
+  type: EventType;
   user: string;
   tokenIn?: string;
   tokenOut?: string;
@@ -36,6 +38,7 @@ export interface ContractEvent {
   amountIn?: string;
   amountOut?: string;
   amount?: string;
+  escrowId?: number;
   timestamp: string;
   txHash: string;
 }
@@ -46,10 +49,33 @@ export interface PoolReserves {
   feeBps: number;
 }
 
+export type EscrowStatus = 'Created' | 'Funded' | 'Released' | 'Refunded';
+
+export interface EscrowItem {
+  id: number;
+  payer: string;
+  payee: string;
+  token: string;
+  amount: string;
+  state: EscrowStatus;
+  timeoutLedger: number;
+  createdAt: string;
+  txHash: string;
+}
+
+export interface UserFeedback {
+  id: string;
+  walletAddress: string;
+  rating: number;
+  comment: string;
+  timestamp: string;
+}
+
 export interface AppError {
-  type: 'WALLET_NOT_FOUND' | 'USER_REJECTED' | 'INSUFFICIENT_BALANCE' | 'UNKNOWN';
+  type: 'WALLET_NOT_FOUND' | 'USER_REJECTED' | 'INSUFFICIENT_BALANCE' | 'TIMEOUT_NOT_EXPIRED' | 'UNKNOWN';
   title: string;
   message: string;
   actionHint: string;
   rawDetails?: string;
 }
+

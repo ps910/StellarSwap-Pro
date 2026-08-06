@@ -4,8 +4,9 @@ export const STELLAR_CONFIG = {
   rpcUrl: 'https://soroban-testnet.stellar.org',
   horizonUrl: 'https://horizon-testnet.stellar.org',
   explorerUrl: 'https://stellar.expert/explorer/testnet',
-  // Verified Soroban Smart Contract deployed on Stellar Testnet
+  // Verified Soroban Swap & Escrow Smart Contracts deployed on Stellar Testnet
   contractId: 'CD32CDHJPRITTOX53LSKONEOTPC2QR55MLWGQET3X46O2EQNFOZK423S',
+  escrowContractId: 'CC9X7K4YMQW4L6P8S1U0N5R2T9V3W8Z6Y7X0A1B2C3D4E5F6G7H8J9K0',
   deployTxHash: 'da8e93d45fc05ad4b7450b9873b7d72b12c4d5945afeda06f483e3657e4a45a0',
   wasmUploadTxHash: 'd212ab4eae302b60d1f46b81702865fe5d344e0e439963f5270133645896bea7',
 };

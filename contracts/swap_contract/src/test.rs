@@ -1,7 +1,7 @@
 #![cfg(test)]
 
 use super::*;
-use soroban_sdk::{symbol_short, Env};
+use soroban_sdk::{symbol_short, Env, Address, testutils::Address as _};
 
 #[test]
 fn test_swap_contract_flow() {

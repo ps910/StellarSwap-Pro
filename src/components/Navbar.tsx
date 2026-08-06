@@ -1,91 +1,190 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { WalletState } from '../types';
-import { Wallet, ShieldCheck, Cpu, ExternalLink } from 'lucide-react';
+import { Wallet, ShieldCheck, ExternalLink, MessageSquare, TrendingUp } from 'lucide-react';
 import { STELLAR_CONFIG } from '../config/stellar';
 
 interface NavbarProps {
   walletState: WalletState;
+  activeTab: 'swap' | 'escrow';
+  onSelectTab: (tab: 'swap' | 'escrow') => void;
   onOpenWalletModal: () => void;
   onDisconnect: () => void;
+  onOpenFeedback: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
   walletState,
+  activeTab,
+  onSelectTab,
   onOpenWalletModal,
   onDisconnect,
+  onOpenFeedback,
 }) => {
+  const [ledgerSeq, setLedgerSeq] = useState(54210);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setLedgerSeq((prev) => prev + 1);
+    }, 5000);
+    return () => clearInterval(timer);
+  }, []);
+
   return (
-    <header className="sticky top-0 z-40 w-full backdrop-blur-xl bg-slate-950/80 border-b border-slate-800/80">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
-        {/* Brand Logo & Name */}
-        <div className="flex items-center gap-3">
-          <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-cyan-500 via-blue-600 to-indigo-600 p-0.5 shadow-lg shadow-cyan-500/20">
-            <div className="w-full h-full bg-slate-950 rounded-[14px] flex items-center justify-center">
-              <Cpu className="w-6 h-6 text-cyan-400 animate-pulse" />
-            </div>
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="font-extrabold text-xl tracking-tight text-white font-sans">
-                Stellar<span className="text-cyan-400">Swap</span>
-              </span>
-              <span className="px-2 py-0.5 text-xs font-semibold rounded-full bg-cyan-950 text-cyan-400 border border-cyan-800/50">
-                Soroban L2
-              </span>
-            </div>
-            <p className="text-xs text-slate-400 hidden sm:block">
-              Multi-Wallet DEX & Real-Time Event Sync Engine
-            </p>
-          </div>
+    <header className="sticky top-0 z-50 w-full bg-[#050505]/95 backdrop-blur-md border-b border-neutral-900 font-mono text-xs">
+      {/* Top Asset Price Ticker Tape */}
+      <div className="bg-[#09090b] border-b border-neutral-900/80 py-1 px-4 overflow-x-auto text-[10px] text-slate-400 flex items-center justify-between gap-6 whitespace-nowrap">
+        <div className="flex items-center gap-6">
+          <span className="flex items-center gap-1">
+            <span className="text-white font-bold">XLM</span>
+            <span className="text-slate-300">$0.1245</span>
+            <span className="text-lime-400 font-semibold">+2.4%</span>
+          </span>
+          <span className="flex items-center gap-1">
+            <span className="text-white font-bold">USDC</span>
+            <span className="text-slate-300">$1.0000</span>
+            <span className="text-slate-400">+0.0%</span>
+          </span>
+          <span className="flex items-center gap-1">
+            <span className="text-white font-bold">EURC</span>
+            <span className="text-slate-300">$1.0820</span>
+            <span className="text-lime-400 font-semibold">+0.1%</span>
+          </span>
+          <span className="flex items-center gap-1">
+            <span className="text-white font-bold">AQUA</span>
+            <span className="text-slate-300">$0.0034</span>
+            <span className="text-lime-400 font-semibold">+5.2%</span>
+          </span>
         </div>
 
-        {/* Right Action Items */}
-        <div className="flex items-center gap-3">
-          {/* Testnet Badge */}
-          <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-900/90 border border-slate-800 text-xs font-medium text-slate-300">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
-            <span className="w-2 h-2 rounded-full bg-emerald-400 -ml-4"></span>
-            <span>Stellar Testnet</span>
-            <a
-              href={`${STELLAR_CONFIG.explorerUrl}/contract/${STELLAR_CONFIG.contractId}`}
-              target="_blank"
-              rel="noreferrer"
-              className="text-slate-400 hover:text-cyan-400 transition-colors ml-1"
-              title="View Deployed Soroban Contract on Stellar Expert Explorer"
+        <div className="flex items-center gap-3 text-[10px]">
+          <span className="flex items-center gap-1.5 text-lime-400">
+            <span className="w-1.5 h-1.5 rounded-full bg-lime-400 animate-ping"></span>
+            <span>TESTNET RPC ONLINE</span>
+          </span>
+        </div>
+      </div>
+
+      {/* Main Navigation Bar */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="h-16 flex items-center justify-between gap-4">
+          {/* Left: Logo & Badges */}
+          <div className="flex items-center gap-4">
+            <div
+              onClick={() => onSelectTab('swap')}
+              className="flex items-center gap-1 cursor-pointer select-none"
             >
-              <ExternalLink className="w-3.5 h-3.5" />
-            </a>
+              <span className="font-sans font-black text-xl tracking-tight text-white">
+                StellarSwap
+              </span>
+              <span className="font-sans font-black text-xl text-lime-400">
+                +
+              </span>
+            </div>
+
+            {/* Network & Ledger Badges */}
+            <div className="hidden sm:flex items-center gap-2">
+              <span className="px-2.5 py-0.5 rounded-full bg-lime-400/10 text-lime-400 border border-lime-400/30 text-[10px] font-bold flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-lime-400"></span>
+                <span>TESTNET</span>
+              </span>
+
+              <span className="px-2 py-0.5 rounded-md bg-neutral-900 border border-neutral-800 text-[10px] text-slate-300">
+                LEDGER <span className="text-lime-400 font-bold">#{ledgerSeq.toLocaleString()}</span>
+              </span>
+            </div>
           </div>
 
-          {/* Connect / Connected Button */}
-          {walletState.isConnected ? (
-            <div className="flex items-center gap-2 bg-slate-900/90 border border-cyan-500/30 p-1.5 pl-3.5 rounded-2xl">
-              <div className="flex flex-col text-right">
-                <span className="text-xs font-semibold text-white font-mono">
-                  {walletState.address?.slice(0, 5)}...{walletState.address?.slice(-4)}
-                </span>
-                <span className="text-[10px] text-cyan-400 capitalize flex items-center gap-1 justify-end">
-                  <ShieldCheck className="w-3 h-3 text-cyan-400" />
-                  {walletState.walletName}
-                </span>
-              </div>
+          {/* Center: Connected Dashboard Navigation Tabs */}
+          {walletState.isConnected && (
+            <div className="hidden md:flex items-center bg-neutral-900 p-1 rounded-xl border border-neutral-800 text-[11px]">
               <button
-                onClick={onDisconnect}
-                className="px-3 py-1.5 text-xs font-medium text-slate-300 hover:text-rose-400 hover:bg-rose-950/40 rounded-xl transition-all border border-transparent hover:border-rose-900/50"
+                onClick={() => onSelectTab('swap')}
+                className={`px-4 py-1.5 rounded-lg font-bold transition-all ${
+                  activeTab === 'swap'
+                    ? 'bg-lime-400 text-black font-extrabold shadow-md shadow-lime-400/20'
+                    : 'text-slate-400 hover:text-white'
+                }`}
               >
-                Disconnect
+                PATH PAYMENT DEX
+              </button>
+              <button
+                onClick={() => onSelectTab('escrow')}
+                className={`px-4 py-1.5 rounded-lg font-bold transition-all ${
+                  activeTab === 'escrow'
+                    ? 'bg-lime-400 text-black font-extrabold shadow-md shadow-lime-400/20'
+                    : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                SOROBAN ESCROW VAULT
               </button>
             </div>
-          ) : (
-            <button
-              onClick={onOpenWalletModal}
-              className="group relative inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 font-semibold text-white text-sm shadow-lg shadow-cyan-500/25 hover:shadow-cyan-500/40 hover:scale-[1.02] transition-all duration-200"
-            >
-              <Wallet className="w-4 h-4 group-hover:rotate-12 transition-transform" />
-              <span>Connect Wallet</span>
-            </button>
           )}
+
+          {/* Right: Actions */}
+          <div className="flex items-center gap-3">
+            <button
+              onClick={onOpenFeedback}
+              className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-neutral-900 border border-neutral-800 text-slate-300 hover:text-lime-400 hover:border-lime-400/40 transition-all text-xs"
+            >
+              <MessageSquare className="w-3.5 h-3.5 text-lime-400" />
+              <span className="hidden sm:inline">FEEDBACK</span>
+            </button>
+
+            {walletState.isConnected ? (
+              <div className="flex items-center gap-2 bg-neutral-900 border border-lime-400/30 p-1 pl-3 rounded-xl">
+                <div className="flex flex-col text-right">
+                  <span className="text-xs font-bold text-white font-mono">
+                    {walletState.address?.slice(0, 5)}...{walletState.address?.slice(-4)}
+                  </span>
+                  <span className="text-[9px] text-lime-400 capitalize flex items-center gap-1 justify-end font-mono">
+                    <ShieldCheck className="w-3 h-3 text-lime-400" />
+                    {walletState.walletName}
+                  </span>
+                </div>
+                <button
+                  onClick={onDisconnect}
+                  className="px-2.5 py-1 text-[11px] font-bold text-slate-400 hover:text-rose-400 hover:bg-rose-950/40 rounded-lg transition-all border border-transparent hover:border-rose-900/50"
+                >
+                  DISCONNECT
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={onOpenWalletModal}
+                className="px-5 py-2.5 rounded-xl bg-lime-400 hover:bg-lime-300 text-black font-black text-xs shadow-lg shadow-lime-400/25 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center gap-1.5 label-mono"
+              >
+                <Wallet className="w-4 h-4" />
+                <span>CONNECT</span>
+              </button>
+            )}
+          </div>
         </div>
+
+        {/* Mobile Tab Selector (when connected) */}
+        {walletState.isConnected && (
+          <div className="md:hidden flex items-center justify-between bg-neutral-900 p-1 rounded-xl border border-neutral-800 mb-3 text-[11px]">
+            <button
+              onClick={() => onSelectTab('swap')}
+              className={`w-1/2 py-2 rounded-lg font-bold text-center transition-all ${
+                activeTab === 'swap'
+                  ? 'bg-lime-400 text-black font-extrabold'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              PATH SWAP
+            </button>
+            <button
+              onClick={() => onSelectTab('escrow')}
+              className={`w-1/2 py-2 rounded-lg font-bold text-center transition-all ${
+                activeTab === 'escrow'
+                  ? 'bg-lime-400 text-black font-extrabold'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              ESCROW VAULT
+            </button>
+          </div>
+        )}
       </div>
     </header>
   );

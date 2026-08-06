@@ -1,19 +1,29 @@
 import React, { useState, useEffect } from 'react';
-import { WalletState, WalletType, AppError, TxStatus, ContractEvent, PoolReserves } from './types';
+import { WalletState, WalletType, AppError, TxStatus, ContractEvent, PoolReserves, EscrowItem } from './types';
 import { SUPPORTED_WALLETS, checkInstalledWallets, connectWallet, parseWalletError } from './services/wallet';
 import { fetchPoolReserves, executeContractSwap, executeContractDeposit } from './services/contract';
+import { INITIAL_ESCROWS, executeCreateEscrow, executeFundEscrow, executeReleaseEscrow, executeRefundEscrow } from './services/escrow';
 import { eventStreamService, INITIAL_EVENTS } from './services/events';
+import { analytics } from './services/analytics';
 import { STELLAR_CONFIG } from './config/stellar';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import { Navbar } from './components/Navbar';
-import { StatsBanner } from './components/StatsBanner';
+import { LandingHero } from './components/LandingHero';
+import { LandingFeatures } from './components/LandingFeatures';
+import { PortfolioBanner } from './components/PortfolioBanner';
 import { SwapInterface } from './components/SwapInterface';
-import { EventFeed } from './components/EventFeed';
+import { EscrowInterface } from './components/EscrowInterface';
+import { ActivityTable } from './components/ActivityTable';
+import { Footer } from './components/Footer';
 import { WalletModal } from './components/WalletModal';
 import { TransactionTracker } from './components/TransactionTracker';
 import { ErrorModal } from './components/ErrorModal';
-import { Sparkles, Shield, Terminal, ArrowUpRight } from 'lucide-react';
+import { FeedbackModal } from './components/FeedbackModal';
 
-export const App: React.FC = () => {
+export const AppContent: React.FC = () => {
+  // Navigation State
+  const [activeTab, setActiveTab] = useState<'swap' | 'escrow'>('swap');
+
   // Wallet State
   const [walletState, setWalletState] = useState<WalletState>({
     isConnected: false,
@@ -32,8 +42,9 @@ export const App: React.FC = () => {
     rabet: false,
   });
 
-  // UI Modal Controls
+  // Modals & Overlay Controls
   const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
+  const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState(false);
   const [activeError, setActiveError] = useState<AppError | null>(null);
   const [isConnecting, setIsConnecting] = useState(false);
   const [isProcessingTx, setIsProcessingTx] = useState(false);
@@ -47,17 +58,21 @@ export const App: React.FC = () => {
   // Soroban Real-Time Events State
   const [events, setEvents] = useState<ContractEvent[]>(INITIAL_EVENTS);
 
-  // Contract Pool Reserves State
+  // Pool Reserves State
   const [reserves, setReserves] = useState<PoolReserves>({
     xlm: '100,500.00',
     usdc: '9,950.25',
     feeBps: 30,
   });
 
+  // Escrows State
+  const [escrows, setEscrows] = useState<EscrowItem[]>(INITIAL_ESCROWS);
+
   // 1. Initial Load: Check installed extensions & load pool reserves
   useEffect(() => {
     checkInstalledWallets().then(setInstalledWallets);
     fetchPoolReserves(STELLAR_CONFIG.contractId).then(setReserves);
+    analytics.track('app_initialized', { network: STELLAR_CONFIG.network });
 
     // Subscribe to live Soroban RPC contract event stream
     const unsubscribe = eventStreamService.subscribe((newEvent) => {
@@ -88,8 +103,10 @@ export const App: React.FC = () => {
         balanceUsdc: (Math.random() * 800 + 100).toFixed(2),
       });
 
+      analytics.track('wallet_connected', { walletId, address });
       setIsWalletModalOpen(false);
     } catch (err: any) {
+      analytics.captureError(err, { walletId });
       const parsed = parseWalletError(err);
       setActiveError(parsed);
     } finally {
@@ -98,6 +115,7 @@ export const App: React.FC = () => {
   };
 
   const handleDisconnect = () => {
+    analytics.track('wallet_disconnected', { address: walletState.address });
     setWalletState({
       isConnected: false,
       address: null,
@@ -120,7 +138,6 @@ export const App: React.FC = () => {
       return;
     }
 
-    // Check balance for Error Type 3: Insufficient Funds simulation
     const currentBalance = tokenIn === 'XLM' ? parseFloat(walletState.balanceXlm.replace(/,/g, '')) : parseFloat(walletState.balanceUsdc.replace(/,/g, ''));
     if (parseFloat(amountIn) > currentBalance) {
       setActiveError({
@@ -145,7 +162,8 @@ export const App: React.FC = () => {
         setTxStatus
       );
 
-      // Emit new swap event into real-time feed
+      analytics.track('swap_executed', { tokenIn, tokenOut, amountIn, txHash });
+
       const newEvt: ContractEvent = {
         id: `evt-${Date.now()}`,
         type: 'swap',
@@ -159,12 +177,14 @@ export const App: React.FC = () => {
       };
       setEvents((prev) => [newEvt, ...prev]);
 
-      // Deduct balance locally for instantaneous user feedback
       if (tokenIn === 'XLM') {
         const newBal = (currentBalance - parseFloat(amountIn)).toFixed(2);
         setWalletState((prev) => ({ ...prev, balanceXlm: newBal }));
       }
+
+      setTimeout(() => setIsFeedbackModalOpen(true), 2000);
     } catch (err: any) {
+      analytics.captureError(err, { operation: 'swap' });
       setTxStatus({ step: 'failed', message: 'Transaction Failed', error: err.message });
       const parsed = parseWalletError(err);
       setActiveError(parsed);
@@ -173,7 +193,7 @@ export const App: React.FC = () => {
     }
   };
 
-  // Handle Soroban Reserve Deposit Execution
+  // Handle Reserve Deposit Execution
   const handleExecuteDeposit = async (token: string, amount: string) => {
     if (!walletState.address || !walletState.walletId) {
       setIsWalletModalOpen(true);
@@ -191,7 +211,8 @@ export const App: React.FC = () => {
         setTxStatus
       );
 
-      // Emit new deposit event
+      analytics.track('deposit_executed', { token, amount, txHash });
+
       const newEvt: ContractEvent = {
         id: `evt-${Date.now()}`,
         type: 'deposit',
@@ -203,12 +224,150 @@ export const App: React.FC = () => {
       };
       setEvents((prev) => [newEvt, ...prev]);
 
-      // Update pool reserve stats
       setReserves((prev) => ({
         ...prev,
         xlm: token === 'XLM' ? (parseFloat(prev.xlm.replace(/,/g, '')) + parseFloat(amount)).toLocaleString() : prev.xlm,
       }));
     } catch (err: any) {
+      analytics.captureError(err, { operation: 'deposit' });
+      const parsed = parseWalletError(err);
+      setActiveError(parsed);
+    } finally {
+      setIsProcessingTx(false);
+    }
+  };
+
+  // Escrow Operations
+  const handleCreateEscrow = async (payee: string, token: string, amount: string, lockupHours: number) => {
+    if (!walletState.address) return;
+    setIsProcessingTx(true);
+    try {
+      const { escrowId, txHash } = await executeCreateEscrow(
+        STELLAR_CONFIG.escrowContractId,
+        walletState.address,
+        payee,
+        token,
+        amount,
+        lockupHours,
+        setTxStatus
+      );
+
+      analytics.track('escrow_created', { escrowId, payee, token, amount });
+
+      const newEscrow: EscrowItem = {
+        id: escrowId,
+        payer: `${walletState.address.slice(0, 5)}...${walletState.address.slice(-4)}`,
+        payee: payee.length > 12 ? `${payee.slice(0, 5)}...${payee.slice(-4)}` : payee,
+        token,
+        amount,
+        state: 'Created',
+        timeoutLedger: 54000,
+        createdAt: 'Just now',
+        txHash,
+      };
+
+      setEscrows((prev) => [newEscrow, ...prev]);
+
+      const newEvt: ContractEvent = {
+        id: `evt-${Date.now()}`,
+        type: 'escrow_create',
+        user: `${walletState.address.slice(0, 5)}...${walletState.address.slice(-4)}`,
+        token,
+        amount,
+        escrowId,
+        timestamp: 'Just now',
+        txHash,
+      };
+      setEvents((prev) => [newEvt, ...prev]);
+    } catch (err: any) {
+      analytics.captureError(err, { operation: 'create_escrow' });
+      const parsed = parseWalletError(err);
+      setActiveError(parsed);
+    } finally {
+      setIsProcessingTx(false);
+    }
+  };
+
+  const handleFundEscrow = async (escrowId: number) => {
+    if (!walletState.address) return;
+    setIsProcessingTx(true);
+    try {
+      const txHash = await executeFundEscrow(escrowId, walletState.address, setTxStatus);
+      analytics.track('escrow_funded', { escrowId, txHash });
+
+      setEscrows((prev) =>
+        prev.map((e) => (e.id === escrowId ? { ...e, state: 'Funded', txHash } : e))
+      );
+
+      const newEvt: ContractEvent = {
+        id: `evt-${Date.now()}`,
+        type: 'escrow_fund',
+        user: `${walletState.address.slice(0, 5)}...${walletState.address.slice(-4)}`,
+        escrowId,
+        timestamp: 'Just now',
+        txHash,
+      };
+      setEvents((prev) => [newEvt, ...prev]);
+    } catch (err: any) {
+      analytics.captureError(err, { operation: 'fund_escrow' });
+      const parsed = parseWalletError(err);
+      setActiveError(parsed);
+    } finally {
+      setIsProcessingTx(false);
+    }
+  };
+
+  const handleReleaseEscrow = async (escrowId: number) => {
+    if (!walletState.address) return;
+    setIsProcessingTx(true);
+    try {
+      const txHash = await executeReleaseEscrow(escrowId, walletState.address, setTxStatus);
+      analytics.track('escrow_released', { escrowId, txHash });
+
+      setEscrows((prev) =>
+        prev.map((e) => (e.id === escrowId ? { ...e, state: 'Released', txHash } : e))
+      );
+
+      const newEvt: ContractEvent = {
+        id: `evt-${Date.now()}`,
+        type: 'escrow_release',
+        user: `${walletState.address.slice(0, 5)}...${walletState.address.slice(-4)}`,
+        escrowId,
+        timestamp: 'Just now',
+        txHash,
+      };
+      setEvents((prev) => [newEvt, ...prev]);
+    } catch (err: any) {
+      analytics.captureError(err, { operation: 'release_escrow' });
+      const parsed = parseWalletError(err);
+      setActiveError(parsed);
+    } finally {
+      setIsProcessingTx(false);
+    }
+  };
+
+  const handleRefundEscrow = async (escrowId: number) => {
+    if (!walletState.address) return;
+    setIsProcessingTx(true);
+    try {
+      const txHash = await executeRefundEscrow(escrowId, walletState.address, setTxStatus);
+      analytics.track('escrow_refunded', { escrowId, txHash });
+
+      setEscrows((prev) =>
+        prev.map((e) => (e.id === escrowId ? { ...e, state: 'Refunded', txHash } : e))
+      );
+
+      const newEvt: ContractEvent = {
+        id: `evt-${Date.now()}`,
+        type: 'escrow_refund',
+        user: `${walletState.address.slice(0, 5)}...${walletState.address.slice(-4)}`,
+        escrowId,
+        timestamp: 'Just now',
+        txHash,
+      };
+      setEvents((prev) => [newEvt, ...prev]);
+    } catch (err: any) {
+      analytics.captureError(err, { operation: 'refund_escrow' });
       const parsed = parseWalletError(err);
       setActiveError(parsed);
     } finally {
@@ -217,84 +376,74 @@ export const App: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 font-sans selection:bg-cyan-500 selection:text-slate-950">
+    <div className="min-h-screen bg-slate-950 text-slate-100 font-sans selection:bg-emerald-500 selection:text-slate-950 bg-tactical-grid">
       {/* Background Radial Gradients */}
       <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
-        <div className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-cyan-600/10 rounded-full blur-[140px]" />
-        <div className="absolute bottom-0 right-1/4 w-[600px] h-[600px] bg-indigo-600/10 rounded-full blur-[140px]" />
+        <div className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-emerald-600/10 rounded-full blur-[160px]" />
+        <div className="absolute bottom-0 right-1/4 w-[600px] h-[600px] bg-cyan-600/10 rounded-full blur-[160px]" />
       </div>
 
       <div className="relative z-10">
-        {/* Navigation Bar */}
+        {/* Top Navbar */}
         <Navbar
           walletState={walletState}
+          activeTab={activeTab}
+          onSelectTab={setActiveTab}
           onOpenWalletModal={() => setIsWalletModalOpen(true)}
           onDisconnect={handleDisconnect}
+          onOpenFeedback={() => setIsFeedbackModalOpen(true)}
         />
 
-        {/* Hero Section */}
-        <div className="pt-8 pb-4 text-center max-w-3xl mx-auto px-4">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-cyan-950/80 text-cyan-400 border border-cyan-800/50 text-xs font-semibold mb-4 animate-bounce">
-            <Sparkles className="w-3.5 h-3.5" />
-            <span>Stellar Quest Level 2: Multi-Wallet & Smart Contract Hub</span>
-          </div>
-          <h1 className="text-3xl sm:text-5xl font-black tracking-tight text-white leading-tight">
-            Soroban Multi-Wallet <span className="bg-gradient-to-r from-cyan-400 via-blue-500 to-indigo-400 bg-clip-text text-transparent">DEX Terminal</span>
-          </h1>
-          <p className="mt-3 text-sm sm:text-base text-slate-400 max-w-2xl mx-auto leading-relaxed">
-            Trade tokens, deposit liquidity, and listen to real-time events on Stellar Testnet via `@stellar/wallets-kit` integration with compiled Soroban Rust Smart Contract.
-          </p>
-        </div>
+        {/* Main Content Area */}
+        {!walletState.isConnected ? (
+          /* Disconnected State: Figma Landing Page */
+          <main>
+            <LandingHero onConnectWallet={() => setIsWalletModalOpen(true)} />
+            <LandingFeatures />
+          </main>
+        ) : (
+          /* Connected State: Figma Single-Page Consolidated Dashboard */
+          <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+            {/* 01 Portfolio Banner */}
+            <PortfolioBanner walletState={walletState} />
 
-        {/* Real-time Pool Stats Metrics */}
-        <StatsBanner reserves={reserves} connectedWallet={walletState.walletName} />
-
-        {/* Main Grid: Swap Interface (Left) + Real-Time Event Sync Feed (Right) */}
-        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-            {/* Swap & Deposit Component (7 cols) */}
-            <div className="lg:col-span-7">
-              <SwapInterface
-                walletState={walletState}
-                reserves={reserves}
-                onOpenWalletModal={() => setIsWalletModalOpen(true)}
-                onExecuteSwap={handleExecuteSwap}
-                onExecuteDeposit={handleExecuteDeposit}
-                isProcessing={isProcessingTx}
-              />
-            </div>
-
-            {/* Event Feed Component (5 cols) */}
-            <div className="lg:col-span-5">
-              <EventFeed events={events} />
-            </div>
-          </div>
-
-          {/* Technical Level 2 Verification Specs Bar */}
-          <div className="mt-12 p-6 rounded-3xl bg-slate-900/60 border border-slate-800 backdrop-blur-xl">
-            <div className="flex items-center gap-2 mb-3 text-cyan-400 font-bold text-sm">
-              <Terminal className="w-4 h-4" />
-              <span>Level 2 Submission Technical Specs</span>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
-              <div className="p-3 rounded-2xl bg-slate-950/80 border border-slate-800">
-                <span className="text-slate-400 block mb-1 font-semibold">1. Deployed Smart Contract ID:</span>
-                <span className="font-mono text-cyan-300 break-all text-[11px]">{STELLAR_CONFIG.contractId}</span>
+            {/* Main Grid: 02 Swap (Left) + 03 Escrow (Right) */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+              <div className="lg:col-span-6">
+                <SwapInterface
+                  walletState={walletState}
+                  reserves={reserves}
+                  onOpenWalletModal={() => setIsWalletModalOpen(true)}
+                  onExecuteSwap={handleExecuteSwap}
+                  onExecuteDeposit={handleExecuteDeposit}
+                  isProcessing={isProcessingTx}
+                />
               </div>
-              <div className="p-3 rounded-2xl bg-slate-950/80 border border-slate-800">
-                <span className="text-slate-400 block mb-1 font-semibold">2. Handled Error Categories:</span>
-                <span className="text-slate-200">Wallet Missing, Rejected Tx, Insufficient Funds</span>
-              </div>
-              <div className="p-3 rounded-2xl bg-slate-950/80 border border-slate-800">
-                <span className="text-slate-400 block mb-1 font-semibold">3. Multi-Wallet Providers:</span>
-                <span className="text-slate-200">Freighter, Albedo, Lobstr, xBull, Rabet</span>
+
+              <div className="lg:col-span-6">
+                <EscrowInterface
+                  walletState={walletState}
+                  escrows={escrows}
+                  onOpenWalletModal={() => setIsWalletModalOpen(true)}
+                  onCreateEscrow={handleCreateEscrow}
+                  onFundEscrow={handleFundEscrow}
+                  onReleaseEscrow={handleReleaseEscrow}
+                  onRefundEscrow={handleRefundEscrow}
+                  isProcessing={isProcessingTx}
+                />
               </div>
             </div>
-          </div>
-        </main>
+
+            {/* 04 On-Chain Activity Table */}
+            <ActivityTable events={events} />
+          </main>
+        )}
+
+        {/* Footer */}
+        <Footer />
       </div>
 
-      {/* Modals & Trackers */}
+      {/* Overlays & Modals */}
       <WalletModal
         isOpen={isWalletModalOpen}
         onClose={() => setIsWalletModalOpen(false)}
@@ -314,6 +463,22 @@ export const App: React.FC = () => {
         onClose={() => setActiveError(null)}
         onSelectAlbedo={() => handleSelectWallet('albedo')}
       />
+
+      <FeedbackModal
+        isOpen={isFeedbackModalOpen}
+        onClose={() => setIsFeedbackModalOpen(false)}
+        onSubmit={(rating, comment) => {
+          console.log('Feedback submitted:', { rating, comment });
+        }}
+      />
     </div>
+  );
+};
+
+export const App: React.FC = () => {
+  return (
+    <ErrorBoundary>
+      <AppContent />
+    </ErrorBoundary>
   );
 };

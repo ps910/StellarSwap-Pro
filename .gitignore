@@ -5,3 +5,4 @@ dist
 target
 *.wasm
 .DS_Store
+.vscode
