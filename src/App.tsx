@@ -16,12 +16,36 @@ import { TransactionTracker } from './components/TransactionTracker';
 import { ErrorModal } from './components/ErrorModal';
 import { FeedbackModal } from './components/FeedbackModal';
 
-// Code-split heavy components for faster initial page load
-const LandingHero = lazy(() => import('./components/LandingHero').then(m => ({ default: m.LandingHero })));
-const LandingFeatures = lazy(() => import('./components/LandingFeatures').then(m => ({ default: m.LandingFeatures })));
-const SwapInterface = lazy(() => import('./components/SwapInterface').then(m => ({ default: m.SwapInterface })));
-const EscrowInterface = lazy(() => import('./components/EscrowInterface').then(m => ({ default: m.EscrowInterface })));
-const ActivityTable = lazy(() => import('./components/ActivityTable').then(m => ({ default: m.ActivityTable })));
+// Helper to handle dynamic chunk loading errors caused by fresh deployments / stale browser cache
+function lazyRetry<T extends React.ComponentType<any>>(
+  importFn: () => Promise<{ default: T }>,
+  name: string
+) {
+  return lazy(async () => {
+    const hasReloaded = sessionStorage.getItem(`retry_lazy_${name}`);
+    try {
+      const component = await importFn();
+      sessionStorage.removeItem(`retry_lazy_${name}`);
+      return component;
+    } catch (error: any) {
+      console.warn(`[LazyLoad] Failed to load chunk for ${name}:`, error);
+      if (!hasReloaded) {
+        sessionStorage.setItem(`retry_lazy_${name}`, 'true');
+        window.location.reload();
+        return new Promise<{ default: T }>(() => {});
+      }
+      sessionStorage.removeItem(`retry_lazy_${name}`);
+      throw error;
+    }
+  });
+}
+
+// Code-split heavy components with resilient chunk loading
+const LandingHero = lazyRetry(() => import('./components/LandingHero').then(m => ({ default: m.LandingHero })), 'LandingHero');
+const LandingFeatures = lazyRetry(() => import('./components/LandingFeatures').then(m => ({ default: m.LandingFeatures })), 'LandingFeatures');
+const SwapInterface = lazyRetry(() => import('./components/SwapInterface').then(m => ({ default: m.SwapInterface })), 'SwapInterface');
+const EscrowInterface = lazyRetry(() => import('./components/EscrowInterface').then(m => ({ default: m.EscrowInterface })), 'EscrowInterface');
+const ActivityTable = lazyRetry(() => import('./components/ActivityTable').then(m => ({ default: m.ActivityTable })), 'ActivityTable');
 
 export const AppContent: React.FC = () => {
   // Navigation State

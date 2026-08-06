@@ -23,6 +23,21 @@ export class ErrorBoundary extends Component<Props, State> {
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     analytics.captureError(error, { componentStack: errorInfo.componentStack });
+
+    // Auto-reload on dynamic import failure (stale build asset after new deployment)
+    const isChunkError =
+      error.message?.includes('Failed to fetch dynamically imported module') ||
+      error.message?.includes('Importing a module script failed') ||
+      error.message?.includes('Loading chunk');
+
+    if (isChunkError) {
+      const hasAutoReloaded = sessionStorage.getItem('auto_reload_chunk_error');
+      if (!hasAutoReloaded) {
+        sessionStorage.setItem('auto_reload_chunk_error', 'true');
+        console.warn('[ErrorBoundary] Chunk load failure detected due to new deployment. Auto-reloading page...');
+        window.location.reload();
+      }
+    }
   }
 
   private handleReset = () => {
@@ -39,9 +54,17 @@ export class ErrorBoundary extends Component<Props, State> {
               <ShieldAlert className="w-8 h-8" />
             </div>
 
-            <h2 className="text-2xl font-bold text-white mb-2">Something went wrong</h2>
+            <h2 className="text-2xl font-bold text-white mb-2">
+              {this.state.error?.message?.includes('Failed to fetch dynamically imported module') ||
+              this.state.error?.message?.includes('Loading chunk')
+                ? 'App Update Detected'
+                : 'Something went wrong'}
+            </h2>
             <p className="text-sm text-slate-400 mb-6">
-              StellarSwap+ encountered an unexpected UI exception. Our automated monitoring (Sentry) has captured the stack trace.
+              {this.state.error?.message?.includes('Failed to fetch dynamically imported module') ||
+              this.state.error?.message?.includes('Loading chunk')
+                ? 'A new version of StellarSwap+ was recently deployed. Reload the page to fetch the latest application updates.'
+                : 'StellarSwap+ encountered an unexpected UI exception. Our automated monitoring (Sentry) has captured the stack trace.'}
             </p>
 
             {this.state.error && (
