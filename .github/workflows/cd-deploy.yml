@@ -1,0 +1,163 @@
+name: CD — Deploy Smart Contracts & Frontend
+
+on:
+  push:
+    branches: [main, master]
+  workflow_dispatch:
+    inputs:
+      deploy_contracts:
+        description: 'Deploy Soroban contracts to Testnet'
+        required: false
+        default: 'false'
+        type: boolean
+      deploy_frontend:
+        description: 'Deploy frontend to Vercel'
+        required: false
+        default: 'true'
+        type: boolean
+
+env:
+  STELLAR_NETWORK: TESTNET
+  SOROBAN_RPC_URL: https://soroban-testnet.stellar.org
+  STELLAR_NETWORK_PASSPHRASE: "Test SDF Network ; September 2015"
+
+jobs:
+  # ──────────────────────────────────────────────
+  # Deploy Soroban Contracts to Stellar Testnet
+  # ──────────────────────────────────────────────
+  deploy-contracts:
+    name: Deploy Soroban Contracts
+    runs-on: ubuntu-latest
+    if: github.event.inputs.deploy_contracts == 'true' || github.event_name == 'push'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+
+      - name: Cache Cargo registry
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+          key: ${{ runner.os }}-cargo-deploy-${{ hashFiles('contracts/**/Cargo.lock') }}
+
+      - name: Install Soroban CLI
+        run: cargo install --locked soroban-cli || cargo install --locked stellar-cli
+
+      - name: Build Escrow Contract (WASM)
+        working-directory: contracts/escrow_contract
+        run: cargo build --release --target wasm32-unknown-unknown
+
+      - name: Build Swap Contract (WASM)
+        working-directory: contracts/swap_contract
+        run: cargo build --release --target wasm32-unknown-unknown
+
+      - name: Deploy Escrow Contract to Testnet
+        if: env.STELLAR_SECRET_KEY != ''
+        env:
+          STELLAR_SECRET_KEY: ${{ secrets.STELLAR_SECRET_KEY }}
+        run: |
+          echo "🚀 Deploying Escrow Contract to Stellar Testnet..."
+          soroban contract deploy \
+            --wasm contracts/escrow_contract/target/wasm32-unknown-unknown/release/soroban_escrow_contract.wasm \
+            --source "$STELLAR_SECRET_KEY" \
+            --rpc-url "$SOROBAN_RPC_URL" \
+            --network-passphrase "$STELLAR_NETWORK_PASSPHRASE" \
+            | tee escrow_contract_id.txt
+          echo "ESCROW_CONTRACT_ID=$(cat escrow_contract_id.txt)" >> $GITHUB_ENV
+          echo "✅ Escrow Contract deployed: $(cat escrow_contract_id.txt)"
+
+      - name: Deploy Swap Contract to Testnet
+        if: env.STELLAR_SECRET_KEY != ''
+        env:
+          STELLAR_SECRET_KEY: ${{ secrets.STELLAR_SECRET_KEY }}
+        run: |
+          echo "🚀 Deploying Swap Contract to Stellar Testnet..."
+          soroban contract deploy \
+            --wasm contracts/swap_contract/target/wasm32-unknown-unknown/release/soroban_swap_contract.wasm \
+            --source "$STELLAR_SECRET_KEY" \
+            --rpc-url "$SOROBAN_RPC_URL" \
+            --network-passphrase "$STELLAR_NETWORK_PASSPHRASE" \
+            | tee swap_contract_id.txt
+          echo "SWAP_CONTRACT_ID=$(cat swap_contract_id.txt)" >> $GITHUB_ENV
+          echo "✅ Swap Contract deployed: $(cat swap_contract_id.txt)"
+
+      - name: Skip deployment (no secret key configured)
+        if: env.STELLAR_SECRET_KEY == ''
+        env:
+          STELLAR_SECRET_KEY: ${{ secrets.STELLAR_SECRET_KEY }}
+        run: |
+          echo "⚠️ STELLAR_SECRET_KEY not configured in repository secrets."
+          echo "Contracts were built successfully but not deployed."
+          echo "To enable deployment, add STELLAR_SECRET_KEY to Settings → Secrets → Actions."
+
+      - name: Upload deployed contract IDs
+        if: env.STELLAR_SECRET_KEY != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: deployed-contract-ids
+          path: |
+            escrow_contract_id.txt
+            swap_contract_id.txt
+          retention-days: 30
+
+  # ──────────────────────────────────────────────
+  # Deploy Frontend to Vercel
+  # ──────────────────────────────────────────────
+  deploy-frontend:
+    name: Deploy Frontend to Vercel
+    runs-on: ubuntu-latest
+    if: github.event.inputs.deploy_frontend != 'false'
+    needs: deploy-contracts
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build production frontend
+        run: npm run build
+        env:
+          VITE_STELLAR_NETWORK: TESTNET
+          VITE_STELLAR_RPC_URL: https://soroban-testnet.stellar.org
+          VITE_STELLAR_HORIZON_URL: https://horizon-testnet.stellar.org
+          VITE_STELLAR_EXPLORER_URL: https://stellar.expert/explorer/testnet
+          VITE_SWAP_CONTRACT_ID: ${{ secrets.SWAP_CONTRACT_ID || 'CD32CDHJPRITTOX53LSKONEOTPC2QR55MLWGQET3X46O2EQNFOZK423S' }}
+          VITE_ESCROW_CONTRACT_ID: ${{ secrets.ESCROW_CONTRACT_ID || 'CC9X7K4YMQW4L6P8S1U0N5R2T9V3W8Z6Y7X0A1B2C3D4E5F6G7H8J9K0' }}
+          VITE_SENTRY_DSN: ${{ secrets.SENTRY_DSN || '' }}
+
+      - name: Deploy to Vercel
+        if: env.VERCEL_TOKEN != ''
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        run: |
+          npm install -g vercel
+          vercel deploy --prod --token="$VERCEL_TOKEN" --yes
+          echo "✅ Frontend deployed to Vercel production"
+
+      - name: Skip Vercel deploy (no token configured)
+        if: env.VERCEL_TOKEN == ''
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: |
+          echo "⚠️ VERCEL_TOKEN not configured in repository secrets."
+          echo "Frontend was built successfully but not deployed."
+          echo "To enable deployment, add VERCEL_TOKEN, VERCEL_ORG_ID, and VERCEL_PROJECT_ID to Settings → Secrets → Actions."
+          echo ""
+          echo "Alternatively, the frontend is auto-deployed via Vercel Git Integration on push to main."
