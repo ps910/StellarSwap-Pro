@@ -1,5 +1,8 @@
 # ⚡ StellarSwap+ — Level 4 (Green Belt) Production MVP & Soroban Escrow Vault
 
+[![CI — Smart Contracts](https://github.com/ps910/StellarSwap-Pro/actions/workflows/ci-contracts.yml/badge.svg)](https://github.com/ps910/StellarSwap-Pro/actions/workflows/ci-contracts.yml)
+[![CI — Frontend](https://github.com/ps910/StellarSwap-Pro/actions/workflows/ci-frontend.yml/badge.svg)](https://github.com/ps910/StellarSwap-Pro/actions/workflows/ci-frontend.yml)
+[![CD — Deploy](https://github.com/ps910/StellarSwap-Pro/actions/workflows/cd-deploy.yml/badge.svg)](https://github.com/ps910/StellarSwap-Pro/actions/workflows/cd-deploy.yml)
 [![Stellar Testnet](https://img.shields.io/badge/Stellar-Testnet-cyan?style=for-the-badge&logo=stellar)](https://stellar.expert/explorer/testnet)
 [![Soroban Rust](https://img.shields.io/badge/Soroban-Rust%20v22-blue?style=for-the-badge&logo=rust)](https://soroban.stellar.org)
 [![Vercel Deploy](https://img.shields.io/badge/Deployed-Vercel-black?style=for-the-badge&logo=vercel)](https://stellar-swap-pro.vercel.app)
@@ -25,6 +28,10 @@
 | Proof of 10+ user wallet interactions | ✅ (11 txs) | [`docs/user-testing.md`](./docs/user-testing.md) |
 | Basic user feedback summary | ✅ (4.9/5.0) | [`docs/user-testing.md`](./docs/user-testing.md) |
 | Production deployment | ✅ | Vercel with security headers and CSP |
+| CI pipeline for Smart Contracts | ✅ | [`ci-contracts.yml`](./.github/workflows/ci-contracts.yml) — `cargo fmt`, `cargo build`, `cargo test` |
+| CI pipeline for Frontend | ✅ | [`ci-frontend.yml`](./.github/workflows/ci-frontend.yml) — `npm ci`, `lint`, `tsc`, `build` |
+| CD pipeline (Contracts + Frontend) | ✅ | [`cd-deploy.yml`](./.github/workflows/cd-deploy.yml) — Soroban CLI deploy + Vercel deploy |
+| Makefile for contract build/test | ✅ | [`Makefile`](./Makefile) — `make build`, `make test`, `make fmt` |
 
 ---
 
@@ -149,6 +156,12 @@ Documented in detail in [`docs/user-testing.md`](./docs/user-testing.md):
 - **Feedback persistence** to localStorage for cross-session proof
 - **PostHog / Plausible** drop-in integration hooks
 
+### CI/CD Pipelines (GitHub Actions)
+- **Smart Contract CI** (`ci-contracts.yml`): `cargo fmt --check` → `cargo build --release --target wasm32-unknown-unknown` → `cargo test --verbose` on push/PR
+- **Frontend CI** (`ci-frontend.yml`): `npm ci` → `eslint` → `tsc --noEmit` → `npm run build` across Node 18/20 matrix
+- **Continuous Deployment** (`cd-deploy.yml`): Soroban CLI contract deployment to Testnet + Vercel production frontend deploy with secrets/RPC config
+- **Makefile automation**: `make all` runs format, build, and test in one command
+
 ### Deployment & Security
 - **Vercel deployment** with `vercel.json` SPA configuration
 - **Content Security Policy** restricting script, style, and connect sources
@@ -209,11 +222,20 @@ npx vercel --prod
 
 ```
 StellarSwap-Pro/
+├── .github/
+│   └── workflows/
+│       ├── ci-contracts.yml   # CI: cargo fmt/build/test for Soroban contracts
+│       ├── ci-frontend.yml    # CI: npm ci/lint/tsc/build for React frontend
+│       └── cd-deploy.yml      # CD: Soroban deploy + Vercel production deploy
 ├── contracts/
 │   ├── escrow_contract/       # Soroban Escrow Vault (Rust)
+│   │   ├── Cargo.toml         # Package manifest & dependencies
+│   │   ├── Cargo.lock         # Locked dependency versions
 │   │   ├── src/lib.rs         # Contract implementation
 │   │   └── src/test.rs        # 7 unit tests
 │   └── swap_contract/         # Soroban AMM Swap Pool (Rust)
+│       ├── Cargo.toml          # Package manifest & dependencies
+│       ├── Cargo.lock          # Locked dependency versions
 │       ├── src/lib.rs          # Contract implementation
 │       └── src/test.rs         # 6 unit tests
 ├── src/
@@ -233,6 +255,7 @@ StellarSwap-Pro/
 ├── docs/
 │   ├── user-testing.md        # 11 wallet interactions + feedback
 │   └── screenshots/           # UI screenshots
+├── Makefile                   # Build/test/format automation for contracts
 ├── vercel.json                # Production deployment config
 ├── .env.example               # Environment variable template
 ├── CHANGELOG.md               # Version history (L1–L4)
@@ -265,6 +288,10 @@ The project tracks a clean progression from Level 1 through Level 4:
 16. `feat(resilience): add exponential backoff RPC retry wrapper and failover support`
 17. `test(contracts): expand Soroban escrow and swap contract edge case test coverage`
 18. `docs: add LICENSE, CONTRIBUTING.md, and CHANGELOG for Level 4 compliance`
+19. `ci: add GitHub Actions CI for Soroban contracts (fmt, build, test)`
+20. `ci: add GitHub Actions CI for frontend (install, lint, typecheck, build)`
+21. `cd: add GitHub Actions CD pipeline for Soroban deploy + Vercel production deploy`
+22. `chore: add root Makefile for contract build/test/fmt automation`
 
 ---
 
