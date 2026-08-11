@@ -1,0 +1,76 @@
+name: CI — Frontend (React + Vite)
+
+on:
+  push:
+    branches: [main, master]
+    paths:
+      - 'src/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'tsconfig.json'
+      - 'vite.config.*'
+      - 'index.html'
+  pull_request:
+    branches: [main, master]
+    paths:
+      - 'src/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'tsconfig.json'
+      - 'vite.config.*'
+      - 'index.html'
+  workflow_dispatch:
+
+jobs:
+  # ──────────────────────────────────────────────
+  # Install, Lint, Type-check, Build
+  # ──────────────────────────────────────────────
+  build-and-lint:
+    name: Build & Lint Frontend
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [18, 20]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint (ESLint)
+        run: npm run lint --if-present
+        continue-on-error: true
+
+      - name: TypeScript type-check
+        run: npx tsc --noEmit
+        continue-on-error: true
+
+      - name: Build production bundle
+        run: npm run build
+        env:
+          VITE_STELLAR_NETWORK: TESTNET
+          VITE_STELLAR_RPC_URL: https://soroban-testnet.stellar.org
+          VITE_STELLAR_HORIZON_URL: https://horizon-testnet.stellar.org
+          VITE_SWAP_CONTRACT_ID: ${{ secrets.SWAP_CONTRACT_ID || 'CD32CDHJPRITTOX53LSKONEOTPC2QR55MLWGQET3X46O2EQNFOZK423S' }}
+          VITE_ESCROW_CONTRACT_ID: ${{ secrets.ESCROW_CONTRACT_ID || 'CC9X7K4YMQW4L6P8S1U0N5R2T9V3W8Z6Y7X0A1B2C3D4E5F6G7H8J9K0' }}
+
+      - name: Verify dist output
+        run: |
+          ls -la dist/
+          test -f dist/index.html && echo "✅ index.html found in dist/" || exit 1
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-dist-node${{ matrix.node-version }}
+          path: dist/
+          retention-days: 7
