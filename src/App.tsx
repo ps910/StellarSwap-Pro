@@ -1,5 +1,5 @@
 import React, { useState, useEffect, Suspense, lazy } from 'react';
-import { WalletState, WalletType, AppError, TxStatus, ContractEvent, PoolReserves, EscrowItem } from './types';
+import { WalletState, WalletType, AppError, TxStatus, ContractEvent, PoolReserves, EscrowItem, AppTab } from './types';
 import { SUPPORTED_WALLETS, checkInstalledWallets, connectWallet, parseWalletError } from './services/wallet';
 import { fetchPoolReserves, executeContractSwap, executeContractDeposit } from './services/contract';
 import { INITIAL_ESCROWS, executeCreateEscrow, executeFundEscrow, executeReleaseEscrow, executeRefundEscrow } from './services/escrow';
@@ -48,9 +48,13 @@ const SwapInterface = lazyRetry(() => import('./components/SwapInterface').then(
 const EscrowInterface = lazyRetry(() => import('./components/EscrowInterface').then(m => ({ default: m.EscrowInterface })), 'EscrowInterface');
 const ActivityTable = lazyRetry(() => import('./components/ActivityTable').then(m => ({ default: m.ActivityTable })), 'ActivityTable');
 
+// Level 5: New lazy-loaded components
+const AnalyticsDashboard = lazyRetry(() => import('./components/AnalyticsDashboard').then(m => ({ default: m.AnalyticsDashboard })), 'AnalyticsDashboard');
+const OnboardingHub = lazyRetry(() => import('./components/OnboardingHub').then(m => ({ default: m.OnboardingHub })), 'OnboardingHub');
+
 export const AppContent: React.FC = () => {
-  // Navigation State
-  const [activeTab, setActiveTab] = useState<'swap' | 'escrow'>('swap');
+  // Navigation State — Level 5: extended with 'analytics' tab
+  const [activeTab, setActiveTab] = useState<AppTab>('swap');
 
   // Wallet State
   const [walletState, setWalletState] = useState<WalletState>({
@@ -161,6 +165,7 @@ export const AppContent: React.FC = () => {
 
       handleRefreshBalances(address);
       analytics.identifyUser(address);
+      analytics.trackUserOnboarded(address); // Level 5: Track user growth
       analytics.track('wallet_connected', { walletId, address });
       setIsWalletModalOpen(false);
     } catch (err: any) {
@@ -454,15 +459,20 @@ export const AppContent: React.FC = () => {
 
         {/* Main Content Area */}
         {!walletState.isConnected ? (
-          /* Disconnected State: Figma Landing Page */
+          /* Disconnected State: Landing Page + Onboarding Hub */
           <main>
             <Suspense fallback={<div className="min-h-screen" />}>
               <LandingHero onConnectWallet={() => setIsWalletModalOpen(true)} />
               <LandingFeatures />
+              {/* Level 5: Onboarding Hub on landing page */}
+              <OnboardingHub
+                onConnectWallet={() => setIsWalletModalOpen(true)}
+                isConnected={false}
+              />
             </Suspense>
           </main>
         ) : (
-          /* Connected State: Figma Single-Page Consolidated Dashboard */
+          /* Connected State: Dashboard with Swap / Escrow / Analytics tabs */
           <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
             {/* 01 Portfolio Banner */}
             <PortfolioBanner
@@ -471,41 +481,51 @@ export const AppContent: React.FC = () => {
               onRefreshBalances={() => handleRefreshBalances()}
             />
 
-            {/* Main Grid: 02 Swap (Left) + 03 Escrow (Right) */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-              <div className="lg:col-span-6">
-                <Suspense fallback={<LoadingSkeleton lines={6} />}>
-                  <SwapInterface
-                    walletState={walletState}
-                    reserves={reserves}
-                    onOpenWalletModal={() => setIsWalletModalOpen(true)}
-                    onExecuteSwap={handleExecuteSwap}
-                    onExecuteDeposit={handleExecuteDeposit}
-                    isProcessing={isProcessingTx}
-                  />
-                </Suspense>
-              </div>
+            {/* Tab Content */}
+            {activeTab === 'analytics' ? (
+              /* Level 5: Analytics Dashboard */
+              <Suspense fallback={<LoadingSkeleton lines={8} />}>
+                <AnalyticsDashboard />
+              </Suspense>
+            ) : (
+              <>
+                {/* Main Grid: Swap (Left) + Escrow (Right) */}
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                  <div className="lg:col-span-6">
+                    <Suspense fallback={<LoadingSkeleton lines={6} />}>
+                      <SwapInterface
+                        walletState={walletState}
+                        reserves={reserves}
+                        onOpenWalletModal={() => setIsWalletModalOpen(true)}
+                        onExecuteSwap={handleExecuteSwap}
+                        onExecuteDeposit={handleExecuteDeposit}
+                        isProcessing={isProcessingTx}
+                      />
+                    </Suspense>
+                  </div>
 
-              <div className="lg:col-span-6">
-                <Suspense fallback={<LoadingSkeleton lines={6} />}>
-                  <EscrowInterface
-                    walletState={walletState}
-                    escrows={escrows}
-                    onOpenWalletModal={() => setIsWalletModalOpen(true)}
-                    onCreateEscrow={handleCreateEscrow}
-                    onFundEscrow={handleFundEscrow}
-                    onReleaseEscrow={handleReleaseEscrow}
-                    onRefundEscrow={handleRefundEscrow}
-                    isProcessing={isProcessingTx}
-                  />
-                </Suspense>
-              </div>
-            </div>
+                  <div className="lg:col-span-6">
+                    <Suspense fallback={<LoadingSkeleton lines={6} />}>
+                      <EscrowInterface
+                        walletState={walletState}
+                        escrows={escrows}
+                        onOpenWalletModal={() => setIsWalletModalOpen(true)}
+                        onCreateEscrow={handleCreateEscrow}
+                        onFundEscrow={handleFundEscrow}
+                        onReleaseEscrow={handleReleaseEscrow}
+                        onRefundEscrow={handleRefundEscrow}
+                        isProcessing={isProcessingTx}
+                      />
+                    </Suspense>
+                  </div>
+                </div>
 
-            {/* 04 On-Chain Activity Table */}
-            <Suspense fallback={<LoadingSkeleton lines={8} />}>
-              <ActivityTable events={events} />
-            </Suspense>
+                {/* On-Chain Activity Table */}
+                <Suspense fallback={<LoadingSkeleton lines={8} />}>
+                  <ActivityTable events={events} />
+                </Suspense>
+              </>
+            )}
           </main>
         )}
 
