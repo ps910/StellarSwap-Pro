@@ -29,6 +29,8 @@ jobs:
     name: Deploy Soroban Contracts
     runs-on: ubuntu-latest
     if: github.event.inputs.deploy_contracts == 'true' || github.event_name == 'push'
+    env:
+      STELLAR_SECRET_KEY: ${{ secrets.STELLAR_SECRET_KEY }}
 
     steps:
       - name: Checkout repository
@@ -59,9 +61,7 @@ jobs:
         run: cargo build --release --target wasm32-unknown-unknown
 
       - name: Deploy Escrow Contract to Testnet
-        if: ${{ secrets.STELLAR_SECRET_KEY != '' }}
-        env:
-          STELLAR_SECRET_KEY: ${{ secrets.STELLAR_SECRET_KEY }}
+        if: env.STELLAR_SECRET_KEY != ''
         run: |
           echo "🚀 Deploying Escrow Contract to Stellar Testnet..."
           soroban contract deploy \
@@ -74,9 +74,7 @@ jobs:
           echo "✅ Escrow Contract deployed: $(cat escrow_contract_id.txt)"
 
       - name: Deploy Swap Contract to Testnet
-        if: ${{ secrets.STELLAR_SECRET_KEY != '' }}
-        env:
-          STELLAR_SECRET_KEY: ${{ secrets.STELLAR_SECRET_KEY }}
+        if: env.STELLAR_SECRET_KEY != ''
         run: |
           echo "🚀 Deploying Swap Contract to Stellar Testnet..."
           soroban contract deploy \
@@ -89,16 +87,14 @@ jobs:
           echo "✅ Swap Contract deployed: $(cat swap_contract_id.txt)"
 
       - name: Skip deployment (no secret key configured)
-        if: ${{ secrets.STELLAR_SECRET_KEY == '' }}
-        env:
-          STELLAR_SECRET_KEY: ${{ secrets.STELLAR_SECRET_KEY }}
+        if: env.STELLAR_SECRET_KEY == ''
         run: |
           echo "⚠️ STELLAR_SECRET_KEY not configured in repository secrets."
           echo "Contracts were built successfully but not deployed."
           echo "To enable deployment, add STELLAR_SECRET_KEY to Settings → Secrets → Actions."
 
       - name: Upload deployed contract IDs
-        if: ${{ secrets.STELLAR_SECRET_KEY != '' }}
+        if: env.STELLAR_SECRET_KEY != ''
         uses: actions/upload-artifact@v4
         with:
           name: deployed-contract-ids
@@ -115,6 +111,10 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event.inputs.deploy_frontend != 'false'
     needs: deploy-contracts
+    env:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
 
     steps:
       - name: Checkout repository
@@ -136,25 +136,19 @@ jobs:
           VITE_STELLAR_RPC_URL: https://soroban-testnet.stellar.org
           VITE_STELLAR_HORIZON_URL: https://horizon-testnet.stellar.org
           VITE_STELLAR_EXPLORER_URL: https://stellar.expert/explorer/testnet
-          VITE_SWAP_CONTRACT_ID: ${{ secrets.SWAP_CONTRACT_ID || 'CD32CDHJPRITTOX53LSKONEOTPC2QR55MLWGQET3X46O2EQNFOZK423S' }}
-          VITE_ESCROW_CONTRACT_ID: ${{ secrets.ESCROW_CONTRACT_ID || 'CC9X7K4YMQW4L6P8S1U0N5R2T9V3W8Z6Y7X0A1B2C3D4E5F6G7H8J9K0' }}
-          VITE_SENTRY_DSN: ${{ secrets.SENTRY_DSN || '' }}
+          VITE_SWAP_CONTRACT_ID: CD32CDHJPRITTOX53LSKONEOTPC2QR55MLWGQET3X46O2EQNFOZK423S
+          VITE_ESCROW_CONTRACT_ID: CC9X7K4YMQW4L6P8S1U0N5R2T9V3W8Z6Y7X0A1B2C3D4E5F6G7H8J9K0
+          VITE_SENTRY_DSN: ''
 
       - name: Deploy to Vercel
-        if: ${{ secrets.VERCEL_TOKEN != '' }}
-        env:
-          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        if: env.VERCEL_TOKEN != ''
         run: |
           npm install -g vercel
           vercel deploy --prod --token="$VERCEL_TOKEN" --yes
           echo "✅ Frontend deployed to Vercel production"
 
       - name: Skip Vercel deploy (no token configured)
-        if: ${{ secrets.VERCEL_TOKEN == '' }}
-        env:
-          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        if: env.VERCEL_TOKEN == ''
         run: |
           echo "⚠️ VERCEL_TOKEN not configured in repository secrets."
           echo "Frontend was built successfully but not deployed."
