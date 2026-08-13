@@ -8,12 +8,12 @@ on:
       deploy_contracts:
         description: 'Deploy Soroban contracts to Testnet'
         required: false
-        default: 'false'
+        default: false
         type: boolean
       deploy_frontend:
         description: 'Deploy frontend to Vercel'
         required: false
-        default: 'true'
+        default: true
         type: boolean
 
 env:
@@ -59,7 +59,7 @@ jobs:
         run: cargo build --release --target wasm32-unknown-unknown
 
       - name: Deploy Escrow Contract to Testnet
-        if: env.STELLAR_SECRET_KEY != ''
+        if: ${{ secrets.STELLAR_SECRET_KEY != '' }}
         env:
           STELLAR_SECRET_KEY: ${{ secrets.STELLAR_SECRET_KEY }}
         run: |
@@ -74,7 +74,7 @@ jobs:
           echo "✅ Escrow Contract deployed: $(cat escrow_contract_id.txt)"
 
       - name: Deploy Swap Contract to Testnet
-        if: env.STELLAR_SECRET_KEY != ''
+        if: ${{ secrets.STELLAR_SECRET_KEY != '' }}
         env:
           STELLAR_SECRET_KEY: ${{ secrets.STELLAR_SECRET_KEY }}
         run: |
@@ -89,7 +89,7 @@ jobs:
           echo "✅ Swap Contract deployed: $(cat swap_contract_id.txt)"
 
       - name: Skip deployment (no secret key configured)
-        if: env.STELLAR_SECRET_KEY == ''
+        if: ${{ secrets.STELLAR_SECRET_KEY == '' }}
         env:
           STELLAR_SECRET_KEY: ${{ secrets.STELLAR_SECRET_KEY }}
         run: |
@@ -98,7 +98,7 @@ jobs:
           echo "To enable deployment, add STELLAR_SECRET_KEY to Settings → Secrets → Actions."
 
       - name: Upload deployed contract IDs
-        if: env.STELLAR_SECRET_KEY != ''
+        if: ${{ secrets.STELLAR_SECRET_KEY != '' }}
         uses: actions/upload-artifact@v4
         with:
           name: deployed-contract-ids
@@ -141,7 +141,7 @@ jobs:
           VITE_SENTRY_DSN: ${{ secrets.SENTRY_DSN || '' }}
 
       - name: Deploy to Vercel
-        if: env.VERCEL_TOKEN != ''
+        if: ${{ secrets.VERCEL_TOKEN != '' }}
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
@@ -152,7 +152,7 @@ jobs:
           echo "✅ Frontend deployed to Vercel production"
 
       - name: Skip Vercel deploy (no token configured)
-        if: env.VERCEL_TOKEN == ''
+        if: ${{ secrets.VERCEL_TOKEN == '' }}
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
         run: |
