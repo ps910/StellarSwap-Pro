@@ -30,7 +30,7 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event.inputs.deploy_contracts == 'true' || github.event_name == 'push'
     env:
-      STELLAR_SECRET_KEY: ${{ secrets.STELLAR_SECRET_KEY }}
+      STELLAR_SECRET_KEY: ${{ secrets.STELLAR_SECRET_KEY || '' }}
 
     steps:
       - name: Checkout repository
@@ -112,9 +112,9 @@ jobs:
     if: github.event.inputs.deploy_frontend != 'false'
     needs: deploy-contracts
     env:
-      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN || '' }}
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID || '' }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID || '' }}
 
     steps:
       - name: Checkout repository
