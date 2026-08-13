@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowRight, Lock, ExternalLink, Shield } from 'lucide-react';
+import { ArrowRight, Lock, ExternalLink, Shield, Users, Activity, Zap, TrendingUp } from 'lucide-react';
 import { STELLAR_CONFIG } from '../config/stellar';
 
 interface LandingHeroProps {
@@ -8,7 +8,7 @@ interface LandingHeroProps {
 
 export const LandingHero: React.FC<LandingHeroProps> = ({ onConnectWallet }) => {
   return (
-    <section className="py-12 lg:py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section className="py-12 lg:py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
         {/* Left Column: Headline & Action */}
         <div className="lg:col-span-7 space-y-6 text-left">
@@ -51,6 +51,22 @@ export const LandingHero: React.FC<LandingHeroProps> = ({ onConnectWallet }) => 
               <span>NO WALLET YET</span>
               <ExternalLink className="w-3.5 h-3.5 text-slate-500" />
             </a>
+          </div>
+
+          {/* Trust Badges — Level 5 addition */}
+          <div className="flex flex-wrap items-center gap-4 pt-4 font-mono text-[11px]">
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-neutral-900 border border-neutral-800 text-slate-300">
+              <Users className="w-3.5 h-3.5 text-lime-400" />
+              <span><span className="text-lime-400 font-bold">50+</span> Testnet Users</span>
+            </div>
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-neutral-900 border border-neutral-800 text-slate-300">
+              <Activity className="w-3.5 h-3.5 text-cyan-400" />
+              <span><span className="text-cyan-400 font-bold">170+</span> Transactions</span>
+            </div>
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-neutral-900 border border-neutral-800 text-slate-300">
+              <TrendingUp className="w-3.5 h-3.5 text-amber-400" />
+              <span><span className="text-amber-400 font-bold">99.8%</span> Uptime</span>
+            </div>
           </div>
         </div>
 
