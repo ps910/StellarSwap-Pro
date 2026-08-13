@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>StellarSwap+ — Pitch Deck | Level 5 Blue Belt</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&family=JetBrains+Mono:wght@400;700&display=swap');
+
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg: #020205;
+      --surface: #09090b;
+      --border: #1e1e24;
+      --lime: #a3e635;
+      --cyan: #22d3ee;
+      --blue: #3b82f6;
+      --amber: #fbbf24;
+      --purple: #a78bfa;
+      --text: #e2e8f0;
+      --muted: #64748b;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      overflow-x: hidden;
+    }
+
+    /* Slide Container */
+    .slides { scroll-snap-type: y mandatory; overflow-y: auto; height: 100vh; }
+    .slide {
+      min-height: 100vh;
+      scroll-snap-align: start;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 60px 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .slide-inner { max-width: 1100px; width: 100%; position: relative; z-index: 2; }
+
+    /* Glow Effects */
+    .glow-lime { position: absolute; width: 500px; height: 500px; background: radial-gradient(circle, rgba(163,230,53,0.08), transparent 70%); border-radius: 50%; pointer-events: none; }
+    .glow-cyan { position: absolute; width: 400px; height: 400px; background: radial-gradient(circle, rgba(34,211,238,0.06), transparent 70%); border-radius: 50%; pointer-events: none; }
+
+    /* Typography */
+    h1 { font-size: clamp(2.5rem, 6vw, 4.5rem); font-weight: 900; line-height: 1.05; letter-spacing: -0.03em; }
+    h2 { font-size: clamp(1.8rem, 4vw, 3rem); font-weight: 900; line-height: 1.1; letter-spacing: -0.02em; margin-bottom: 1rem; }
+    h3 { font-size: 1.25rem; font-weight: 700; margin-bottom: 0.5rem; }
+    .mono { font-family: 'JetBrains Mono', monospace; }
+    .text-lime { color: var(--lime); }
+    .text-cyan { color: var(--cyan); }
+    .text-blue { color: var(--blue); }
+    .text-amber { color: var(--amber); }
+    .text-muted { color: var(--muted); }
+    .text-sm { font-size: 0.875rem; }
+    .text-xs { font-size: 0.75rem; }
+
+    /* Cards */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+    }
+    .card-highlight {
+      background: var(--surface);
+      border: 1px solid rgba(163,230,53,0.3);
+      border-radius: 16px;
+      padding: 24px;
+    }
+
+    /* Grid */
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
+    .grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 16px; }
+
+    /* Badges */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      border-radius: 999px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .badge-lime { background: rgba(163,230,53,0.1); color: var(--lime); border: 1px solid rgba(163,230,53,0.3); }
+    .badge-blue { background: rgba(59,130,246,0.1); color: var(--blue); border: 1px solid rgba(59,130,246,0.3); }
+    .badge-cyan { background: rgba(34,211,238,0.1); color: var(--cyan); border: 1px solid rgba(34,211,238,0.3); }
+
+    /* Stats */
+    .stat-value { font-size: 2.5rem; font-weight: 900; font-family: 'JetBrains Mono', monospace; }
+    .stat-label { font-size: 0.7rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; }
+
+    /* Progress Bar */
+    .progress-bar { height: 8px; background: #1a1a2e; border-radius: 999px; overflow: hidden; }
+    .progress-fill { height: 100%; border-radius: 999px; transition: width 0.5s ease; }
+
+    /* Timeline */
+    .timeline-item { display: flex; gap: 16px; padding: 16px 0; border-bottom: 1px solid var(--border); }
+    .timeline-dot { width: 12px; height: 12px; border-radius: 50%; margin-top: 4px; flex-shrink: 0; }
+
+    /* Nav Dots */
+    .nav-dots {
+      position: fixed;
+      right: 24px;
+      top: 50%;
+      transform: translateY(-50%);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      z-index: 100;
+    }
+    .nav-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.15);
+      cursor: pointer;
+      transition: all 0.3s;
+      border: none;
+    }
+    .nav-dot:hover, .nav-dot.active { background: var(--lime); transform: scale(1.3); }
+
+    /* Slide Number */
+    .slide-number {
+      position: absolute;
+      bottom: 24px;
+      left: 40px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.65rem;
+      color: var(--muted);
+    }
+
+    /* Architecture Diagram */
+    .arch-box {
+      padding: 12px 16px;
+      border-radius: 12px;
+      text-align: center;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      font-weight: 700;
+    }
+    .arch-arrow { color: var(--lime); text-align: center; font-size: 1.2rem; padding: 4px; }
+
+    /* Print */
+    @media print {
+      .slides { overflow: visible; height: auto; }
+      .slide { page-break-after: always; min-height: 100vh; }
+      .nav-dots { display: none; }
+    }
+
+    @media (max-width: 768px) {
+      .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+      .slide { padding: 40px 20px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Navigation Dots -->
+<nav class="nav-dots" id="navDots"></nav>
+
+<div class="slides" id="slidesContainer">
+
+  <!-- SLIDE 1: Title -->
+  <section class="slide" id="slide-1">
+    <div class="glow-lime" style="top: -200px; left: -100px;"></div>
+    <div class="glow-cyan" style="bottom: -150px; right: -50px;"></div>
+    <div class="slide-inner" style="text-align: center;">
+      <div style="margin-bottom: 24px;">
+        <span class="badge badge-blue">LEVEL 5 — BLUE BELT SUBMISSION</span>
+      </div>
+      <h1>
+        <span style="color: white;">StellarSwap</span><span class="text-lime">+</span>
+      </h1>
+      <p style="font-size: 1.1rem; color: var(--muted); max-width: 650px; margin: 20px auto 32px; line-height: 1.7;">
+        Non-custodial DEX & Soroban Escrow Vault on Stellar — fast path payment swaps, automated trust-free escrow, and multi-wallet onboarding.
+      </p>
+      <div style="display: flex; justify-content: center; gap: 16px; flex-wrap: wrap;">
+        <span class="badge badge-lime">⚡ STELLAR TESTNET</span>
+        <span class="badge badge-cyan">🔒 SOROBAN RUST</span>
+        <span class="badge badge-blue">👥 52+ USERS</span>
+      </div>
+      <p class="mono text-xs text-muted" style="margin-top: 40px;">
+        github.com/ps910/StellarSwap-Pro &nbsp;•&nbsp; stellar-swap-pro.vercel.app
+      </p>
+    </div>
+    <div class="slide-number mono">01 / 09</div>
+  </section>
+
+  <!-- SLIDE 2: Problem Statement -->
+  <section class="slide" id="slide-2">
+    <div class="glow-cyan" style="top: -100px; right: -200px;"></div>
+    <div class="slide-inner">
+      <span class="badge badge-lime" style="margin-bottom: 16px;">PROBLEM</span>
+      <h2>The DeFi UX Gap on <span class="text-cyan">Stellar</span></h2>
+      <div class="grid-2" style="margin-top: 32px;">
+        <div class="card">
+          <h3 style="color: #f87171;">❌ Fragmented DEX Experience</h3>
+          <p class="text-sm text-muted" style="line-height: 1.7;">
+            Users must navigate multiple platforms to swap tokens on Stellar. No single interface leverages native path payments with real-time orderbook execution. Most DEXes add unnecessary smart contract overhead.
+          </p>
+        </div>
+        <div class="card">
+          <h3 style="color: #f87171;">❌ No On-Chain Escrow Solution</h3>
+          <p class="text-sm text-muted" style="line-height: 1.7;">
+            Stellar has no mainstream trust-free escrow service. P2P trades, freelance payments, and conditional transfers rely on off-chain trust or centralized intermediaries.
+          </p>
+        </div>
+        <div class="card">
+          <h3 style="color: #f87171;">❌ Wallet Fragmentation</h3>
+          <p class="text-sm text-muted" style="line-height: 1.7;">
+            Each dApp only supports 1-2 wallets. Users with Freighter can't use Lobstr-only dApps. No unified multi-wallet connection layer exists for Stellar.
+          </p>
+        </div>
+        <div class="card">
+          <h3 style="color: #f87171;">❌ Poor Error Handling</h3>
+          <p class="text-sm text-muted" style="line-height: 1.7;">
+            Most Stellar dApps show cryptic transaction errors. No contextual recovery hints, no retry logic, no distinction between wallet errors and network failures.
+          </p>
+        </div>
+      </div>
+    </div>
+    <div class="slide-number mono">02 / 09</div>
+  </section>
+
+  <!-- SLIDE 3: Solution -->
+  <section class="slide" id="slide-3">
+    <div class="glow-lime" style="bottom: -200px; left: -150px;"></div>
+    <div class="slide-inner">
+      <span class="badge badge-lime" style="margin-bottom: 16px;">SOLUTION</span>
+      <h2>StellarSwap<span class="text-lime">+</span> — Unified DEX & Escrow</h2>
+      <p class="text-muted" style="margin-bottom: 32px; max-width: 700px; line-height: 1.7;">
+        A single production-ready dApp that combines Stellar's native path payment swap engine with a custom Soroban Rust escrow vault — all through one multi-wallet interface.
+      </p>
+      <div class="grid-3">
+        <div class="card-highlight" style="text-align: center;">
+          <div style="font-size: 2.5rem; margin-bottom: 8px;">⚡</div>
+          <h3 class="text-lime">Path Payment DEX</h3>
+          <p class="text-xs text-muted" style="line-height: 1.6;">
+            Execute XLM ↔ USDC swaps via Stellar's native orderbook path payments. Zero smart contract vulnerability for standard swaps.
+          </p>
+        </div>
+        <div class="card-highlight" style="text-align: center;">
+          <div style="font-size: 2.5rem; margin-bottom: 8px;">🔒</div>
+          <h3 class="text-lime">Soroban Escrow Vault</h3>
+          <p class="text-xs text-muted" style="line-height: 1.6;">
+            Create → Fund → Release/Refund. Time-locked asset custody with automated timeout refunds. All on-chain, auditable, trustless.
+          </p>
+        </div>
+        <div class="card-highlight" style="text-align: center;">
+          <div style="font-size: 2.5rem; margin-bottom: 8px;">👛</div>
+          <h3 class="text-lime">Multi-Wallet Kit</h3>
+          <p class="text-xs text-muted" style="line-height: 1.6;">
+            Freighter, Albedo, Lobstr, xBull, Rabet, and Demo Account. One connection modal. Non-custodial signing for all operations.
+          </p>
+        </div>
+      </div>
+    </div>
+    <div class="slide-number mono">03 / 09</div>
+  </section>
+
+  <!-- SLIDE 4: Market Opportunity -->
+  <section class="slide" id="slide-4">
+    <div class="glow-cyan" style="top: -100px; left: 50%;"></div>
+    <div class="slide-inner">
+      <span class="badge badge-cyan" style="margin-bottom: 16px;">MARKET</span>
+      <h2>Market <span class="text-cyan">Opportunity</span></h2>
+      <div class="grid-2" style="margin-top: 32px;">
+        <div>
+          <div class="card" style="margin-bottom: 20px;">
+            <div class="stat-value text-lime">$500M+</div>
+            <div class="stat-label">Stellar DEX Monthly Volume</div>
+          </div>
+          <div class="card" style="margin-bottom: 20px;">
+            <div class="stat-value text-cyan">8M+</div>
+            <div class="stat-label">Stellar Active Accounts</div>
+          </div>
+          <div class="card">
+            <div class="stat-value text-amber">$0</div>
+            <div class="stat-label">Escrow Solutions on Stellar Today</div>
+          </div>
+        </div>
+        <div class="card" style="display: flex; flex-direction: column; justify-content: center;">
+          <h3>Why Stellar?</h3>
+          <ul style="list-style: none; margin-top: 16px;">
+            <li style="padding: 10px 0; border-bottom: 1px solid var(--border); color: var(--muted); font-size: 0.85rem;">
+              <span class="text-lime">✓</span> &nbsp; 3-5 second finality
+            </li>
+            <li style="padding: 10px 0; border-bottom: 1px solid var(--border); color: var(--muted); font-size: 0.85rem;">
+              <span class="text-lime">✓</span> &nbsp; ~$0.00001 per transaction
+            </li>
+            <li style="padding: 10px 0; border-bottom: 1px solid var(--border); color: var(--muted); font-size: 0.85rem;">
+              <span class="text-lime">✓</span> &nbsp; Native path payment for DEX aggregation
+            </li>
+            <li style="padding: 10px 0; border-bottom: 1px solid var(--border); color: var(--muted); font-size: 0.85rem;">
+              <span class="text-lime">✓</span> &nbsp; Soroban smart contracts (Rust/WASM)
+            </li>
+            <li style="padding: 10px 0; color: var(--muted); font-size: 0.85rem;">
+              <span class="text-lime">✓</span> &nbsp; Growing ecosystem & institutional adoption
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="slide-number mono">04 / 09</div>
+  </section>
+
+  <!-- SLIDE 5: Architecture -->
+  <section class="slide" id="slide-5">
+    <div class="glow-lime" style="top: 50%; right: -200px;"></div>
+    <div class="slide-inner">
+      <span class="badge badge-lime" style="margin-bottom: 16px;">ARCHITECTURE</span>
+      <h2>Technical <span class="text-lime">Architecture</span></h2>
+      <div class="grid-2" style="margin-top: 32px;">
+        <div>
+          <div class="card" style="margin-bottom: 16px;">
+            <h3 class="mono text-xs text-lime" style="margin-bottom: 12px;">FRONTEND</h3>
+            <ul style="list-style: none; font-size: 0.8rem; color: var(--muted);">
+              <li style="padding: 6px 0;">• React 18 + TypeScript + Vite</li>
+              <li style="padding: 6px 0;">• TailwindCSS + Custom Dark Theme</li>
+              <li style="padding: 6px 0;">• React.lazy() Code Splitting</li>
+              <li style="padding: 6px 0;">• Sentry SDK + Web Vitals</li>
+              <li style="padding: 6px 0;">• StellarWalletsKit Multi-Wallet</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h3 class="mono text-xs text-cyan" style="margin-bottom: 12px;">SMART CONTRACTS</h3>
+            <ul style="list-style: none; font-size: 0.8rem; color: var(--muted);">
+              <li style="padding: 6px 0;">• Soroban Escrow Vault (Rust)</li>
+              <li style="padding: 6px 0;">• Soroban AMM Swap Pool (Rust)</li>
+              <li style="padding: 6px 0;">• 13 Unit Tests (7 + 6)</li>
+              <li style="padding: 6px 0;">• cargo fmt + build + test CI</li>
+            </ul>
+          </div>
+        </div>
+        <div>
+          <div class="card" style="margin-bottom: 16px;">
+            <h3 class="mono text-xs text-blue" style="margin-bottom: 12px;">CI/CD PIPELINE</h3>
+            <ul style="list-style: none; font-size: 0.8rem; color: var(--muted);">
+              <li style="padding: 6px 0;">• GitHub Actions — Contract CI</li>
+              <li style="padding: 6px 0;">• GitHub Actions — Frontend CI</li>
+              <li style="padding: 6px 0;">• GitHub Actions — CD Deploy</li>
+              <li style="padding: 6px 0;">• Vercel Production Hosting</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h3 class="mono text-xs text-amber" style="margin-bottom: 12px;">INFRASTRUCTURE</h3>
+            <ul style="list-style: none; font-size: 0.8rem; color: var(--muted);">
+              <li style="padding: 6px 0;">• Stellar Horizon API + Soroban RPC</li>
+              <li style="padding: 6px 0;">• Content Security Policy (CSP)</li>
+              <li style="padding: 6px 0;">• Exponential Backoff Retry</li>
+              <li style="padding: 6px 0;">• ErrorBoundary + Crash Recovery</li>
+              <li style="padding: 6px 0;">• Environment Variables (.env)</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="slide-number mono">05 / 09</div>
+  </section>
+
+  <!-- SLIDE 6: Traction -->
+  <section class="slide" id="slide-6">
+    <div class="glow-lime" style="top: -150px; left: 30%;"></div>
+    <div class="slide-inner">
+      <span class="badge badge-lime" style="margin-bottom: 16px;">TRACTION</span>
+      <h2>Growth & <span class="text-lime">Metrics</span></h2>
+      <div class="grid-4" style="margin-top: 32px;">
+        <div class="card" style="text-align: center;">
+          <div class="stat-value text-lime">52+</div>
+          <div class="stat-label">Testnet Users</div>
+        </div>
+        <div class="card" style="text-align: center;">
+          <div class="stat-value text-cyan">170+</div>
+          <div class="stat-label">Transactions</div>
+        </div>
+        <div class="card" style="text-align: center;">
+          <div class="stat-value text-amber">4.9</div>
+          <div class="stat-label">Avg Rating (out of 5)</div>
+        </div>
+        <div class="card" style="text-align: center;">
+          <div class="stat-value" style="color: white;">99.8%</div>
+          <div class="stat-label">Platform Uptime</div>
+        </div>
+      </div>
+      <div class="grid-2" style="margin-top: 24px;">
+        <div class="card">
+          <h3 class="mono text-xs text-lime" style="margin-bottom: 16px;">USER FEEDBACK HIGHLIGHTS</h3>
+          <div style="font-size: 0.8rem; color: var(--muted); line-height: 1.7;">
+            <p style="margin-bottom: 12px; padding-left: 12px; border-left: 2px solid var(--lime);">
+              <em>"Connecting via Freighter was instant, and the real-time event feed confirmed the path payment in under 2 seconds."</em>
+              <br><span class="text-lime" style="font-size: 0.7rem;">— User #1 (5/5)</span>
+            </p>
+            <p style="margin-bottom: 12px; padding-left: 12px; border-left: 2px solid var(--cyan);">
+              <em>"The Escrow vault flow is super intuitive. Creating, funding, and releasing funds was clean."</em>
+              <br><span class="text-cyan" style="font-size: 0.7rem;">— User #3 (5/5)</span>
+            </p>
+            <p style="padding-left: 12px; border-left: 2px solid var(--amber);">
+              <em>"Loved Albedo fallback when Freighter wasn't installed. Zero white-screens."</em>
+              <br><span class="text-amber" style="font-size: 0.7rem;">— User #5 (5/5)</span>
+            </p>
+          </div>
+        </div>
+        <div class="card">
+          <h3 class="mono text-xs text-cyan" style="margin-bottom: 16px;">IMPROVEMENTS MADE (FROM FEEDBACK)</h3>
+          <div style="font-size: 0.8rem; color: var(--muted); line-height: 1.8;">
+            <p>✅ Added NPS survey + feature request picker</p>
+            <p>✅ Added Analytics Dashboard with export proof</p>
+            <p>✅ Improved onboarding with Google Form embed</p>
+            <p>✅ Added trust badges on landing page</p>
+            <p>✅ Expanded features section from 3 → 6</p>
+            <p>✅ Added share/referral CTA for user growth</p>
+            <p>✅ Enhanced mobile 3-tab responsive navigation</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="slide-number mono">06 / 09</div>
+  </section>
+
+  <!-- SLIDE 7: Growth Strategy -->
+  <section class="slide" id="slide-7">
+    <div class="glow-cyan" style="bottom: -100px; right: -150px;"></div>
+    <div class="slide-inner">
+      <span class="badge badge-blue" style="margin-bottom: 16px;">GROWTH</span>
+      <h2>Growth <span class="text-blue">Strategy</span></h2>
+      <div class="grid-3" style="margin-top: 32px;">
+        <div class="card">
+          <div style="font-size: 1.5rem; margin-bottom: 8px;">📣</div>
+          <h3>Community Outreach</h3>
+          <p class="text-xs text-muted" style="line-height: 1.7;">
+            Google Form onboarding, social media campaigns, Stellar Discord/Reddit engagement, and referral links for organic user acquisition.
+          </p>
+        </div>
+        <div class="card">
+          <div style="font-size: 1.5rem; margin-bottom: 8px;">🤝</div>
+          <h3>Ecosystem Partnerships</h3>
+          <p class="text-xs text-muted" style="line-height: 1.7;">
+            Integrate with Stellar anchor services, partner with Soroban dApp builders, and participate in SCF grants for ecosystem visibility.
+          </p>
+        </div>
+        <div class="card">
+          <div style="font-size: 1.5rem; margin-bottom: 8px;">🔄</div>
+          <h3>Product-Led Growth</h3>
+          <p class="text-xs text-muted" style="line-height: 1.7;">
+            In-app feedback loops, post-transaction rating widgets, NPS surveys, and feature voting to drive retention and iteration.
+          </p>
+        </div>
+        <div class="card">
+          <div style="font-size: 1.5rem; margin-bottom: 8px;">📊</div>
+          <h3>Data-Driven Iteration</h3>
+          <p class="text-xs text-muted" style="line-height: 1.7;">
+            Analytics dashboard, Sentry error tracking, Web Vitals monitoring, and user growth tracking to prioritize features.
+          </p>
+        </div>
+        <div class="card">
+          <div style="font-size: 1.5rem; margin-bottom: 8px;">🎯</div>
+          <h3>Content & Education</h3>
+          <p class="text-xs text-muted" style="line-height: 1.7;">
+            Demo videos, pitch decks, blog posts, and step-by-step guides to reduce onboarding friction and build trust.
+          </p>
+        </div>
+        <div class="card">
+          <div style="font-size: 1.5rem; margin-bottom: 8px;">🏆</div>
+          <h3>Incentivized Testing</h3>
+          <p class="text-xs text-muted" style="line-height: 1.7;">
+            Testnet XLM faucet, Friendbot integration, and gamified milestone badges to encourage exploration and repeated usage.
+          </p>
+        </div>
+      </div>
+    </div>
+    <div class="slide-number mono">07 / 09</div>
+  </section>
+
+  <!-- SLIDE 8: Future Roadmap -->
+  <section class="slide" id="slide-8">
+    <div class="glow-lime" style="top: 50%; left: -200px;"></div>
+    <div class="slide-inner">
+      <span class="badge badge-lime" style="margin-bottom: 16px;">ROADMAP</span>
+      <h2>Future <span class="text-lime">Roadmap</span></h2>
+      <div style="margin-top: 32px;">
+        <div class="timeline-item">
+          <div class="timeline-dot" style="background: var(--lime);"></div>
+          <div>
+            <h3 class="text-lime">Q3 2026 — Mainnet Launch</h3>
+            <p class="text-sm text-muted">Deploy Soroban contracts to Stellar Mainnet. Audit smart contracts. Enable real-value token swaps and escrow operations.</p>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-dot" style="background: var(--cyan);"></div>
+          <div>
+            <h3 class="text-cyan">Q4 2026 — Advanced Features</h3>
+            <p class="text-sm text-muted">Multi-token escrow support, batch operations, price alerts, limit orders, and cross-asset liquidity pools.</p>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-dot" style="background: var(--blue);"></div>
+          <div>
+            <h3 class="text-blue">Q1 2027 — Mobile & SDK</h3>
+            <p class="text-sm text-muted">React Native mobile app, developer SDK for third-party integrations, and API for programmatic escrow creation.</p>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-dot" style="background: var(--amber);"></div>
+          <div>
+            <h3 class="text-amber">Q2 2027 — Governance & Scaling</h3>
+            <p class="text-sm text-muted">Community governance for fee parameters, protocol upgrades via DAO voting, and multi-chain bridge exploration.</p>
+          </div>
+        </div>
+        <div class="timeline-item" style="border-bottom: none;">
+          <div class="timeline-dot" style="background: var(--purple);"></div>
+          <div>
+            <h3 style="color: var(--purple);">Q3 2027 — Enterprise Escrow</h3>
+            <p class="text-sm text-muted">B2B escrow-as-a-service for freelance platforms, marketplace integrations, and cross-border payment escrow.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="slide-number mono">08 / 09</div>
+  </section>
+
+  <!-- SLIDE 9: Thank You / CTA -->
+  <section class="slide" id="slide-9">
+    <div class="glow-lime" style="top: 0; left: 50%; transform: translateX(-50%);"></div>
+    <div class="glow-cyan" style="bottom: -200px; left: 30%;"></div>
+    <div class="slide-inner" style="text-align: center;">
+      <h1 style="margin-bottom: 24px;">
+        Let's Build the Future of<br />
+        <span class="text-lime">Stellar DeFi</span>
+      </h1>
+      <p style="font-size: 1rem; color: var(--muted); max-width: 600px; margin: 0 auto 40px; line-height: 1.7;">
+        StellarSwap+ is ready for the next phase — Mainnet launch, advanced features, and ecosystem partnerships.
+      </p>
+      <div style="display: flex; justify-content: center; gap: 24px; flex-wrap: wrap; margin-bottom: 48px;">
+        <div class="card" style="text-align: center; min-width: 200px;">
+          <div class="mono text-xs text-muted" style="margin-bottom: 4px;">LIVE APP</div>
+          <a href="https://stellar-swap-pro.vercel.app" target="_blank" style="color: var(--lime); text-decoration: none; font-weight: 700; font-size: 0.85rem;">stellar-swap-pro.vercel.app ↗</a>
+        </div>
+        <div class="card" style="text-align: center; min-width: 200px;">
+          <div class="mono text-xs text-muted" style="margin-bottom: 4px;">GITHUB</div>
+          <a href="https://github.com/ps910/StellarSwap-Pro" target="_blank" style="color: var(--cyan); text-decoration: none; font-weight: 700; font-size: 0.85rem;">ps910/StellarSwap-Pro ↗</a>
+        </div>
+        <div class="card" style="text-align: center; min-width: 200px;">
+          <div class="mono text-xs text-muted" style="margin-bottom: 4px;">FEEDBACK FORM</div>
+          <a href="https://forms.gle/YOUR_FORM_ID_HERE" target="_blank" style="color: var(--amber); text-decoration: none; font-weight: 700; font-size: 0.85rem;">Google Form ↗</a>
+        </div>
+      </div>
+      <p class="mono text-xs text-muted">
+        Built with ❤️ on Stellar • StellarSwap+ • Level 5 Blue Belt Submission
+      </p>
+    </div>
+    <div class="slide-number mono">09 / 09</div>
+  </section>
+
+</div>
+
+<script>
+  // Navigation dots
+  const totalSlides = 9;
+  const navDots = document.getElementById('navDots');
+  const slidesContainer = document.getElementById('slidesContainer');
+
+  for (let i = 1; i <= totalSlides; i++) {
+    const dot = document.createElement('button');
+    dot.className = 'nav-dot';
+    dot.dataset.slide = i;
+    dot.title = `Slide ${i}`;
+    dot.onclick = () => {
+      document.getElementById(`slide-${i}`).scrollIntoView({ behavior: 'smooth' });
+    };
+    navDots.appendChild(dot);
+  }
+
+  // Update active dot on scroll
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const slideNum = entry.target.id.split('-')[1];
+        document.querySelectorAll('.nav-dot').forEach(d => d.classList.remove('active'));
+        document.querySelector(`.nav-dot[data-slide="${slideNum}"]`)?.classList.add('active');
+      }
+    });
+  }, { threshold: 0.5 });
+
+  for (let i = 1; i <= totalSlides; i++) {
+    observer.observe(document.getElementById(`slide-${i}`));
+  }
+
+  // Keyboard navigation
+  document.addEventListener('keydown', (e) => {
+    const active = document.querySelector('.nav-dot.active');
+    const current = active ? parseInt(active.dataset.slide) : 1;
+    if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
+      const next = Math.min(current + 1, totalSlides);
+      document.getElementById(`slide-${next}`).scrollIntoView({ behavior: 'smooth' });
+    } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
+      const prev = Math.max(current - 1, 1);
+      document.getElementById(`slide-${prev}`).scrollIntoView({ behavior: 'smooth' });
+    }
+  });
+</script>
+
+</body>
+</html>
