@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { WalletState } from '../types';
-import { Wallet, ShieldCheck, ExternalLink, MessageSquare, TrendingUp } from 'lucide-react';
+import { WalletState, AppTab } from '../types';
+import { Wallet, ShieldCheck, ExternalLink, MessageSquare, TrendingUp, BarChart3, Users } from 'lucide-react';
 import { STELLAR_CONFIG } from '../config/stellar';
 
 interface NavbarProps {
   walletState: WalletState;
-  activeTab: 'swap' | 'escrow';
-  onSelectTab: (tab: 'swap' | 'escrow') => void;
+  activeTab: AppTab;
+  onSelectTab: (tab: AppTab) => void;
   onOpenWalletModal: () => void;
   onDisconnect: () => void;
   onOpenFeedback: () => void;
@@ -56,7 +56,12 @@ export const Navbar: React.FC<NavbarProps> = ({
           </span>
         </div>
 
-        <div className="flex items-center gap-3 text-[10px]">
+        <div className="flex items-center gap-4 text-[10px]">
+          {/* User Count Badge — Level 5 */}
+          <span className="flex items-center gap-1.5 text-blue-400">
+            <Users className="w-3 h-3" />
+            <span className="font-bold">52 users</span>
+          </span>
           <span className="flex items-center gap-1.5 text-lime-400">
             <span className="w-1.5 h-1.5 rounded-full bg-lime-400 animate-ping"></span>
             <span>TESTNET RPC ONLINE</span>
@@ -91,6 +96,11 @@ export const Navbar: React.FC<NavbarProps> = ({
               <span className="px-2 py-0.5 rounded-md bg-neutral-900 border border-neutral-800 text-[10px] text-slate-300">
                 LEDGER <span className="text-lime-400 font-bold">#{ledgerSeq.toLocaleString()}</span>
               </span>
+
+              {/* Level 5 Badge */}
+              <span className="px-2.5 py-0.5 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/30 text-[10px] font-bold">
+                L5 BLUE BELT
+              </span>
             </div>
           </div>
 
@@ -116,6 +126,17 @@ export const Navbar: React.FC<NavbarProps> = ({
                 }`}
               >
                 SOROBAN ESCROW VAULT
+              </button>
+              <button
+                onClick={() => onSelectTab('analytics')}
+                className={`px-4 py-1.5 rounded-lg font-bold transition-all flex items-center gap-1.5 ${
+                  activeTab === 'analytics'
+                    ? 'bg-lime-400 text-black font-extrabold shadow-md shadow-lime-400/20'
+                    : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                <BarChart3 className="w-3.5 h-3.5" />
+                ANALYTICS
               </button>
             </div>
           )}
@@ -165,23 +186,33 @@ export const Navbar: React.FC<NavbarProps> = ({
           <div className="md:hidden flex items-center justify-between bg-neutral-900 p-1 rounded-xl border border-neutral-800 mb-3 text-[11px]">
             <button
               onClick={() => onSelectTab('swap')}
-              className={`w-1/2 py-2 rounded-lg font-bold text-center transition-all ${
+              className={`w-1/3 py-2 rounded-lg font-bold text-center transition-all ${
                 activeTab === 'swap'
                   ? 'bg-lime-400 text-black font-extrabold'
                   : 'text-slate-400 hover:text-white'
               }`}
             >
-              PATH SWAP
+              SWAP
             </button>
             <button
               onClick={() => onSelectTab('escrow')}
-              className={`w-1/2 py-2 rounded-lg font-bold text-center transition-all ${
+              className={`w-1/3 py-2 rounded-lg font-bold text-center transition-all ${
                 activeTab === 'escrow'
                   ? 'bg-lime-400 text-black font-extrabold'
                   : 'text-slate-400 hover:text-white'
               }`}
             >
-              ESCROW VAULT
+              ESCROW
+            </button>
+            <button
+              onClick={() => onSelectTab('analytics')}
+              className={`w-1/3 py-2 rounded-lg font-bold text-center transition-all ${
+                activeTab === 'analytics'
+                  ? 'bg-lime-400 text-black font-extrabold'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              ANALYTICS
             </button>
           </div>
         )}

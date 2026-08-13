@@ -1,5 +1,5 @@
 import React from 'react';
-import { ExternalLink, Terminal, Shield } from 'lucide-react';
+import { ExternalLink, Terminal, Shield, FileText, Video, ClipboardList } from 'lucide-react';
 import { STELLAR_CONFIG } from '../config/stellar';
 
 export const Footer: React.FC = () => {
@@ -12,8 +12,8 @@ export const Footer: React.FC = () => {
             <span className="font-extrabold text-sm text-white font-sans">
               Stellar<span className="text-emerald-400">Swap+</span>
             </span>
-            <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-slate-900 text-slate-300 border border-slate-800">
-              Green Belt Level 4
+            <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/30">
+              Blue Belt Level 5
             </span>
           </div>
           <p className="text-slate-500 text-[11px]">
@@ -21,8 +21,8 @@ export const Footer: React.FC = () => {
           </p>
         </div>
 
-        {/* Right: Technical Links */}
-        <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 text-[11px]">
+        {/* Right: Technical Links + Level 5 Links */}
+        <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-5 text-[11px]">
           <a
             href={`${STELLAR_CONFIG.explorerUrl}/contract/${STELLAR_CONFIG.escrowContractId}`}
             target="_blank"
@@ -44,13 +44,33 @@ export const Footer: React.FC = () => {
           </a>
 
           <a
-            href="https://laboratory.stellar.org/#account-creator?network=test"
+            href="https://forms.gle/YOUR_FORM_ID_HERE"
             target="_blank"
             rel="noopener noreferrer"
-            className="hover:text-emerald-400 transition-colors flex items-center gap-1"
+            className="hover:text-blue-400 transition-colors flex items-center gap-1"
           >
-            <span>FRIENDBOT</span>
-            <ExternalLink className="w-3 h-3" />
+            <ClipboardList className="w-3 h-3" />
+            <span>FEEDBACK FORM</span>
+          </a>
+
+          <a
+            href="./docs/pitch-deck.html"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-amber-400 transition-colors flex items-center gap-1"
+          >
+            <FileText className="w-3 h-3" />
+            <span>PITCH DECK</span>
+          </a>
+
+          <a
+            href="https://www.loom.com/share/YOUR_DEMO_VIDEO_LINK"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-purple-400 transition-colors flex items-center gap-1"
+          >
+            <Video className="w-3 h-3" />
+            <span>DEMO VIDEO</span>
           </a>
 
           <a
@@ -66,7 +86,7 @@ export const Footer: React.FC = () => {
       </div>
 
       <div className="max-w-7xl mx-auto border-t border-slate-900 mt-6 pt-6 text-center text-slate-600 text-[10px]">
-        © 2026 StellarSwap+ • Open Source MIT License • Deployed on Stellar Testnet
+        © 2026 StellarSwap+ • Open Source MIT License • Deployed on Stellar Testnet • Level 5 Blue Belt Submission
       </div>
     </footer>
   );
