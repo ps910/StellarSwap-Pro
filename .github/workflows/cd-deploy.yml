@@ -59,11 +59,8 @@ jobs:
         run: cargo build --release --target wasm32-unknown-unknown
 
       - name: Deploy Contracts to Testnet
-        env:
-          DEPLOY_KEY: ${{ secrets.STELLAR_SECRET_KEY }}
         run: |
-          SECRET_KEY="${DEPLOY_KEY}"
-          if [ -z "$SECRET_KEY" ]; then
+          if [ -z "$DEPLOY_KEY" ]; then
             echo "⚠️ STELLAR_SECRET_KEY not configured in repository secrets."
             echo "Contracts were built successfully but not deployed."
             echo "To enable deployment, add STELLAR_SECRET_KEY to Settings → Secrets → Actions."
@@ -73,7 +70,7 @@ jobs:
           echo "🚀 Deploying Escrow Contract to Stellar Testnet..."
           soroban contract deploy \
             --wasm contracts/escrow_contract/target/wasm32-unknown-unknown/release/soroban_escrow_contract.wasm \
-            --source "$SECRET_KEY" \
+            --source "$DEPLOY_KEY" \
             --rpc-url "$SOROBAN_RPC_URL" \
             --network-passphrase "$STELLAR_NETWORK_PASSPHRASE" \
             | tee escrow_contract_id.txt
@@ -83,7 +80,7 @@ jobs:
           echo "🚀 Deploying Swap Contract to Stellar Testnet..."
           soroban contract deploy \
             --wasm contracts/swap_contract/target/wasm32-unknown-unknown/release/soroban_swap_contract.wasm \
-            --source "$SECRET_KEY" \
+            --source "$DEPLOY_KEY" \
             --rpc-url "$SOROBAN_RPC_URL" \
             --network-passphrase "$STELLAR_NETWORK_PASSPHRASE" \
             | tee swap_contract_id.txt
@@ -136,13 +133,8 @@ jobs:
           VITE_SENTRY_DSN: ''
 
       - name: Deploy to Vercel
-        env:
-          VCL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-          VCL_ORG: ${{ secrets.VERCEL_ORG_ID }}
-          VCL_PROJECT: ${{ secrets.VERCEL_PROJECT_ID }}
         run: |
-          DEPLOY_TOKEN="${VCL_TOKEN}"
-          if [ -z "$DEPLOY_TOKEN" ]; then
+          if [ -z "$VCL_TOKEN" ]; then
             echo "⚠️ VERCEL_TOKEN not configured in repository secrets."
             echo "Frontend was built successfully but not deployed."
             echo "To enable deployment, add VERCEL_TOKEN, VERCEL_ORG_ID, and VERCEL_PROJECT_ID to Settings → Secrets → Actions."
@@ -154,5 +146,5 @@ jobs:
           npm install -g vercel
           export VERCEL_ORG_ID="$VCL_ORG"
           export VERCEL_PROJECT_ID="$VCL_PROJECT"
-          vercel deploy --prod --token="$DEPLOY_TOKEN" --yes
+          vercel deploy --prod --token="$VCL_TOKEN" --yes
           echo "✅ Frontend deployed to Vercel production"

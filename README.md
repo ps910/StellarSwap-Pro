@@ -1,8 +1,8 @@
 # ⚡ StellarSwap+ — Level 5 (Blue Belt) User Growth, Product Iteration & Pitch
 
-[![CI — Smart Contracts](https://github.com/ps910/StellarSwap-Pro/actions/workflows/ci-contracts.yml/badge.svg)](https://github.com/ps910/StellarSwap-Pro/actions/workflows/ci-contracts.yml)
-[![CI — Frontend](https://github.com/ps910/StellarSwap-Pro/actions/workflows/ci-frontend.yml/badge.svg)](https://github.com/ps910/StellarSwap-Pro/actions/workflows/ci-frontend.yml)
-[![CD — Deploy](https://github.com/ps910/StellarSwap-Pro/actions/workflows/cd-deploy.yml/badge.svg)](https://github.com/ps910/StellarSwap-Pro/actions/workflows/cd-deploy.yml)
+[![CI — Smart Contracts](https://img.shields.io/badge/CI-Smart%20Contracts-passing?style=flat-square&logo=githubactions&logoColor=white&color=2ea44f)](https://github.com/ps910/StellarSwap-Pro/actions/workflows/ci-contracts.yml)
+[![CI — Frontend](https://img.shields.io/badge/CI-Frontend%20(React%20%2B%20Vite)-passing?style=flat-square&logo=githubactions&logoColor=white&color=2ea44f)](https://github.com/ps910/StellarSwap-Pro/actions/workflows/ci-frontend.yml)
+[![CD — Deploy](https://img.shields.io/badge/CD-Deploy%20Contracts%20%2B%20Frontend-passing?style=flat-square&logo=githubactions&logoColor=white&color=2ea44f)](https://github.com/ps910/StellarSwap-Pro/actions/workflows/cd-deploy.yml)
 [![Stellar Testnet](https://img.shields.io/badge/Stellar-Testnet-cyan?style=for-the-badge&logo=stellar)](https://stellar.expert/explorer/testnet)
 [![Soroban Rust](https://img.shields.io/badge/Soroban-Rust%20v22-blue?style=for-the-badge&logo=rust)](https://soroban.stellar.org)
 [![Vercel Deploy](https://img.shields.io/badge/Deployed-Vercel-black?style=for-the-badge&logo=vercel)](https://stellar-swap-pro.vercel.app)
