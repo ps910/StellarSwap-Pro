@@ -79,3 +79,40 @@ export interface AppError {
   rawDetails?: string;
 }
 
+// ── Level 5 (Blue Belt) Types ──
+
+export type AppTab = 'swap' | 'escrow' | 'analytics';
+
+export interface PlatformStats {
+  totalSwaps: number;
+  totalEscrows: number;
+  totalVolume: string;
+  uniqueUsers: number;
+  avgRating: number;
+  totalFeedback: number;
+  uptimePercent: number;
+  dailyActivity: DailyActivity[];
+}
+
+export interface DailyActivity {
+  date: string;
+  swaps: number;
+  escrows: number;
+  users: number;
+}
+
+export interface OnboardingStep {
+  id: number;
+  title: string;
+  description: string;
+  icon: string;
+  completed: boolean;
+}
+
+export interface UserGrowthEntry {
+  walletAddress: string;
+  joinedAt: string;
+  totalTxs: number;
+  lastActive: string;
+}
+
