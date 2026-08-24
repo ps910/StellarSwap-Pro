@@ -19,7 +19,7 @@
 | Public GitHub repository | ✅ | [github.com/ps910/StellarSwap-Pro](https://github.com/ps910/StellarSwap-Pro) |
 | Minimum 20+ meaningful commits | ✅ (30+ commits) | `git log --oneline` |
 | Live deployed application | ✅ | [stellar-swap-pro.vercel.app](https://stellar-swap-pro.vercel.app) |
-| PPT/Pitch deck link | ✅ | [`docs/pitch-deck.html`](./docs/pitch-deck.html) — [View Pitch Deck Guide](./docs/pitch-deck.md) |
+| PPT/Pitch deck link | ✅ | [`docs/pitch-deck.pptx`](./docs/pitch-deck.pptx) (PowerPoint PPT) — [Pitch Deck Guide](./docs/pitch-deck.md) / [HTML Deck](./docs/pitch-deck.html) |
 | Demo video link | ✅ | [`docs/demo-video.md`](./docs/demo-video.md) |
 | Proof of 50+ users | ✅ (52 users) | [`docs/user-testing.md`](./docs/user-testing.md) |
 | Screenshots of analytics/transaction activity | ✅ | See [Screenshots](#-screenshots) & [Analytics Dashboard](#-analytics-dashboard) |
@@ -145,25 +145,27 @@ Based on feedback from 50 testnet users (4.44/5.0 avg rating), the following imp
 
 ---
 
-## 🎯 Pitch Deck
+## 🎯 Pitch Deck (PowerPoint & Web)
 
-A professional 9-slide pitch deck is included as an HTML presentation:
+A professional 9-slide pitch deck is available in both **PowerPoint PPTX** and interactive **Web HTML** formats:
 
-📎 **[Open Pitch Deck →](./docs/pitch-deck.html)**
+- 📊 **[Download PowerPoint Deck (.pptx) →](./docs/pitch-deck.pptx)**
+- 🌐 **[Open Interactive HTML Deck →](./docs/pitch-deck.html)**
+- 📖 **[Pitch Deck Outline & Guide →](./docs/pitch-deck.md)**
 
-| Slide | Topic |
-|---|---|
-| 1 | Title — StellarSwap+ Blue Belt |
-| 2 | Problem Statement — DeFi UX gaps on Stellar |
-| 3 | Solution — Unified DEX & Escrow |
-| 4 | Market Opportunity — Stellar ecosystem metrics |
-| 5 | Architecture — Full technical stack |
-| 6 | Traction — 52+ users, 4.9/5.0 rating |
-| 7 | Growth Strategy — 6 growth pillars |
-| 8 | Future Roadmap — Q3 2026 → Q3 2027 |
-| 9 | Thank You / CTA — Links & contact |
+| Slide | Topic | Key Content |
+|---|---|---|
+| 1 | Title | StellarSwap+ — Level 5 Blue Belt Submission |
+| 2 | Problem Statement | DeFi UX gaps, fragmented DEX, lack of escrow, wallet issues |
+| 3 | Solution | Unified DEX & Soroban Rust Escrow Vault + Multi-Wallet Kit |
+| 4 | Market Opportunity | $500M+ Stellar DEX volume, 8M+ accounts, 3-5s finality, sub-cent fees |
+| 5 | Architecture | Full stack (React 18 + Soroban Rust + CI/CD + Observability) |
+| 6 | Traction | 52+ users, 170+ txs, 4.44/5.0 rating, 99.8% uptime, user feedback |
+| 7 | Growth Strategy | 6 pillars: Outreach, Partnerships, PLG, Data, Content, Incentives |
+| 8 | Future Roadmap | 5 quarters: Mainnet → Advanced → Mobile/SDK → DAO → Enterprise |
+| 9 | Thank You / CTA | Links to live app, GitHub repository, and feedback data |
 
-See [`docs/pitch-deck.md`](./docs/pitch-deck.md) for slide-by-slide details.
+See [`docs/pitch-deck.md`](./docs/pitch-deck.md) for detailed slide notes and presentation guidance.
 
 ---
 
@@ -370,6 +372,7 @@ StellarSwap-Pro/
 │   ├── App.tsx                     # [UPGRADED L5] Analytics tab wiring
 │   └── main.tsx                    # Entry point
 ├── docs/
+│   ├── pitch-deck.pptx             # [NEW L5] 9-slide PowerPoint presentation
 │   ├── pitch-deck.html             # [NEW L5] 9-slide HTML pitch deck
 │   ├── pitch-deck.md               # [NEW L5] Pitch deck guide
 │   ├── user-growth.md              # [NEW L5] Onboarding strategy
