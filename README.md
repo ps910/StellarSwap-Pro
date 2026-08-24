@@ -84,15 +84,19 @@ graph TD
 
 ---
 
-## 🎬 Demo Video Recordings
+## 🎬 Full Demo Video (6 Segments)
 
-> Full walkthrough guide: [`docs/demo-video.md`](./docs/demo-video.md)
+> Full walkthrough guide with topic coverage checklist: [`docs/demo-video.md`](./docs/demo-video.md)
 
-| Part | Focus Area | Recording |
+| Segment | Topic | Recording |
 |---|---|---|
-| **Part 1 — Landing & Wallet** | Hero section, features showcase, wallet connect with Demo Testnet Account | ![Part 1](./docs/stellarswap_demo_part1.webp) |
-| **Part 2 — Swap, Escrow & Analytics** | Swap interface with path routing, Soroban Escrow Vault, Analytics Dashboard | ![Part 2](./docs/stellarswap_demo_part2.webp) |
-| **Part 3 — Mobile (375px)** | Full mobile responsive walkthrough — landing, wallet, portfolio, swap | ![Part 3](./docs/stellarswap_demo_mobile.webp) |
+| **1. Landing Page & Features** | Hero, trust badges, 6 feature cards, problem/solution overview | ![Segment 1](./docs/full_demo_01_landing.webp) |
+| **2. Wallet Connect & Swap** | Multi-wallet modal, Demo Account, portfolio balances, path payment swap | ![Segment 2](./docs/full_demo_02_wallet_swap.webp) |
+| **3. Escrow Vault & Events** | Soroban escrow create/fund/release, event feed, activity table | ![Segment 3](./docs/full_demo_03_escrow.webp) |
+| **4. Analytics & User Growth** | Platform metrics, 7-day chart, 52+ users, satisfaction, proof export | ![Segment 4](./docs/full_demo_04_analytics.webp) |
+| **5. Pitch Deck (9 Slides)** | Problem → Solution → Market → Architecture → Traction → Growth → Roadmap | ![Segment 5](./docs/full_demo_05_pitchdeck.webp) |
+| **6. Mobile (375px)** | Responsive layout, mobile tabs, stacked grids, touch-friendly UI | ![Segment 6](./docs/full_demo_06_mobile.webp) |
+
 
 ---
 
