@@ -1,25 +1,56 @@
-# 📹 StellarSwap+ — Demo Video Walkthrough Guide
+# 📹 StellarSwap+ — Demo Video Walkthrough
 
-This document outlines the demo video walkthrough for the **Level 4 (Green Belt)** submission of StellarSwap+.
+This document contains the recorded demo video walkthrough for the **Level 5 (Blue Belt)** submission of StellarSwap+.
 
 ---
 
-## 🕒 Walkthrough Timeline (Target: 2 - 3 Minutes)
+## 🕒 Walkthrough Timeline
 
 | Segment | Duration | Focus Area |
 |---|---|---|
-| **1. Problem & Solution** | 0:00 – 0:30 | Non-custodial path payments + Soroban Escrow Vault for trustless settlement on Stellar Testnet |
-| **2. Multi-Wallet Connect** | 0:30 – 0:50 | Opening wallet modal, 1-click Demo Testnet Account / Albedo Web Wallet connection |
-| **3. Real-Time Horizon Balances** | 0:50 – 1:15 | Dynamic account loading, reserved XLM calculation `(2 + subentries) * 0.5`, Friendbot 10k XLM funding CTA |
-| **4. Path Payment DEX Swap** | 1:15 – 1:45 | Executing 100 XLM → USDC path swap, live price path routing, 4-step transaction progress pipeline |
-| **5. Soroban Escrow Vault** | 1:45 – 2:15 | Creating, funding, and releasing escrows live on Soroban Testnet with verifiable explorer links |
-| **6. Observability & Analytics** | 2:15 – 2:35 | Sentry error boundary, Web Vitals telemetry, 5-star user feedback widget, Vercel Observability dashboard |
-| **7. Mobile Responsiveness** | 2:35 – 3:00 | 375px mobile viewport view showing responsive layout, full-width buttons, and stacked grids |
+| **1. Landing Page & Hero** | 0:00 – 0:30 | App landing page, hero section with CTA, feature showcase, architecture overview |
+| **2. Multi-Wallet Connect** | 0:30 – 0:50 | Opening wallet modal, 1-click Demo Testnet Account connection, Freighter / Albedo options |
+| **3. Real-Time Balances** | 0:50 – 1:15 | Dynamic account loading, portfolio banner, XLM / USDC / EURC / yXLM balances, reserved XLM |
+| **4. Path Payment DEX Swap** | 1:15 – 1:45 | Swap interface with token selection, path routing (XLM → Path Payments → USDC), slippage settings |
+| **5. Soroban Escrow Vault** | 1:45 – 2:15 | Escrow creation, funding, release UI with Soroban smart contract integration |
+| **6. Analytics Dashboard** | 2:15 – 2:35 | Activity table, event feed, analytics charts, Sentry error boundary |
+| **7. Mobile Responsiveness** | 2:35 – 3:00 | 375px mobile viewport — responsive layout, stacked grids, full-width buttons |
 
 ---
 
-## 📊 Recorded Video Artifact
+## 🎬 Recorded Demo Videos
 
-- **Browser Subagent Recording File**: [`stellarswap_demo_video_1786022843062.webp`](file:///C:/Users/pramo/.gemini/antigravity-ide/brain/486eb120-ad2a-40b8-b688-73ce77154060/stellarswap_demo_video_1786022843062.webp)
+### Part 1 — Landing Page, Features & Wallet Connect
+> Covers the full landing page walkthrough, feature showcase, scrolling through the hero section, and connecting a Demo Testnet Account via the wallet modal.
+
+📄 **Recording**: [`stellarswap_demo_part1.webp`](./stellarswap_demo_part1.webp)
+
+---
+
+### Part 2 — Swap Interface, Escrow Vault & Analytics
+> Demonstrates the swap form with token selection and path routing, the Soroban Escrow Vault interface, and the Analytics Dashboard with activity tracking.
+
+📄 **Recording**: [`stellarswap_demo_part2.webp`](./stellarswap_demo_part2.webp)
+
+---
+
+### Part 3 — Mobile Responsiveness (375px Viewport)
+> Shows the entire app in a 375px mobile viewport — landing page, wallet connect, portfolio, and swap interface all adapting to mobile layout with stacked grids and full-width elements.
+
+📄 **Recording**: [`stellarswap_demo_mobile.webp`](./stellarswap_demo_mobile.webp)
+
+---
+
+## 📸 Mobile Responsiveness Screenshots
+
+| Mobile Landing | Wallet Connected | Swap Interface |
+|---|---|---|
+| ![Landing](../screenshots/mobile_initial_view.png) | ![Connected](../screenshots/mobile_wallet_connected.png) | ![Swap](../screenshots/mobile_swap_interface.png) |
+
+---
+
+## 🔗 Links
+
 - **Live Demo Site**: [https://stellar-swap-pro.vercel.app](https://stellar-swap-pro.vercel.app)
 - **GitHub Repository**: [https://github.com/ps910/StellarSwap-Pro](https://github.com/ps910/StellarSwap-Pro)
+- **Pitch Deck**: [`docs/pitch-deck.html`](./pitch-deck.html) — [View Pitch Deck Guide](./pitch-deck.md)

@@ -84,6 +84,18 @@ graph TD
 
 ---
 
+## 🎬 Demo Video Recordings
+
+> Full walkthrough guide: [`docs/demo-video.md`](./docs/demo-video.md)
+
+| Part | Focus Area | Recording |
+|---|---|---|
+| **Part 1 — Landing & Wallet** | Hero section, features showcase, wallet connect with Demo Testnet Account | ![Part 1](./docs/stellarswap_demo_part1.webp) |
+| **Part 2 — Swap, Escrow & Analytics** | Swap interface with path routing, Soroban Escrow Vault, Analytics Dashboard | ![Part 2](./docs/stellarswap_demo_part2.webp) |
+| **Part 3 — Mobile (375px)** | Full mobile responsive walkthrough — landing, wallet, portfolio, swap | ![Part 3](./docs/stellarswap_demo_mobile.webp) |
+
+---
+
 ## 📊 Analytics Dashboard
 
 StellarSwap+ includes a built-in analytics dashboard (Level 5) accessible via the **ANALYTICS** tab when connected:
