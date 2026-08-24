@@ -44,7 +44,7 @@ export const Footer: React.FC = () => {
           </a>
 
           <a
-            href="https://forms.gle/YOUR_FORM_ID_HERE"
+            href="https://docs.google.com/spreadsheets/d/1rwjibmRmoN6Qp0fkED-tAXiDno5CZB-bnLlBET3puHg/edit?usp=sharing"
             target="_blank"
             rel="noopener noreferrer"
             className="hover:text-blue-400 transition-colors flex items-center gap-1"
@@ -64,7 +64,7 @@ export const Footer: React.FC = () => {
           </a>
 
           <a
-            href="https://www.loom.com/share/YOUR_DEMO_VIDEO_LINK"
+            href="https://github.com/ps910/StellarSwap-Pro/blob/main/docs/demo-video.md"
             target="_blank"
             rel="noopener noreferrer"
             className="hover:text-purple-400 transition-colors flex items-center gap-1"

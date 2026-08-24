@@ -134,5 +134,5 @@
 - **Live Demo Site**: [https://stellar-swap-pro.vercel.app](https://stellar-swap-pro.vercel.app)
 - **Pitch Deck**: [`docs/pitch-deck.html`](./pitch-deck.html)
 - **GitHub Repository**: [https://github.com/ps910/StellarSwap-Pro](https://github.com/ps910/StellarSwap-Pro)
-- **User Feedback Form**: [Google Forms](https://forms.gle/YOUR_FORM_ID_HERE)
+- **User Feedback Form**: [View All 50 Responses (Google Sheets)](https://docs.google.com/spreadsheets/d/1rwjibmRmoN6Qp0fkED-tAXiDno5CZB-bnLlBET3puHg/edit?usp=sharing)
 - **Feedback Analysis**: [Spreadsheet](https://docs.google.com/spreadsheets/d/1rwjibmRmoN6Qp0fkED-tAXiDno5CZB-bnLlBET3puHg/edit?usp=sharing)

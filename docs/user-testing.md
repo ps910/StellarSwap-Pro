@@ -7,9 +7,9 @@ This document records the **Level 5 (Blue Belt)** user testing phase, proving **
 ## 1. User Onboarding & Feedback Collection
 
 ### Google Form
-- **Form Link**: [StellarSwap+ User Feedback Form](https://forms.gle/YOUR_FORM_ID_HERE)
+- **Form Link**: [StellarSwap+ User Feedback (Google Sheets)](https://docs.google.com/spreadsheets/d/1rwjibmRmoN6Qp0fkED-tAXiDno5CZB-bnLlBET3puHg/edit?usp=sharing)
 - **Exported Responses**: [`docs/user-feedback-responses.xlsx`](./user-feedback-responses.xlsx)
-- **Total Responses**: 52+
+- **Total Responses**: 50
 
 ### Collection Method
 1. In-app embedded Google Form (OnboardingHub component)
@@ -87,12 +87,14 @@ Feedback collected via in-app rating widget, NPS survey, and Google Form:
 
 | Metric | Value |
 |---|---|
-| **Total Feedback Responses** | 48+ |
-| **Average Star Rating** | 4.9 / 5.0 |
-| **Average NPS Score** | 9.1 / 10 |
-| **Promoters (NPS 9-10)** | 78% |
-| **Passives (NPS 7-8)** | 18% |
-| **Detractors (NPS 0-6)** | 4% |
+| **Total Feedback Responses** | 50 |
+| **Average Product Rating** | 4.44 / 5.0 |
+| **Average Transaction Speed Rating** | 4.42 / 5.0 |
+| **5-Star Product Ratings** | 28 (56%) |
+| **4-Star Product Ratings** | 17 (34%) |
+| **3-Star Product Ratings** | 4 (8%) |
+| **2-Star Product Ratings** | 1 (2%) |
+| **Satisfaction Rate (4+ stars)** | 90% |
 
 ### Top Feature Requests
 
@@ -121,12 +123,11 @@ Feedback collected via in-app rating widget, NPS survey, and Google Form:
 
 | # | Feedback Theme | Action Taken | Git Commit Link |
 |---|---|---|---|
-| 1 | "Need visibility into platform stats" | Added AnalyticsDashboard with real-time metrics, bar chart, and JSON export | [View Commit](#) |
-| 2 | "Onboarding could be smoother" | Added OnboardingHub with Google Form embed and step-by-step guide | [View Commit](#) |
-| 3 | "Want to rate more aspects of the product" | Added NPS (0-10) score + feature request voting in FeedbackModal | [View Commit](#) |
-| 4 | "Hard to tell if platform is trustworthy" | Added trust badges on landing hero (50+ users, 170+ txs, 99.8% uptime) | [View Commit](#) |
-| 5 | "Need more info about features" | Expanded LandingFeatures from 3 → 6 with hover animations | [View Commit](#) |
-| 6 | "Want to share with friends" | Added share/referral CTA button in feedback confirmation | [View Commit](#) |
-| 7 | "Mobile navigation was limited" | Added 3-tab mobile nav (Swap / Escrow / Analytics) | [View Commit](#) |
+| 1 | "Need visibility into platform stats" | Added AnalyticsDashboard with real-time metrics, bar chart, and JSON export | [`053d027`](https://github.com/ps910/StellarSwap-Pro/commit/053d027) |
+| 2 | "Onboarding could be smoother" | Added OnboardingHub with Google Form embed and step-by-step guide | [`4d5a948`](https://github.com/ps910/StellarSwap-Pro/commit/4d5a948) |
+| 3 | "Want to rate more aspects of the product" | Added NPS (0-10) score + feature request voting in FeedbackModal | [`0088148`](https://github.com/ps910/StellarSwap-Pro/commit/0088148) |
+| 4 | "Hard to tell if platform is trustworthy" | Added trust badges on landing hero (50+ users, 170+ txs, 99.8% uptime) | [`671b3cd`](https://github.com/ps910/StellarSwap-Pro/commit/671b3cd) |
+| 5 | "Need more info about features" | Expanded LandingFeatures from 3 → 6 with hover animations | [`671b3cd`](https://github.com/ps910/StellarSwap-Pro/commit/671b3cd) |
+| 6 | "Want to share with friends" | Added share/referral CTA button in feedback confirmation | [`0088148`](https://github.com/ps910/StellarSwap-Pro/commit/0088148) |
+| 7 | "Mobile navigation was limited" | Added 3-tab mobile nav (Swap / Escrow / Analytics) | [`be729bd`](https://github.com/ps910/StellarSwap-Pro/commit/be729bd) |
 
-> **Note:** Replace `[View Commit](#)` with actual git commit links after committing the changes.

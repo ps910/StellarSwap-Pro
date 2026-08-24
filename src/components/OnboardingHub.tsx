@@ -3,8 +3,8 @@ import { Users, Wallet, ArrowRight, ExternalLink, CheckCircle2, ClipboardCopy, S
 import { analytics } from '../services/analytics';
 
 // Replace with your actual Google Form URL
-const GOOGLE_FORM_URL = 'https://forms.gle/YOUR_FORM_ID_HERE';
-const GOOGLE_FORM_EMBED_URL = 'https://docs.google.com/forms/d/e/YOUR_FORM_EMBED_ID/viewform?embedded=true';
+const GOOGLE_FORM_URL = 'https://docs.google.com/spreadsheets/d/1rwjibmRmoN6Qp0fkED-tAXiDno5CZB-bnLlBET3puHg/edit?usp=sharing';
+const GOOGLE_FORM_EMBED_URL = 'https://docs.google.com/spreadsheets/d/1rwjibmRmoN6Qp0fkED-tAXiDno5CZB-bnLlBET3puHg/edit?usp=sharing';
 
 interface OnboardingHubProps {
   onConnectWallet: () => void;

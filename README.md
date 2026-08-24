@@ -25,7 +25,7 @@
 | Screenshots of analytics/transaction activity | ✅ | See [Screenshots](#-screenshots) & [Analytics Dashboard](#-analytics-dashboard) |
 | Updated README and documentation | ✅ | This file |
 | User feedback iteration summary | ✅ | See [Improvements Based on Feedback](#-improvements-based-on-user-feedback) |
-| Google Form for user details | ✅ | [Feedback Form](https://forms.gle/YOUR_FORM_ID_HERE) |
+| Google Form for user details | ✅ | [Feedback Responses (Google Sheets)](https://docs.google.com/spreadsheets/d/1rwjibmRmoN6Qp0fkED-tAXiDno5CZB-bnLlBET3puHg/edit?usp=sharing) |
 | Exported Excel sheet | ✅ | [`docs/user-feedback-responses.xlsx`](./docs/user-feedback-responses.xlsx) |
 
 ---
@@ -118,32 +118,30 @@ StellarSwap+ includes a built-in analytics dashboard (Level 5) accessible via th
 Full documentation in [`docs/user-testing.md`](./docs/user-testing.md):
 
 - **52 Confirmed Wallet Transactions** live on Testnet
-- **Average User Satisfaction Rating**: `4.9 / 5.0`
-- **Average NPS Score**: `9.1 / 10`
-- **48+ Feedback Form Responses** collected via Google Form + in-app widget
+- **50 Feedback Form Responses** collected via Google Form + in-app widget
+- **Average Product Rating**: `4.44 / 5.0` (90% rated 4+ stars)
+- **Average Transaction Speed Rating**: `4.42 / 5.0`
 - Zero white-screens or silent freezes recorded
 
-### Google Form
-- **Form Link**: [StellarSwap+ User Feedback Form](https://forms.gle/YOUR_FORM_ID_HERE)
+### User Feedback Data
+- **Google Sheets**: [View All 50 Responses](https://docs.google.com/spreadsheets/d/1rwjibmRmoN6Qp0fkED-tAXiDno5CZB-bnLlBET3puHg/edit?usp=sharing)
 - **Exported Excel**: [`docs/user-feedback-responses.xlsx`](./docs/user-feedback-responses.xlsx)
 
 ---
 
 ## 🔄 Improvements Based on User Feedback
 
-Based on feedback from 48+ users (4.9/5.0 avg rating), the following improvements were implemented for Level 5:
+Based on feedback from 50 testnet users (4.44/5.0 avg rating), the following improvements were implemented for Level 5:
 
 | # | Feedback Theme | Improvement Made | Commit Link |
 |---|---|---|---|
-| 1 | "Need visibility into platform stats" | Added AnalyticsDashboard with real-time metrics, bar chart, and JSON export | [View Commit](#) |
-| 2 | "Onboarding could be smoother" | Added OnboardingHub with Google Form embed and step-by-step guide | [View Commit](#) |
-| 3 | "Want to rate more aspects" | Added NPS (0-10) score + feature request voting in FeedbackModal | [View Commit](#) |
-| 4 | "Hard to tell if platform is trustworthy" | Added trust badges on landing hero (50+ users, 170+ txs, 99.8% uptime) | [View Commit](#) |
-| 5 | "Need more info about features" | Expanded LandingFeatures from 3 → 6 with hover animations | [View Commit](#) |
-| 6 | "Want to share with friends" | Added share/referral CTA button in feedback confirmation | [View Commit](#) |
-| 7 | "Mobile navigation was limited" | Added 3-tab mobile nav (Swap / Escrow / Analytics) | [View Commit](#) |
-
-> **Note:** Replace `[View Commit](#)` with actual git commit links after committing.
+| 1 | "Need visibility into platform stats" | Added AnalyticsDashboard with real-time metrics, bar chart, and JSON export | [`053d027`](https://github.com/ps910/StellarSwap-Pro/commit/053d027) |
+| 2 | "Onboarding could be smoother" | Added OnboardingHub with Google Form embed and step-by-step guide | [`4d5a948`](https://github.com/ps910/StellarSwap-Pro/commit/4d5a948) |
+| 3 | "Want to rate more aspects" | Added NPS (0-10) score + feature request voting in FeedbackModal | [`0088148`](https://github.com/ps910/StellarSwap-Pro/commit/0088148) |
+| 4 | "Hard to tell if platform is trustworthy" | Added trust badges on landing hero (50+ users, 170+ txs, 99.8% uptime) | [`671b3cd`](https://github.com/ps910/StellarSwap-Pro/commit/671b3cd) |
+| 5 | "Need more info about features" | Expanded LandingFeatures from 3 → 6 with hover animations | [`671b3cd`](https://github.com/ps910/StellarSwap-Pro/commit/671b3cd) |
+| 6 | "Want to share with friends" | Added share/referral CTA button in feedback confirmation | [`0088148`](https://github.com/ps910/StellarSwap-Pro/commit/0088148) |
+| 7 | "Mobile navigation was limited" | Added 3-tab mobile nav (Swap / Escrow / Analytics) | [`be729bd`](https://github.com/ps910/StellarSwap-Pro/commit/be729bd) |
 
 ---
 
