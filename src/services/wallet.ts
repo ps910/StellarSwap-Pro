@@ -211,6 +211,75 @@ export function parseWalletError(error: any, context: 'connect' | 'tx' = 'tx'): 
     };
   }
 
+  if (
+    msg.includes('op_no_trust') ||
+    msg.includes('NO_TRUST') ||
+    msg.includes('changeTrust') ||
+    msg.includes('trustline')
+  ) {
+    return {
+      type: 'NO_TRUSTLINE',
+      title: 'Asset Trustline Required',
+      message: 'Your account does not have a trustline for the destination asset. Stellar requires explicit authorization before receiving non-native tokens.',
+      actionHint: 'Click "Add Trustline" to authorize this asset. This locks ~0.5 XLM in reserve.',
+      rawDetails: msg,
+    };
+  }
+
+  if (
+    msg.includes('op_underfunded') ||
+    msg.includes('insufficient reserve') ||
+    msg.includes('minimum balance')
+  ) {
+    return {
+      type: 'INSUFFICIENT_RESERVE',
+      title: 'Insufficient XLM Reserve',
+      message: 'Your account does not have enough XLM to cover the base reserve requirement. Stellar requires a minimum balance for account operations.',
+      actionHint: 'Keep at least 1.5 XLM in your account. Fund via Friendbot on testnet.',
+      rawDetails: msg,
+    };
+  }
+
+  if (
+    msg.includes('tx_bad_auth') ||
+    msg.includes('bad auth')
+  ) {
+    return {
+      type: 'USER_REJECTED',
+      title: 'Transaction Authentication Failed',
+      message: 'The transaction was rejected due to an authentication error. Your wallet may need to be reconnected.',
+      actionHint: 'Disconnect and reconnect your wallet, then retry the transaction.',
+      rawDetails: msg,
+    };
+  }
+
+  if (
+    msg.includes('tx_insufficient_fee') ||
+    msg.includes('insufficient fee')
+  ) {
+    return {
+      type: 'UNKNOWN',
+      title: 'Network Fee Too Low',
+      message: 'The base fee was too low due to network congestion. The system will auto-adjust the fee on retry.',
+      actionHint: 'Retry the transaction. The fee has been auto-adjusted by +50 stroops.',
+      rawDetails: msg,
+    };
+  }
+
+  if (
+    msg.includes('Contract Error(1)') ||
+    msg.includes('price moved') ||
+    msg.includes('slippage')
+  ) {
+    return {
+      type: 'UNKNOWN',
+      title: 'Price Slippage Exceeded',
+      message: 'The market price moved beyond your slippage tolerance during execution.',
+      actionHint: 'Increase your slippage tolerance to 1.0% or higher and retry the swap.',
+      rawDetails: msg,
+    };
+  }
+
   return {
     type: 'UNKNOWN',
     title: context === 'connect' ? 'Wallet Connection Failed' : 'Wallet Interaction Failed',
@@ -219,3 +288,4 @@ export function parseWalletError(error: any, context: 'connect' | 'tx' = 'tx'): 
     rawDetails: msg,
   };
 }
+

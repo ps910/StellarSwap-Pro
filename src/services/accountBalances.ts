@@ -207,6 +207,21 @@ export async function fundWithFriendbot(publicKey: string): Promise<{ success: b
   }
 }
 
+/**
+ * Check if account has a trustline for a specific asset code
+ */
+export function hasTrustline(balances: AssetBalanceItem[] | undefined, assetCode: string): boolean {
+  if (!balances || assetCode === 'XLM') return true;
+  return balances.some((b) => b.assetCode === assetCode);
+}
+
+/**
+ * Calculate minimum XLM required based on subentries
+ */
+export function getRequiredReserve(subentries: number): number {
+  return (2 + subentries) * 0.5;
+}
+
 // ---------- Helper Fallbacks ----------
 
 function getUnfundedFallback(publicKey: string): AccountBalancesData {

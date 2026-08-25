@@ -1,54 +1,151 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Outfit:wght@400;500;600;700;800&family=Roboto+Mono:wght@400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   body {
-    background-color: #050505;
-    color: #f8fafc;
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    background-color: #0B0E11;
+    color: #EAECEF;
+    font-family: 'Inter', 'Outfit', system-ui, -apple-system, sans-serif;
     overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Enforce tabular numerals globally on monospace */
+  .font-mono {
+    font-feature-settings: 'tnum' on, 'lnum' on;
   }
 }
 
-/* Figma Tactical Background Grid Pattern */
+@layer components {
+  /* ── Card System ── */
+  .card-surface {
+    @apply bg-surface border border-b-border rounded-2xl;
+  }
+
+  .card-elevated {
+    @apply bg-elevated border border-b-border rounded-xl;
+  }
+
+  /* ── Gold Accent Glows ── */
+  .glow-gold {
+    box-shadow: 0 0 24px -4px rgba(240, 185, 11, 0.25);
+  }
+
+  .glow-gold-sm {
+    box-shadow: 0 0 12px -2px rgba(240, 185, 11, 0.20);
+  }
+
+  .glow-bullish {
+    box-shadow: 0 0 16px -4px rgba(14, 203, 129, 0.25);
+  }
+
+  /* ── Monospace Hardware Labels ── */
+  .label-mono {
+    font-family: 'Roboto Mono', 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    font-feature-settings: 'tnum' on, 'lnum' on;
+  }
+
+  /* ── Tabular Numerals for Financial Data ── */
+  .tabular-nums {
+    font-family: 'Roboto Mono', ui-monospace, monospace;
+    font-feature-settings: 'tnum' on, 'lnum' on;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.01em;
+  }
+
+  /* ── Button Styles ── */
+  .btn-gold {
+    @apply py-3 px-6 bg-gold hover:bg-gold-hover text-black font-bold rounded-xl transition-all duration-150;
+    box-shadow: 0 4px 12px -2px rgba(240, 185, 11, 0.15);
+  }
+
+  .btn-gold:hover {
+    box-shadow: 0 4px 16px -2px rgba(240, 185, 11, 0.30);
+  }
+
+  .btn-gold:active {
+    transform: scale(0.99);
+  }
+
+  .btn-surface {
+    @apply py-2.5 px-4 bg-surface hover:bg-surface-hover border border-b-border text-text-primary font-semibold rounded-xl transition-all duration-150;
+  }
+
+  /* ── Input Styles ── */
+  .input-elevated {
+    @apply w-full bg-elevated border border-transparent hover:border-b-border-light focus:border-gold rounded-xl px-4 py-3 text-text-primary placeholder-text-disabled focus:outline-none transition-all duration-200;
+    font-family: 'Roboto Mono', monospace;
+    font-feature-settings: 'tnum' on;
+  }
+
+  /* ── Badge Styles ── */
+  .badge-gold {
+    @apply inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold;
+    background: rgba(240, 185, 11, 0.12);
+    color: #F0B90B;
+    border: 1px solid rgba(240, 185, 11, 0.25);
+  }
+
+  .badge-bullish {
+    @apply inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold;
+    background: rgba(14, 203, 129, 0.12);
+    color: #0ECB81;
+    border: 1px solid rgba(14, 203, 129, 0.25);
+  }
+
+  .badge-bearish {
+    @apply inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold;
+    background: rgba(246, 70, 93, 0.12);
+    color: #F6465D;
+    border: 1px solid rgba(246, 70, 93, 0.25);
+  }
+
+  .badge-blue {
+    @apply inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold;
+    background: rgba(14, 118, 253, 0.12);
+    color: #0E76FD;
+    border: 1px solid rgba(14, 118, 253, 0.25);
+  }
+}
+
+/* ── Subtle Background Grid ── */
 .bg-tactical-grid {
-  background-size: 36px 36px;
-  background-image: 
-    linear-gradient(to right, rgba(255, 255, 255, 0.035) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+  background-size: 40px 40px;
+  background-image:
+    linear-gradient(to right, rgba(255, 255, 255, 0.018) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.018) 1px, transparent 1px);
 }
 
-/* Neon Lime Glow Accent */
-.glow-lime {
-  box-shadow: 0 0 30px -5px rgba(163, 230, 53, 0.4);
-}
-
-.glow-lime-sm {
-  box-shadow: 0 0 15px -3px rgba(163, 230, 53, 0.3);
-}
-
-/* Monospace Hardware Labels */
-.label-mono {
-  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-
-/* Custom Scrollbar */
+/* ── Custom Scrollbar ── */
 .custom-scrollbar::-webkit-scrollbar {
-  width: 5px;
+  width: 4px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-track {
-  background: #09090b;
+  background: #0B0E11;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(163, 230, 53, 0.3);
+  background: rgba(240, 185, 11, 0.25);
   border-radius: 4px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: rgba(163, 230, 53, 0.7);
+  background: rgba(240, 185, 11, 0.5);
+}
+
+/* ── Fade-In Animation ── */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.2s ease-out;
 }

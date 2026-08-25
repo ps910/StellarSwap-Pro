@@ -4,86 +4,83 @@ import { Wallet, Repeat, Lock, BarChart3, ShieldCheck, Layers } from 'lucide-rea
 const FEATURES = [
   {
     id: '01',
-    title: 'Connect',
-    description: 'Freighter & Albedo. Keys never leave the extension — non-custodial and zero secret key risk for signed transaction envelopes.',
+    title: 'Non-Custodial Connect',
+    description: 'Freighter & Albedo integration. Keys never leave the wallet — zero secret key exposure for signed XDR transaction envelopes.',
     icon: <Wallet className="w-5 h-5" />,
-    color: 'lime',
+    color: 'gold',
   },
   {
     id: '02',
-    title: 'Swap',
-    description: 'Trades execute via path payments across native orderbooks with minimal price impact and zero smart contract vulnerability.',
+    title: 'Soroban Path Swap',
+    description: 'Trades execute via path payments across Stellar orderbooks with minimal price impact and Soroban AMM liquidity routing.',
     icon: <Repeat className="w-5 h-5" />,
-    color: 'cyan',
+    color: 'bullish',
   },
   {
     id: '03',
-    title: 'Escrow',
-    description: 'A Soroban contract lockup vault. Release funds to payee when work is done, or refund when timeout sequence expires.',
+    title: 'Timelocked Escrow',
+    description: 'Soroban smart contract vault. Release funds to payee when conditions are satisfied, or reclaim via timeout refund sequence.',
     icon: <Lock className="w-5 h-5" />,
-    color: 'emerald',
+    color: 'gold',
   },
   {
     id: '04',
-    title: 'Analytics',
-    description: 'Real-time platform metrics: swap volume, escrow activity, user growth, and satisfaction ratings — all tracked live.',
+    title: 'Live Telemetry',
+    description: 'Real-time on-chain analytics: volume, escrow states, user onboarding growth, and transaction latency tracked live.',
     icon: <BarChart3 className="w-5 h-5" />,
     color: 'blue',
   },
   {
     id: '05',
-    title: 'Security',
-    description: 'Content Security Policy, Sentry error tracking, exponential backoff RPC retries, and ErrorBoundary crash recovery.',
+    title: 'Enterprise Security',
+    description: 'Strict Content Security Policy, Sentry error monitoring, exponential backoff RPC retries, and ErrorBoundary recovery.',
     icon: <ShieldCheck className="w-5 h-5" />,
-    color: 'amber',
+    color: 'bullish',
   },
   {
     id: '06',
-    title: 'Multi-Wallet',
-    description: 'StellarWalletsKit supports Freighter, Albedo, Lobstr, xBull, Rabet, and a 1-click Demo Testnet Account for instant access.',
+    title: 'Multi-Wallet Kit',
+    description: 'StellarWalletsKit supports Freighter, Albedo, Lobstr, xBull, Rabet, and a 1-click Demo Account for zero-friction testing.',
     icon: <Layers className="w-5 h-5" />,
-    color: 'purple',
+    color: 'gold',
   },
 ];
 
 const COLOR_MAP: Record<string, { icon: string; border: string; bg: string }> = {
-  lime: { icon: 'text-lime-400', border: 'border-lime-400/30', bg: 'bg-lime-400/10' },
-  cyan: { icon: 'text-cyan-400', border: 'border-cyan-400/30', bg: 'bg-cyan-400/10' },
-  emerald: { icon: 'text-emerald-400', border: 'border-emerald-400/30', bg: 'bg-emerald-400/10' },
-  blue: { icon: 'text-blue-400', border: 'border-blue-400/30', bg: 'bg-blue-400/10' },
-  amber: { icon: 'text-amber-400', border: 'border-amber-400/30', bg: 'bg-amber-400/10' },
-  purple: { icon: 'text-purple-400', border: 'border-purple-400/30', bg: 'bg-purple-400/10' },
+  gold: { icon: 'text-gold', border: 'border-gold/30', bg: 'bg-gold/10' },
+  bullish: { icon: 'text-bullish', border: 'border-bullish/30', bg: 'bg-bullish/10' },
+  blue: { icon: 'text-protocol-blue', border: 'border-protocol-blue/30', bg: 'bg-protocol-blue/10' },
 };
 
 export const LandingFeatures: React.FC = () => {
   return (
-    <section className="py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 border-t border-neutral-900">
+    <section className="py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 border-t border-b-border">
       {/* Section Header */}
       <div className="text-center mb-10">
-        <span className="text-lime-400 font-bold text-xs font-mono block mb-2">FEATURES</span>
-        <h2 className="text-2xl sm:text-3xl font-black text-white font-sans">
-          Everything You Need to <span className="text-lime-400">Trade & Escrow</span>
+        <span className="badge-gold mb-2">FEATURES & ARCHITECTURE</span>
+        <h2 className="text-2xl sm:text-3xl font-black text-text-primary mt-2">
+          Everything You Need to <span className="text-gold">Trade & Escrow</span>
         </h2>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
         {FEATURES.map((feature) => {
-          const c = COLOR_MAP[feature.color];
+          const c = COLOR_MAP[feature.color] || COLOR_MAP.gold;
           return (
             <div
               key={feature.id}
-              className="p-6 rounded-2xl bg-[#09090b] border border-neutral-800 space-y-3 group hover:border-neutral-700 hover:shadow-lg transition-all cursor-default"
+              className="p-6 rounded-2xl bg-surface border border-b-border space-y-3 group hover:border-gold/40 hover:bg-surface-hover transition-all duration-200 cursor-default"
             >
               <div className="flex items-center gap-3">
-                <div className={`w-10 h-10 rounded-xl ${c.bg} ${c.icon} border ${c.border} flex items-center justify-center group-hover:scale-110 transition-transform`}>
+                <div className={`w-10 h-10 rounded-xl ${c.bg} ${c.icon} border ${c.border} flex items-center justify-center group-hover:scale-105 transition-transform`}>
                   {feature.icon}
                 </div>
                 <div>
-                  <span className={`${c.icon} font-bold block text-[10px] font-mono`}>{feature.id}</span>
-                  <h3 className="text-sm font-bold text-white font-sans">{feature.title}</h3>
+                  <span className={`${c.icon} font-bold block text-[10px] font-mono tabular-nums`}>{feature.id}</span>
+                  <h3 className="text-sm font-bold text-text-primary">{feature.title}</h3>
                 </div>
               </div>
-              <p className="text-[11px] text-slate-400 font-sans leading-relaxed">
+              <p className="text-xs text-text-secondary leading-relaxed">
                 {feature.description}
               </p>
             </div>

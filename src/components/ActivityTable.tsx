@@ -20,37 +20,37 @@ export const ActivityTable: React.FC<ActivityTableProps> = ({ events }) => {
     switch (type) {
       case 'swap':
         return (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-lime-400/10 text-lime-400 border border-lime-400/30 text-[10px] font-mono">
+          <span className="badge-bullish">
             <RefreshCw className="w-3 h-3" /> PATH SWAP
           </span>
         );
       case 'deposit':
         return (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 text-[10px] font-mono">
+          <span className="badge-blue">
             <ArrowUpRight className="w-3 h-3" /> DEPOSIT
           </span>
         );
       case 'escrow_create':
         return (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/30 text-[10px] font-mono">
+          <span className="badge-gold">
             <Lock className="w-3 h-3" /> ESCROW CREATE
           </span>
         );
       case 'escrow_fund':
         return (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-blue-500/10 text-blue-400 border border-blue-500/30 text-[10px] font-mono">
+          <span className="badge-gold">
             <Lock className="w-3 h-3" /> ESCROW FUND
           </span>
         );
       case 'escrow_release':
         return (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 text-[10px] font-mono">
+          <span className="badge-bullish">
             <CheckCircle2 className="w-3 h-3" /> ESCROW RELEASE
           </span>
         );
       case 'escrow_refund':
         return (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-purple-500/10 text-purple-400 border border-purple-500/30 text-[10px] font-mono">
+          <span className="badge-bearish">
             <RefreshCw className="w-3 h-3" /> ESCROW REFUND
           </span>
         );
@@ -58,21 +58,22 @@ export const ActivityTable: React.FC<ActivityTableProps> = ({ events }) => {
   };
 
   return (
-    <div className="p-6 sm:p-8 rounded-2xl bg-[#09090b] border border-neutral-800 font-mono text-xs mt-8">
+    <div className="card-surface p-6 animate-fade-in mt-6">
       {/* Section Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-neutral-800 pb-3 mb-6">
-        <div className="flex items-center gap-2 text-lime-400 font-bold">
-          <span>04 // ON-CHAIN ACTIVITY TELEMETRY</span>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-b-border pb-3.5 mb-5">
+        <div className="flex items-center gap-2">
+          <h2 className="text-base font-bold text-text-primary">On-Chain Activity Telemetry</h2>
+          <span className="badge-bullish">REAL-TIME RPC</span>
         </div>
 
         {/* Filter Buttons */}
-        <div className="flex bg-[#050505] p-1 rounded-xl border border-neutral-800 text-[11px]">
+        <div className="flex bg-canvas p-1 rounded-xl border border-b-border text-xs">
           <button
             onClick={() => setFilter('all')}
             className={`px-3 py-1 rounded-lg font-bold transition-all ${
               filter === 'all'
-                ? 'bg-neutral-800 text-white'
-                : 'text-slate-400 hover:text-white'
+                ? 'bg-gold text-black shadow-sm'
+                : 'text-text-tertiary hover:text-text-primary'
             }`}
           >
             ALL
@@ -81,8 +82,8 @@ export const ActivityTable: React.FC<ActivityTableProps> = ({ events }) => {
             onClick={() => setFilter('swap')}
             className={`px-3 py-1 rounded-lg font-bold transition-all ${
               filter === 'swap'
-                ? 'bg-lime-400/20 text-lime-400 border border-lime-400/40'
-                : 'text-slate-400 hover:text-white'
+                ? 'bg-gold text-black shadow-sm'
+                : 'text-text-tertiary hover:text-text-primary'
             }`}
           >
             SWAPS
@@ -91,8 +92,8 @@ export const ActivityTable: React.FC<ActivityTableProps> = ({ events }) => {
             onClick={() => setFilter('escrow')}
             className={`px-3 py-1 rounded-lg font-bold transition-all ${
               filter === 'escrow'
-                ? 'bg-purple-500/20 text-purple-400 border border-purple-500/40'
-                : 'text-slate-400 hover:text-white'
+                ? 'bg-gold text-black shadow-sm'
+                : 'text-text-tertiary hover:text-text-primary'
             }`}
           >
             ESCROW
@@ -104,28 +105,28 @@ export const ActivityTable: React.FC<ActivityTableProps> = ({ events }) => {
       <div className="overflow-x-auto">
         <table className="w-full text-left border-collapse">
           <thead>
-            <tr className="border-b border-neutral-800 text-slate-500 text-[10px]">
-              <th className="py-3 px-4 font-semibold">OPERATION</th>
-              <th className="py-3 px-4 font-semibold">DETAILS</th>
-              <th className="py-3 px-4 font-semibold">ACCOUNT</th>
-              <th className="py-3 px-4 font-semibold">LEDGER</th>
-              <th className="py-3 px-4 font-semibold">FEE</th>
-              <th className="py-3 px-4 font-semibold">AGE</th>
-              <th className="py-3 px-4 font-semibold text-right">HASH</th>
+            <tr className="border-b border-b-border text-text-tertiary text-[10px] uppercase font-bold tracking-wider">
+              <th className="py-3 px-4">Operation</th>
+              <th className="py-3 px-4">Details</th>
+              <th className="py-3 px-4">Account</th>
+              <th className="py-3 px-4">Ledger</th>
+              <th className="py-3 px-4">Fee</th>
+              <th className="py-3 px-4">Age</th>
+              <th className="py-3 px-4 text-right">Hash</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-neutral-900 text-[11px]">
+          <tbody className="divide-y divide-b-border/60 text-xs">
             {filteredEvents.length === 0 ? (
               <tr>
-                <td colSpan={7} className="py-8 text-center text-slate-500">
+                <td colSpan={7} className="py-8 text-center text-text-disabled">
                   No operations recorded yet.
                 </td>
               </tr>
             ) : (
               filteredEvents.map((evt, idx) => (
-                <tr key={evt.id} className="hover:bg-[#050505] transition-colors">
-                  <td className="py-3.5 px-4 font-bold">{getOperationBadge(evt.type)}</td>
-                  <td className="py-3.5 px-4 text-white font-mono">
+                <tr key={evt.id} className="hover:bg-elevated/50 transition-colors">
+                  <td className="py-3 px-4">{getOperationBadge(evt.type)}</td>
+                  <td className="py-3 px-4 text-text-primary font-mono tabular-nums font-semibold">
                     {evt.amountIn && evt.amountOut ? (
                       <span>{evt.amountIn} {evt.tokenIn} → {evt.amountOut} {evt.tokenOut}</span>
                     ) : evt.escrowId ? (
@@ -134,18 +135,18 @@ export const ActivityTable: React.FC<ActivityTableProps> = ({ events }) => {
                       <span>{evt.amount} {evt.token}</span>
                     )}
                   </td>
-                  <td className="py-3.5 px-4 text-slate-400 font-mono text-[11px]">{evt.user}</td>
-                  <td className="py-3.5 px-4 text-slate-300">#{54200 + idx * 3}</td>
-                  <td className="py-3.5 px-4 text-lime-400">0.00001 XLM</td>
-                  <td className="py-3.5 px-4 text-slate-400">{evt.timestamp}</td>
-                  <td className="py-3.5 px-4 text-right">
+                  <td className="py-3 px-4 text-text-secondary font-mono text-[11px] tabular-nums">{evt.user}</td>
+                  <td className="py-3 px-4 text-text-tertiary tabular-nums font-mono">#{54200 + idx * 3}</td>
+                  <td className="py-3 px-4 text-text-tertiary tabular-nums font-mono">0.00001 XLM</td>
+                  <td className="py-3 px-4 text-text-disabled text-[11px]">{evt.timestamp}</td>
+                  <td className="py-3 px-4 text-right">
                     <a
                       href={`${STELLAR_CONFIG.explorerUrl}/tx/${evt.txHash}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-lime-400 hover:underline inline-flex items-center gap-1 font-mono"
+                      className="text-gold hover:text-gold-hover inline-flex items-center gap-1 font-mono text-xs transition-colors"
                     >
-                      <span>{evt.txHash.slice(0, 6)}...</span>
+                      <span className="tabular-nums">{evt.txHash.slice(0, 6)}...</span>
                       <ExternalLink className="w-3 h-3" />
                     </a>
                   </td>

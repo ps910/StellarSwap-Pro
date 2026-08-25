@@ -72,7 +72,7 @@ export interface UserFeedback {
 }
 
 export interface AppError {
-  type: 'WALLET_NOT_FOUND' | 'USER_REJECTED' | 'INSUFFICIENT_BALANCE' | 'TIMEOUT_NOT_EXPIRED' | 'UNKNOWN';
+  type: 'WALLET_NOT_FOUND' | 'USER_REJECTED' | 'INSUFFICIENT_BALANCE' | 'TIMEOUT_NOT_EXPIRED' | 'NO_TRUSTLINE' | 'INSUFFICIENT_RESERVE' | 'UNKNOWN';
   title: string;
   message: string;
   actionHint: string;
@@ -116,3 +116,8 @@ export interface UserGrowthEntry {
   lastActive: string;
 }
 
+// ── Level 6 (Black Belt) Types ──
+
+export type TrustlineStatus = 'exists' | 'missing' | 'unknown';
+
+export type ViewMode = 'simple' | 'pro';

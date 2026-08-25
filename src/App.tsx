@@ -439,11 +439,11 @@ export const AppContent: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 font-sans selection:bg-emerald-500 selection:text-slate-950 bg-tactical-grid">
+    <div className="min-h-screen bg-canvas text-text-primary font-sans selection:bg-gold selection:text-black bg-tactical-grid">
       {/* Background Radial Gradients */}
       <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
-        <div className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-emerald-600/10 rounded-full blur-[160px]" />
-        <div className="absolute bottom-0 right-1/4 w-[600px] h-[600px] bg-cyan-600/10 rounded-full blur-[160px]" />
+        <div className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-gold/5 rounded-full blur-[180px]" />
+        <div className="absolute bottom-0 right-1/4 w-[600px] h-[600px] bg-protocol-blue/5 rounded-full blur-[180px]" />
       </div>
 
       <div className="relative z-10">
@@ -496,6 +496,7 @@ export const AppContent: React.FC = () => {
                       <SwapInterface
                         walletState={walletState}
                         reserves={reserves}
+                        balancesData={balancesData}
                         onOpenWalletModal={() => setIsWalletModalOpen(true)}
                         onExecuteSwap={handleExecuteSwap}
                         onExecuteDeposit={handleExecuteDeposit}
