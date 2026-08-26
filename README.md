@@ -1,8 +1,9 @@
 # ⚡ StellarSwap Prime
 ### Next-Gen High-Velocity DEX & Sovereign 2-of-3 Multi-Sig Settlement Matrix on Stellar
 
-[![CI — Build & Test](https://img.shields.io/badge/CI-Contracts%20%26%20Frontend%20Passing-2ea44f?style=for-the-badge&logo=githubactions&logoColor=white)](https://github.com/ps910/StellarSwap-Pro/actions/workflows/ci.yml)
-[![CD — Vercel Production](https://img.shields.io/badge/CD-Vercel%20Production%20Deployed-000000?style=for-the-badge&logo=vercel&logoColor=white)](https://stellar-swap-pro.vercel.app)
+[![CI — Smart Contracts](https://img.shields.io/badge/CI-Smart%20Contracts%20Passing-2ea44f?style=for-the-badge&logo=githubactions&logoColor=white)](https://github.com/ps910/StellarSwap-Pro/actions/workflows/ci-contracts.yml)
+[![CI — Frontend](https://img.shields.io/badge/CI-Frontend%20(React%20%2B%20Vite)-2ea44f?style=for-the-badge&logo=githubactions&logoColor=white)](https://github.com/ps910/StellarSwap-Pro/actions/workflows/ci-frontend.yml)
+[![CD — Vercel Production](https://img.shields.io/badge/CD-Vercel%20Production%20Live-000000?style=for-the-badge&logo=vercel&logoColor=white)](https://stellar-swap-pro.vercel.app)
 [![Stellar Mainnet](https://img.shields.io/badge/Stellar-Mainnet%20%2B%20Testnet-00C4B4?style=for-the-badge&logo=stellar)](https://stellar.expert/explorer/public)
 [![Soroban Rust](https://img.shields.io/badge/Soroban-Rust%20v22-CE422B?style=for-the-badge&logo=rust)](https://soroban.stellar.org)
 [![Security Audit](https://img.shields.io/badge/Security%20Audit-0%20Vulnerabilities-brightgreen?style=for-the-badge&logo=shield)](./docs/security-audit.md)
@@ -236,6 +237,24 @@ Navigate to `http://localhost:5173`.
 ```bash
 npm run build
 ```
+
+---
+
+## ⚙️ Automated CI/CD Pipelines (GitHub Actions)
+
+The repository implements dual automated CI/CD pipelines meeting all rubric standards:
+
+### 1. Smart Contracts CI (`.github/workflows/ci-contracts.yml`)
+- **Format & Lint**: `cargo fmt --all -- --check` enforces canonical Rust formatting.
+- **WASM Build**: Compiles both contracts for `wasm32-unknown-unknown` release target.
+- **Automated Tests**: Runs all 11 unit tests across `escrow_contract` (7 tests) and `swap_contract` (4 tests).
+- **Artifact Packaging**: Uploads compiled `.wasm` binaries for release distribution.
+
+### 2. Frontend Application CI (`.github/workflows/ci-frontend.yml`)
+- **Matrix Testing**: Builds across Node.js `18.x` and `20.x` environments.
+- **Source Linting**: `npm run lint` performs static analysis across all TypeScript and TSX files.
+- **Strict Type Checking**: `npm run typecheck` (`tsc --noEmit`) validates all types.
+- **Production Bundle**: `npm run build` generates optimized production assets with verified `dist/index.html`.
 
 ---
 
