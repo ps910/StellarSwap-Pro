@@ -2,7 +2,7 @@
 
 ## 📽️ Demo Recordings
 
-The complete product walkthrough is segmented into **6 recordings** covering every feature of the Binance Pro-redesigned application.
+The complete product walkthrough is segmented into **6 recordings** covering every feature of the Pro Terminal-redesigned application.
 
 ---
 
@@ -10,7 +10,7 @@ The complete product walkthrough is segmented into **6 recordings** covering eve
 **File**: [`full_demo_01_landing.webp`](./full_demo_01_landing.webp)
 
 **Covers**:
-- ✅ Binance Pro dark canvas (`#0B0E11`) landing page
+- ✅ Pro dark canvas (`#0B0E11`) landing page
 - ✅ Hero section with "Swap it. Escrow it. Settle it." headline
 - ✅ FIG.1 Soroban Settlement Pipeline diagram
 - ✅ Trust badges (52+ Users, 170+ Transactions, 99.8% Uptime)
@@ -41,7 +41,7 @@ The complete product walkthrough is segmented into **6 recordings** covering eve
 **File**: [`full_demo_03_escrow.webp`](./full_demo_03_escrow.webp)
 
 **Covers**:
-- ✅ Full Binance Pro dashboard layout
+- ✅ Full Pro Terminal dashboard layout
 - ✅ Swap execution with price estimation
 - ✅ Escrow Vault — Active List view
 - ✅ Escrow creation form (Payee, Token, Amount, Duration)
@@ -58,70 +58,53 @@ The complete product walkthrough is segmented into **6 recordings** covering eve
 **Covers**:
 - ✅ Analytics tab navigation
 - ✅ 4 stat cards: Total Swaps (127+), Total Escrows (43+), Onboarded Users (52+), Feedback Reviews (48+)
-- ✅ 7-Day Transaction Activity bar chart
-- ✅ AVG Satisfaction rating with gold stars (4.9/5.0)
-- ✅ Total Volume Processed ($284,750+)
-- ✅ RPC Network Uptime (99.8%)
-- ✅ Export Proof JSON button
+- ✅ 7-day activity bar chart (Swaps vs Escrows)
+- ✅ Average satisfaction score (4.9/5.0 with 5 gold stars)
+- ✅ Total volume processed ($284,750.00)
+- ✅ RPC network uptime monitor (99.8%)
+- ✅ Export Proof JSON button with download confirmation
 
 ---
 
-### Segment 5: Pitch Deck (9 Slides)
+### Segment 5: Pitch Deck Walkthrough (9 Slides)
 **File**: [`full_demo_05_pitchdeck.webp`](./full_demo_05_pitchdeck.webp)
 
 **Covers**:
-- ✅ Slide 1: Title — StellarSwap+ Level 6 Black Belt
-- ✅ Slide 2: Problem Statement — DeFi UX gaps
-- ✅ Slide 3: Solution — Unified DEX + Escrow
-- ✅ Slide 4: Market Opportunity — $500M+ volume
-- ✅ Slide 5: Architecture — Full stack diagram
-- ✅ Slide 6: Traction — 52+ users, 170+ txs
-- ✅ Slide 7: Growth Strategy — 6 pillars
-- ✅ Slide 8: Future Roadmap — 5 quarters
-- ✅ Slide 9: Thank You / CTA
+- ✅ Interactive 9-slide deck with keyboard navigation
+- ✅ Slide 1: Title & Executive Summary
+- ✅ Slide 2: Problem Statement (Fragmented DEX, No Escrow, Wallet Issues)
+- ✅ Slide 3: Solution (Path Payment DEX, Soroban Escrow Vault, Multi-Wallet)
+- ✅ Slide 4: Market Opportunity ($500M+ volume, 8M+ accounts)
+- ✅ Slide 5: Technical Architecture (React 18, Soroban Rust, CI/CD)
+- ✅ Slide 6: Traction & Validation (52+ users, 170+ txs, 4.44 rating)
+- ✅ Slide 7: Growth Strategy (6 pillars)
+- ✅ Slide 8: Future Roadmap (5 quarters)
+- ✅ Slide 9: Team, Mission & Community Links
 
 ---
 
-### Segment 6: Mobile Responsive (375px)
+### Segment 6: Mobile Responsive Walkthrough (375px)
 **File**: [`full_demo_06_mobile.webp`](./full_demo_06_mobile.webp)
 
 **Covers**:
-- ✅ Mobile-optimized dark theme layout
-- ✅ Responsive navigation with hamburger menu
-- ✅ Stacked card layouts for swap and escrow
-- ✅ Touch-friendly buttons and inputs
-- ✅ Mobile tab navigation (Swap / Escrow / Analytics)
-- ✅ Compressed portfolio banner
+- ✅ Mobile layout in iPhone SE / 375px viewport
+- ✅ Fixed mobile tab navigation bar (Swap, Escrow, Analytics)
+- ✅ Responsive price ticker tape
+- ✅ Touch-friendly swap inputs and quick buttons
+- ✅ Compact portfolio banner
+- ✅ Stacked escrow cards with mobile action buttons
+- ✅ Scrollable analytics charts on mobile
+- ✅ Full navigation without horizontal overflow
 
 ---
 
-## 📋 Video Topic Coverage Checklist
+## 🔗 Submission Links
 
-| Topic | Covered | Segment |
-|---|---|---|
-| Product overview & value proposition | ✅ | 1 |
-| Binance Pro dark mode design system | ✅ | 1, 2, 3 |
-| Wallet connection flow | ✅ | 2 |
-| Path payment swap execution | ✅ | 2, 3 |
-| Trustline pre-flight checks | ✅ | 2 |
-| 4-stage transaction tracking | ✅ | 2, 3 |
-| Soroban escrow lifecycle | ✅ | 3 |
-| On-chain activity feed | ✅ | 3 |
-| Analytics & platform metrics | ✅ | 4 |
-| User growth proof (52+ users) | ✅ | 4 |
-| Pitch deck presentation | ✅ | 5 |
-| Mobile responsive design | ✅ | 6 |
-
----
-
-## 🎨 Level 6 Design System Highlights
-
-The video showcases the Binance Pro-inspired design system:
-
-- **Canvas**: `#0B0E11` — Deep dark base
-- **Surface**: `#181A20` — Card backgrounds
-- **Gold Accent**: `#F0B90B` — Primary CTAs
-- **Green**: `#0ECB81` — Success states
-- **Red**: `#F6465D` — Error states
-- **Typography**: `Inter` / `Outfit` headings, `Roboto Mono` financial data
-- **Animations**: Smooth transitions, hover effects, pulsing indicators
+| Asset | Link |
+|---|---|
+| Live Demo Application | [stellar-swap-pro.vercel.app](https://stellar-swap-pro.vercel.app) |
+| GitHub Repository | [github.com/ps910/StellarSwap-Pro](https://github.com/ps910/StellarSwap-Pro) |
+| Interactive Pitch Deck | [HTML Deck](../docs/pitch-deck.html) |
+| PowerPoint Pitch Deck | [Download PPTX](../docs/pitch-deck.pptx) |
+| Analytics Proof JSON | Generated via in-app export |
+| User Testing Documentation | [user-testing.md](../docs/user-testing.md) |

@@ -4,7 +4,7 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Binance-Inspired Canvas System
+        // Institutional Dark Mode Canvas System
         canvas: {
           DEFAULT: '#0B0E11',
           light: '#0D1117',

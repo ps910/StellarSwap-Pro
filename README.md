@@ -9,7 +9,7 @@
 [![Vercel Deploy](https://img.shields.io/badge/Deployed-Vercel-black?style=for-the-badge&logo=vercel)](https://stellar-swap-pro.vercel.app)
 [![License: MIT](https://img.shields.io/badge/License-MIT-emerald.svg?style=for-the-badge)](./LICENSE)
 
-**StellarSwap+** is an institutional-grade, non-custodial Web3 application engineered for the **Stellar Ecosystem (Level 6 / Black Belt Final Certification)**. Modeled after the high-trust, data-dense aesthetic of **Binance Pro**, it combines native Stellar Path Payment DEX aggregation with a **scalable Soroban Rust 2-of-3 Multi-Signature Escrow Vault**, SAC token transfers, Arbiter dispute resolution, persistent TTL state management, trustline pre-flight checks, 4-stage transaction tracking, and continuous CI/CD deployment.
+**StellarSwap+** is an institutional-grade, non-custodial Web3 application engineered for the **Stellar Ecosystem (Level 6 / Black Belt Final Certification)**. Modeled after institutional-grade, data-dense Web3 trading terminals, it combines native Stellar Path Payment DEX aggregation with a **scalable Soroban Rust 2-of-3 Multi-Signature Escrow Vault**, SAC token transfers, Arbiter dispute resolution, persistent TTL state management, trustline pre-flight checks, 4-stage transaction tracking, and continuous CI/CD deployment.
 
 ---
 
@@ -18,7 +18,7 @@
 | Requirement | Status | Evidence & Verification Link |
 |---|---|---|
 | **Public GitHub Repository** | ✅ | [github.com/ps910/StellarSwap-Pro](https://github.com/ps910/StellarSwap-Pro) |
-| **Minimum 30+ Meaningful Commits** | ✅ (55+ commits) | [`git log --oneline`](https://github.com/ps910/StellarSwap-Pro/commits/main) |
+| **Minimum 30+ Meaningful Commits** | ✅ (56+ commits) | [`git log --oneline`](https://github.com/ps910/StellarSwap-Pro/commits/main) |
 | **Live Mainnet Application** | ✅ | [stellar-swap-pro.vercel.app](https://stellar-swap-pro.vercel.app) |
 | **Mainnet & Testnet Contract Addresses** | ✅ | See [Deployed Smart Contracts](#-deployed-smart-contracts--mainnet-readiness) |
 | **Advanced Feature: Multi-Signature Logic** | ✅ | [2-of-3 Multi-Sig Escrow & Arbiter Resolution](#-advanced-feature-2-of-3-multi-signature--arbiter-dispute-resolution) |
@@ -28,7 +28,7 @@
 | **Proof of 50+ Verified Users & Telemetry** | ✅ (52 users) | [`docs/user-testing.md`](./docs/user-testing.md) & [Growth Analytics](#-user-growth--retention-analytics-0--52-users) |
 | **Google Form & Exported Excel Feedback** | ✅ | [Google Sheets Responses](https://docs.google.com/spreadsheets/d/1rwjibmRmoN6Qp0fkED-tAXiDno5CZB-bnLlBET3puHg/edit?usp=sharing) • [`docs/user-feedback-responses.xlsx`](./docs/user-feedback-responses.xlsx) |
 | **Pitch Deck (PowerPoint PPTX & Web)** | ✅ | [`docs/pitch-deck.pptx`](./docs/pitch-deck.pptx) • [HTML Deck](./docs/pitch-deck.html) • [Guide](./docs/pitch-deck.md) |
-| **Demo Walkthrough Video** | ✅ | [`docs/demo-video.md`](./docs/demo-video.md) & [Demo Recordings](#-demo-videos-level-6-binance-pro-redesign) |
+| **Demo Walkthrough Video** | ✅ | [`docs/demo-video.md`](./docs/demo-video.md) & [Demo Recordings](#-demo-videos-level-6-pro-terminal-redesign) |
 | **User Feedback Iteration Summary** | ✅ | See [Improvements Based on User Feedback](#-improvements-based-on-user-feedback) |
 
 ---
@@ -86,9 +86,9 @@ sequenceDiagram
 
 ---
 
-## 🎨 Level 6 Black Belt — Binance Pro UI Redesign
+## 🎨 Level 6 Black Belt — Institutional Pro UI Redesign
 
-The application features an institutional-grade, data-dense interface modeled after **Binance Pro**:
+The application features an institutional-grade, data-dense interface designed for optimal readability and high-frequency Web3 operations:
 
 | Design Token | Value | Purpose |
 |---|---|---|
@@ -102,7 +102,7 @@ The application features an institutional-grade, data-dense interface modeled af
 
 ---
 
-## 📸 Screenshots — Binance Pro UI
+## 📸 Screenshots — Pro Terminal UI
 
 | Feature | Preview |
 |---|---|
@@ -120,7 +120,7 @@ The application features an institutional-grade, data-dense interface modeled af
 
 ---
 
-## 🎬 Demo Videos (Level 6 Binance Pro Redesign)
+## 🎬 Demo Videos (Level 6 Pro Terminal Redesign)
 
 > Complete walkthrough and topic coverage guide: [`docs/demo-video.md`](./docs/demo-video.md)
 
@@ -151,7 +151,7 @@ StellarSwap+ scaled from **0 to 52+ active users** over an 8-week onboarding cam
 | Week 4 | Jul 22–28 | 25 | 7 | In-app feedback widget + referral incentive |
 | Week 5 | Aug 1–7 | 32 | 7 | Ecosystem builder collaborations & word-of-mouth |
 | Week 6 | Aug 8–14 | 38 | 6 | Trust badges & verified telemetry on landing hero |
-| Week 7 | Aug 15–21 | 45 | 7 | Level 6 Binance Pro redesign (higher conversion) |
+| Week 7 | Aug 15–21 | 45 | 7 | Level 6 Pro redesign (higher conversion) |
 | Week 8 | Aug 22–28 | **52** | 7 | **50+ Users Target achieved** ✅ |
 
 ### User Retention & Interaction Breakdown
@@ -178,7 +178,7 @@ Based on feedback from 50 testnet users (4.44/5.0 avg rating), the following ite
 | 1 | "Need visibility into platform stats" | Real-time AnalyticsDashboard with metrics, charts & JSON proof export | L5 | [`053d027`](https://github.com/ps910/StellarSwap-Pro/commit/053d027) |
 | 2 | "Onboarding could be smoother" | Step-by-step OnboardingHub with embedded Google Form | L5 | [`4d5a948`](https://github.com/ps910/StellarSwap-Pro/commit/4d5a948) |
 | 3 | "Want to vote on upcoming features" | NPS (0-10) scoring & feature voting in FeedbackModal | L5 | [`0088148`](https://github.com/ps910/StellarSwap-Pro/commit/0088148) |
-| 4 | "UI feels generic, needs institutional feel" | **Full Binance Pro dark mode redesign** (`#0B0E11` canvas, `#F0B90B` gold) | **L6** | [`6ad74c8`](https://github.com/ps910/StellarSwap-Pro/commit/6ad74c8) |
+| 4 | "UI feels generic, needs institutional feel" | **Full Institutional Pro dark mode redesign** (`#0B0E11` canvas, `#F0B90B` gold) | **L6** | [`6ad74c8`](https://github.com/ps910/StellarSwap-Pro/commit/6ad74c8) |
 | 5 | "Transaction state is opaque" | **4-stage Transaction Tracker** (Building → Signing → Submitting → Confirmed) | **L6** | [`6ad74c8`](https://github.com/ps910/StellarSwap-Pro/commit/6ad74c8) |
 | 6 | "Contract logic needs multi-party security" | **2-of-3 Multi-Sig Escrow & Arbiter Dispute Resolution** with persistent TTL | **L6** | [`01f7f84`](https://github.com/ps910/StellarSwap-Pro/commit/01f7f84) |
 | 7 | "Missing trustline errors cause confusion" | **Trustline pre-flight check engine** with 1-click guided resolution | **L6** | [`6ad74c8`](https://github.com/ps910/StellarSwap-Pro/commit/6ad74c8) |
@@ -327,7 +327,7 @@ StellarSwap-Pro/
 │   ├── user-growth.md              # Onboarding strategy
 │   ├── user-testing.md             # 52+ users documentation
 │   ├── demo-video.md               # Demo walkthrough link
-│   ├── screenshots/                # Binance Pro UI screenshots
+│   ├── screenshots/                # Institutional UI screenshots
 │   └── full_demo_*.webp            # Demo video recordings
 ├── Makefile                        # Build/test/format automation
 ├── vercel.json                     # Production deployment config

@@ -35,14 +35,14 @@ A unified production platform combining:
 - **Competitive Advantages**: 3–5s finality, ~$0.00001 fees, native DEX orderbook path finding, Soroban Rust/WASM speed, Tier-1 stablecoins.
 
 ### Slide 5 — Technical Architecture
-- **Frontend Layer**: React 18, TypeScript, Vite, TailwindCSS Binance Pro dark theme, React.lazy() chunk splitting, StellarWalletsKit.
+- **Frontend Layer**: React 18, TypeScript, Vite, TailwindCSS Pro dark theme, React.lazy() chunk splitting, StellarWalletsKit.
 - **Smart Contract Layer**: Soroban Rust Multi-Sig Escrow Vault & AMM Swap Pool with Persistent TTL scaling, 11 unit tests, automated Cargo CI.
 - **CI/CD & Deployment**: GitHub Actions (Contract CI, Frontend CI, CD Deploy), Vercel Global Edge CDN.
 - **Observability & Security**: Sentry error tracking, Web Vitals telemetry, exponential backoff RPC retry, CSP headers.
 
 ### Slide 6 — Traction & User Validation
 - **52+** Onboarded Users | **170+** Live Transactions | **4.44 / 5.0** Average Rating (50 Google Form Responses) | **99.8%** Production Uptime | **78%** Cohort Retention
-- **User Feedback**: 90% satisfaction (4+ stars), praise for instantaneous swaps, smooth multi-wallet connect, and institutional Binance Pro layout.
+- **User Feedback**: 90% satisfaction (4+ stars), praise for instantaneous swaps, smooth multi-wallet connect, and institutional Pro layout.
 - **Improvements Shipped**: 2-of-3 Multi-Sig arbiter logic, Trustline pre-flight checks, 4-stage transaction tracking, human-readable error translation, AnalyticsDashboard with JSON proof export, and OnboardingHub.
 
 ### Slide 7 — Growth Strategy (6 Pillars)
