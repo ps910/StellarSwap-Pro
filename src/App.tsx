@@ -36,38 +36,16 @@ import { TransactionTracker } from './components/TransactionTracker';
 import { ErrorModal } from './components/ErrorModal';
 import { FeedbackModal } from './components/FeedbackModal';
 
-// Helper to handle dynamic chunk loading errors
-function lazyRetry<T extends React.ComponentType<any>>(
-  importFn: () => Promise<{ default: T }>,
-  name: string
-) {
-  return lazy(async () => {
-    const hasReloaded = sessionStorage.getItem(`retry_lazy_${name}`);
-    try {
-      const component = await importFn();
-      sessionStorage.removeItem(`retry_lazy_${name}`);
-      return component;
-    } catch (error: any) {
-      console.warn(`[LazyLoad] Failed to load chunk for ${name}:`, error);
-      if (!hasReloaded) {
-        sessionStorage.setItem(`retry_lazy_${name}`, 'true');
-        window.location.reload();
-        return new Promise<{ default: T }>(() => {});
-      }
-      sessionStorage.removeItem(`retry_lazy_${name}`);
-      throw error;
-    }
-  });
-}
+// Direct static imports for critical landing experience (prevents blank screen)
+import { LandingHero } from './components/LandingHero';
+import { LandingFeatures } from './components/LandingFeatures';
+import { OnboardingHub } from './components/OnboardingHub';
+import { SwapInterface } from './components/SwapInterface';
+import { EscrowInterface } from './components/EscrowInterface';
+import { ActivityTable } from './components/ActivityTable';
 
-// Code-split components
-const LandingHero = lazyRetry(() => import('./components/LandingHero').then((m) => ({ default: m.LandingHero })), 'LandingHero');
-const LandingFeatures = lazyRetry(() => import('./components/LandingFeatures').then((m) => ({ default: m.LandingFeatures })), 'LandingFeatures');
-const SwapInterface = lazyRetry(() => import('./components/SwapInterface').then((m) => ({ default: m.SwapInterface })), 'SwapInterface');
-const EscrowInterface = lazyRetry(() => import('./components/EscrowInterface').then((m) => ({ default: m.EscrowInterface })), 'EscrowInterface');
-const ActivityTable = lazyRetry(() => import('./components/ActivityTable').then((m) => ({ default: m.ActivityTable })), 'ActivityTable');
-const AnalyticsDashboard = lazyRetry(() => import('./components/AnalyticsDashboard').then((m) => ({ default: m.AnalyticsDashboard })), 'AnalyticsDashboard');
-const OnboardingHub = lazyRetry(() => import('./components/OnboardingHub').then((m) => ({ default: m.OnboardingHub })), 'OnboardingHub');
+// Lazy load analytics tab
+const AnalyticsDashboard = lazy(() => import('./components/AnalyticsDashboard').then((m) => ({ default: m.AnalyticsDashboard })));
 
 export const AppContent: React.FC = () => {
   // Navigation State
@@ -139,7 +117,8 @@ export const AppContent: React.FC = () => {
   // 1. Initial Load
   useEffect(() => {
     checkInstalledWallets().then(setInstalledWallets);
-    fetchPoolReserves(NETWORKS[networkMode].contractId).then(setReserves);
+    const activeConfig = NETWORKS[networkMode] || STELLAR_CONFIG;
+    fetchPoolReserves(activeConfig.contractId).then(setReserves);
     analytics.track('app_initialized', { network: networkMode });
 
     const unsubscribe = eventStreamService.subscribe((newEvent) => {
@@ -244,7 +223,7 @@ export const AppContent: React.FC = () => {
 
     setIsProcessingTx(true);
     try {
-      const currentContractId = NETWORKS[networkMode].contractId;
+      const currentContractId = NETWORKS[networkMode]?.contractId || STELLAR_CONFIG.contractId;
       const txHash = await executeContractSwap(
         currentContractId,
         walletState.address,
@@ -296,7 +275,7 @@ export const AppContent: React.FC = () => {
 
     setIsProcessingTx(true);
     try {
-      const currentContractId = NETWORKS[networkMode].contractId;
+      const currentContractId = NETWORKS[networkMode]?.contractId || STELLAR_CONFIG.contractId;
       const txHash = await executeContractDeposit(
         currentContractId,
         walletState.address,
@@ -345,7 +324,7 @@ export const AppContent: React.FC = () => {
     if (!walletState.address) return;
     setIsProcessingTx(true);
     try {
-      const currentEscrowContractId = NETWORKS[networkMode].escrowContractId;
+      const currentEscrowContractId = NETWORKS[networkMode]?.escrowContractId || STELLAR_CONFIG.escrowContractId;
       const { escrowId, txHash } = await executeCreateEscrow(
         currentEscrowContractId,
         walletState.address,
@@ -610,16 +589,14 @@ export const AppContent: React.FC = () => {
 
         {/* Main Content Area */}
         {!walletState.isConnected ? (
-          /* Disconnected State: Landing Page + Onboarding Hub */
+          /* Disconnected State: Landing Page + Onboarding Hub (rendered directly without blank fallback) */
           <main>
-            <Suspense fallback={<div className="min-h-screen" />}>
-              <LandingHero onConnectWallet={() => setIsWalletModalOpen(true)} />
-              <LandingFeatures />
-              <OnboardingHub
-                onConnectWallet={() => setIsWalletModalOpen(true)}
-                isConnected={false}
-              />
-            </Suspense>
+            <LandingHero onConnectWallet={() => setIsWalletModalOpen(true)} />
+            <LandingFeatures />
+            <OnboardingHub
+              onConnectWallet={() => setIsWalletModalOpen(true)}
+              isConnected={false}
+            />
           </main>
         ) : (
           /* Connected State: Dashboard with Swap / Escrow / Multisig / Analytics tabs */
@@ -641,42 +618,36 @@ export const AppContent: React.FC = () => {
                 {/* Main Grid: Swap (Left) + Escrow / Multi-Sig (Right) */}
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
                   <div className="lg:col-span-6">
-                    <Suspense fallback={<LoadingSkeleton lines={6} />}>
-                      <SwapInterface
-                        walletState={walletState}
-                        reserves={reserves}
-                        balancesData={balancesData}
-                        onOpenWalletModal={() => setIsWalletModalOpen(true)}
-                        onExecuteSwap={handleExecuteSwap}
-                        onExecuteDeposit={handleExecuteDeposit}
-                        isProcessing={isProcessingTx}
-                      />
-                    </Suspense>
+                    <SwapInterface
+                      walletState={walletState}
+                      reserves={reserves}
+                      balancesData={balancesData}
+                      onOpenWalletModal={() => setIsWalletModalOpen(true)}
+                      onExecuteSwap={handleExecuteSwap}
+                      onExecuteDeposit={handleExecuteDeposit}
+                      isProcessing={isProcessingTx}
+                    />
                   </div>
 
                   <div className="lg:col-span-6">
-                    <Suspense fallback={<LoadingSkeleton lines={6} />}>
-                      <EscrowInterface
-                        walletState={walletState}
-                        escrows={escrows}
-                        onOpenWalletModal={() => setIsWalletModalOpen(true)}
-                        onCreateEscrow={handleCreateEscrow}
-                        onFundEscrow={handleFundEscrow}
-                        onApproveEscrow={handleApproveEscrow}
-                        onReleaseEscrow={handleReleaseEscrow}
-                        onRefundEscrow={handleRefundEscrow}
-                        onDisputeEscrow={handleDisputeEscrow}
-                        onResolveDispute={handleResolveDispute}
-                        isProcessing={isProcessingTx}
-                      />
-                    </Suspense>
+                    <EscrowInterface
+                      walletState={walletState}
+                      escrows={escrows}
+                      onOpenWalletModal={() => setIsWalletModalOpen(true)}
+                      onCreateEscrow={handleCreateEscrow}
+                      onFundEscrow={handleFundEscrow}
+                      onApproveEscrow={handleApproveEscrow}
+                      onReleaseEscrow={handleReleaseEscrow}
+                      onRefundEscrow={handleRefundEscrow}
+                      onDisputeEscrow={handleDisputeEscrow}
+                      onResolveDispute={handleResolveDispute}
+                      isProcessing={isProcessingTx}
+                    />
                   </div>
                 </div>
 
                 {/* On-Chain Activity Table */}
-                <Suspense fallback={<LoadingSkeleton lines={8} />}>
-                  <ActivityTable events={events} />
-                </Suspense>
+                <ActivityTable events={events} />
               </>
             )}
           </main>

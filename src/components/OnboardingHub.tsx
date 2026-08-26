@@ -3,7 +3,7 @@ import { Users, Wallet, ArrowRight, ExternalLink, CheckCircle2, ClipboardCopy, S
 import { analytics } from '../services/analytics';
 
 const GOOGLE_FORM_URL = 'https://docs.google.com/spreadsheets/d/1rwjibmRmoN6Qp0fkED-tAXiDno5CZB-bnLlBET3puHg/edit?usp=sharing';
-const GOOGLE_FORM_EMBED_URL = 'https://docs.google.com/spreadsheets/d/1rwjibmRmoN6Qp0fkED-tAXiDno5CZB-bnLlBET3puHg/edit?usp=sharing';
+const GOOGLE_FORM_EMBED_URL = 'https://docs.google.com/spreadsheets/d/1rwjibmRmoN6Qp0fkED-tAXiDno5CZB-bnLlBET3puHg/pubhtml?widget=true&headers=false';
 
 interface OnboardingHubProps {
   onConnectWallet: () => void;
