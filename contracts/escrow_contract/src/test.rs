@@ -6,8 +6,13 @@ use soroban_sdk::{
     token, Address, Env, String,
 };
 
-fn create_mock_token<'a>(env: &Env, admin: &Address) -> (Address, token::Client<'a>, token::StellarAssetClient<'a>) {
-    let token_address = env.register_stellar_asset_contract_v2(admin.clone()).address();
+fn create_mock_token<'a>(
+    env: &Env,
+    admin: &Address,
+) -> (Address, token::Client<'a>, token::StellarAssetClient<'a>) {
+    let token_address = env
+        .register_stellar_asset_contract_v2(admin.clone())
+        .address();
     let client = token::Client::new(env, &token_address);
     let stellar_client = token::StellarAssetClient::new(env, &token_address);
     (token_address, client, stellar_client)
@@ -41,7 +46,15 @@ fn test_escrow_full_happy_path_with_token_transfers() {
     let desc = String::from_str(&env, "Web3 Security Audit Payment");
 
     // 2. Create Escrow
-    let escrow_id = client.create(&payer, &payee, &None, &token_address, &amount, &timeout, &desc);
+    let escrow_id = client.create(
+        &payer,
+        &payee,
+        &None,
+        &token_address,
+        &amount,
+        &timeout,
+        &desc,
+    );
     assert_eq!(escrow_id, 1);
 
     let record = client.get_escrow(&escrow_id);
@@ -96,7 +109,15 @@ fn test_multisig_2_of_3_arbiter_approval_release() {
     let timeout = 500u32;
     let desc = String::from_str(&env, "Cross-Border Invoice #412");
 
-    let escrow_id = client.create(&payer, &payee, &Some(arbiter.clone()), &token_address, &amount, &timeout, &desc);
+    let escrow_id = client.create(
+        &payer,
+        &payee,
+        &Some(arbiter.clone()),
+        &token_address,
+        &amount,
+        &timeout,
+        &desc,
+    );
     client.fund(&escrow_id);
 
     // Payee approves first (1 of 3 approvals)
@@ -139,7 +160,15 @@ fn test_dispute_and_arbiter_custom_split_resolution() {
     let timeout = 200u32;
     let desc = String::from_str(&env, "Freelance Dev Milestone");
 
-    let escrow_id = client.create(&payer, &payee, &Some(arbiter.clone()), &token_address, &amount, &timeout, &desc);
+    let escrow_id = client.create(
+        &payer,
+        &payee,
+        &Some(arbiter.clone()),
+        &token_address,
+        &amount,
+        &timeout,
+        &desc,
+    );
     client.fund(&escrow_id);
 
     // Payer raises dispute
@@ -178,7 +207,15 @@ fn test_timelocked_refund_flow() {
     client.initialize(&admin, &fee_recipient, &0u32);
 
     let timeout_ledger = 50u32;
-    let escrow_id = client.create(&payer, &payee, &None, &token_address, &300_0000000i128, &timeout_ledger, &String::from_str(&env, "Time-lock Test"));
+    let escrow_id = client.create(
+        &payer,
+        &payee,
+        &None,
+        &token_address,
+        &300_0000000i128,
+        &timeout_ledger,
+        &String::from_str(&env, "Time-lock Test"),
+    );
     client.fund(&escrow_id);
 
     // Advance ledger past timeout
@@ -213,9 +250,33 @@ fn test_user_index_and_scaling() {
     let client = EscrowContractClient::new(&env, &contract_id);
     client.initialize(&admin, &fee_recipient, &10u32);
 
-    let id1 = client.create(&payer, &payee1, &None, &token_address, &100_0000000i128, &100u32, &String::from_str(&env, "Contract 1"));
-    let id2 = client.create(&payer, &payee2, &None, &token_address, &200_0000000i128, &100u32, &String::from_str(&env, "Contract 2"));
-    let id3 = client.create(&payer, &payee1, &None, &token_address, &300_0000000i128, &100u32, &String::from_str(&env, "Contract 3"));
+    let id1 = client.create(
+        &payer,
+        &payee1,
+        &None,
+        &token_address,
+        &100_0000000i128,
+        &100u32,
+        &String::from_str(&env, "Contract 1"),
+    );
+    let id2 = client.create(
+        &payer,
+        &payee2,
+        &None,
+        &token_address,
+        &200_0000000i128,
+        &100u32,
+        &String::from_str(&env, "Contract 2"),
+    );
+    let id3 = client.create(
+        &payer,
+        &payee1,
+        &None,
+        &token_address,
+        &300_0000000i128,
+        &100u32,
+        &String::from_str(&env, "Contract 3"),
+    );
 
     assert_eq!(id1, 1);
     assert_eq!(id2, 2);
@@ -247,7 +308,15 @@ fn test_create_zero_amount_fails() {
     let contract_id = env.register(EscrowContract, ());
     let client = EscrowContractClient::new(&env, &contract_id);
 
-    client.create(&payer, &payee, &None, &token, &0i128, &100u32, &String::from_str(&env, "Invalid"));
+    client.create(
+        &payer,
+        &payee,
+        &None,
+        &token,
+        &0i128,
+        &100u32,
+        &String::from_str(&env, "Invalid"),
+    );
 }
 
 #[test]
@@ -269,7 +338,15 @@ fn test_refund_before_timeout_fails() {
     let client = EscrowContractClient::new(&env, &contract_id);
     client.initialize(&admin, &fee_recipient, &0u32);
 
-    let escrow_id = client.create(&payer, &payee, &None, &token_address, &100_0000000i128, &500u32, &String::from_str(&env, "Early Refund"));
+    let escrow_id = client.create(
+        &payer,
+        &payee,
+        &None,
+        &token_address,
+        &100_0000000i128,
+        &500u32,
+        &String::from_str(&env, "Early Refund"),
+    );
     client.fund(&escrow_id);
 
     // Ledger sequence is 0, timeout is 500 — refund must fail

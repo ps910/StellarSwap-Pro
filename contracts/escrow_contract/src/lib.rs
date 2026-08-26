@@ -1,7 +1,7 @@
 #![no_std]
 use soroban_sdk::{
-    contract, contracterror, contractimpl, contracttype, symbol_short,
-    token, Address, Env, String, Vec,
+    contract, contracterror, contractimpl, contracttype, symbol_short, token, Address, Env, String,
+    Vec,
 };
 
 #[contracterror]
@@ -75,7 +75,7 @@ pub enum DataKey {
 }
 
 const DEFAULT_EXTEND_TTL_THRESHOLD: u32 = 17_280; // ~1 day in ledgers (5s/ledger)
-const DEFAULT_EXTEND_TTL_AMOUNT: u32 = 518_400;   // ~30 days in ledgers
+const DEFAULT_EXTEND_TTL_AMOUNT: u32 = 518_400; // ~30 days in ledgers
 
 #[contract]
 pub struct EscrowContract;
@@ -83,7 +83,12 @@ pub struct EscrowContract;
 #[contractimpl]
 impl EscrowContract {
     /// Initialize global configuration (Admin, Fee Recipient, Protocol Fee in Basis Points)
-    pub fn initialize(env: Env, admin: Address, fee_recipient: Address, fee_bps: u32) -> Result<(), Error> {
+    pub fn initialize(
+        env: Env,
+        admin: Address,
+        fee_recipient: Address,
+        fee_bps: u32,
+    ) -> Result<(), Error> {
         if env.storage().instance().has(&DataKey::Admin) {
             return Err(Error::AlreadyInitialized);
         }
@@ -95,15 +100,15 @@ impl EscrowContract {
         }
 
         env.storage().instance().set(&DataKey::Admin, &admin);
-        env.storage().instance().set(&DataKey::FeeRecipient, &fee_recipient);
+        env.storage()
+            .instance()
+            .set(&DataKey::FeeRecipient, &fee_recipient);
         env.storage().instance().set(&DataKey::FeeBps, &fee_bps);
         env.storage().instance().set(&DataKey::NextId, &1u64);
         env.storage().instance().set(&DataKey::TotalVolume, &0i128);
 
-        env.events().publish(
-            (symbol_short!("init"), admin),
-            (fee_recipient, fee_bps),
-        );
+        env.events()
+            .publish((symbol_short!("init"), admin), (fee_recipient, fee_bps));
 
         Ok(())
     }
@@ -130,17 +135,9 @@ impl EscrowContract {
             return Err(Error::InvalidTimeout);
         }
 
-        let next_id: u64 = env
-            .storage()
-            .instance()
-            .get(&DataKey::NextId)
-            .unwrap_or(1);
+        let next_id: u64 = env.storage().instance().get(&DataKey::NextId).unwrap_or(1);
 
-        let fee_bps: u32 = env
-            .storage()
-            .instance()
-            .get(&DataKey::FeeBps)
-            .unwrap_or(0);
+        let fee_bps: u32 = env.storage().instance().get(&DataKey::FeeBps).unwrap_or(0);
 
         let fee_amount = (amount * (fee_bps as i128)) / 10_000;
 
@@ -162,7 +159,9 @@ impl EscrowContract {
         };
 
         // Persistent storage for scalability + long TTL
-        env.storage().persistent().set(&DataKey::Escrow(next_id), &record);
+        env.storage()
+            .persistent()
+            .set(&DataKey::Escrow(next_id), &record);
         env.storage().persistent().extend_ttl(
             &DataKey::Escrow(next_id),
             DEFAULT_EXTEND_TTL_THRESHOLD,
@@ -176,7 +175,9 @@ impl EscrowContract {
             Self::add_to_user_index(&env, arb, next_id);
         }
 
-        env.storage().instance().set(&DataKey::NextId, &(next_id + 1));
+        env.storage()
+            .instance()
+            .set(&DataKey::NextId, &(next_id + 1));
 
         // Emit Create Event
         env.events().publish(
@@ -214,9 +215,13 @@ impl EscrowContract {
             .instance()
             .get(&DataKey::TotalVolume)
             .unwrap_or(0);
-        env.storage().instance().set(&DataKey::TotalVolume, &(current_volume + record.amount));
+        env.storage()
+            .instance()
+            .set(&DataKey::TotalVolume, &(current_volume + record.amount));
 
-        env.storage().persistent().set(&DataKey::Escrow(escrow_id), &record);
+        env.storage()
+            .persistent()
+            .set(&DataKey::Escrow(escrow_id), &record);
         env.storage().persistent().extend_ttl(
             &DataKey::Escrow(escrow_id),
             DEFAULT_EXTEND_TTL_THRESHOLD,
@@ -225,7 +230,11 @@ impl EscrowContract {
 
         // Emit Fund Event
         env.events().publish(
-            (symbol_short!("fund"), record.payer.clone(), record.token.clone()),
+            (
+                symbol_short!("fund"),
+                record.payer.clone(),
+                record.token.clone(),
+            ),
             (escrow_id, record.amount),
         );
 
@@ -283,15 +292,23 @@ impl EscrowContract {
 
         if should_release && record.state == EscrowState::Funded {
             Self::execute_release(&env, &mut record)?;
-            env.storage().persistent().set(&DataKey::Escrow(escrow_id), &record);
+            env.storage()
+                .persistent()
+                .set(&DataKey::Escrow(escrow_id), &record);
             return Ok(true);
         }
 
-        env.storage().persistent().set(&DataKey::Escrow(escrow_id), &record);
+        env.storage()
+            .persistent()
+            .set(&DataKey::Escrow(escrow_id), &record);
 
         env.events().publish(
             (symbol_short!("approve"), caller, escrow_id),
-            (record.payer_approved, record.payee_approved, record.arbiter_approved),
+            (
+                record.payer_approved,
+                record.payee_approved,
+                record.arbiter_approved,
+            ),
         );
 
         Ok(false)
@@ -319,7 +336,9 @@ impl EscrowContract {
         }
 
         Self::execute_release(&env, &mut record)?;
-        env.storage().persistent().set(&DataKey::Escrow(escrow_id), &record);
+        env.storage()
+            .persistent()
+            .set(&DataKey::Escrow(escrow_id), &record);
 
         Ok(())
     }
@@ -356,7 +375,9 @@ impl EscrowContract {
         token_client.transfer(&contract_address, &record.payer, &record.amount);
 
         record.state = EscrowState::Refunded;
-        env.storage().persistent().set(&DataKey::Escrow(escrow_id), &record);
+        env.storage()
+            .persistent()
+            .set(&DataKey::Escrow(escrow_id), &record);
 
         // Emit Refund Event
         env.events().publish(
@@ -391,7 +412,9 @@ impl EscrowContract {
         }
 
         record.state = EscrowState::Disputed;
-        env.storage().persistent().set(&DataKey::Escrow(escrow_id), &record);
+        env.storage()
+            .persistent()
+            .set(&DataKey::Escrow(escrow_id), &record);
 
         env.events().publish(
             (symbol_short!("dispute"), caller),
@@ -444,7 +467,9 @@ impl EscrowContract {
         }
 
         record.state = EscrowState::Resolved;
-        env.storage().persistent().set(&DataKey::Escrow(escrow_id), &record);
+        env.storage()
+            .persistent()
+            .set(&DataKey::Escrow(escrow_id), &record);
 
         env.events().publish(
             (symbol_short!("resolved"), arbiter, escrow_id),
@@ -488,11 +513,7 @@ impl EscrowContract {
             .instance()
             .get(&DataKey::TotalVolume)
             .unwrap_or(0);
-        let fee_bps = env
-            .storage()
-            .instance()
-            .get(&DataKey::FeeBps)
-            .unwrap_or(0);
+        let fee_bps = env.storage().instance().get(&DataKey::FeeBps).unwrap_or(0);
         let fee_recipient = env
             .storage()
             .instance()
@@ -508,7 +529,12 @@ impl EscrowContract {
     }
 
     /// Admin update protocol fee parameters
-    pub fn set_fee(env: Env, admin: Address, new_fee_bps: u32, new_fee_recipient: Address) -> Result<(), Error> {
+    pub fn set_fee(
+        env: Env,
+        admin: Address,
+        new_fee_bps: u32,
+        new_fee_recipient: Address,
+    ) -> Result<(), Error> {
         admin.require_auth();
 
         let stored_admin: Address = env
@@ -526,7 +552,9 @@ impl EscrowContract {
         }
 
         env.storage().instance().set(&DataKey::FeeBps, &new_fee_bps);
-        env.storage().instance().set(&DataKey::FeeRecipient, &new_fee_recipient);
+        env.storage()
+            .instance()
+            .set(&DataKey::FeeRecipient, &new_fee_recipient);
 
         Ok(())
     }
@@ -569,7 +597,9 @@ impl EscrowContract {
             .unwrap_or_else(|| Vec::new(env));
 
         list.push_back(escrow_id);
-        env.storage().persistent().set(&DataKey::UserEscrows(user.clone()), &list);
+        env.storage()
+            .persistent()
+            .set(&DataKey::UserEscrows(user.clone()), &list);
         env.storage().persistent().extend_ttl(
             &DataKey::UserEscrows(user.clone()),
             DEFAULT_EXTEND_TTL_THRESHOLD,

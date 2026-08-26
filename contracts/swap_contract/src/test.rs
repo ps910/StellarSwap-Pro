@@ -1,13 +1,15 @@
 #![cfg(test)]
 
 use super::*;
-use soroban_sdk::{
-    testutils::Address as _,
-    token, Address, Env,
-};
+use soroban_sdk::{testutils::Address as _, token, Address, Env};
 
-fn create_mock_token<'a>(env: &Env, admin: &Address) -> (Address, token::Client<'a>, token::StellarAssetClient<'a>) {
-    let token_address = env.register_stellar_asset_contract_v2(admin.clone()).address();
+fn create_mock_token<'a>(
+    env: &Env,
+    admin: &Address,
+) -> (Address, token::Client<'a>, token::StellarAssetClient<'a>) {
+    let token_address = env
+        .register_stellar_asset_contract_v2(admin.clone())
+        .address();
     let client = token::Client::new(env, &token_address);
     let stellar_client = token::StellarAssetClient::new(env, &token_address);
     (token_address, client, stellar_client)
@@ -28,8 +30,8 @@ fn test_amm_deposit_swap_withdraw_flow() {
 
     // Mint tokens to provider and trader
     admin_a.mint(&provider, &100_000_0000000i128); // 100,000 XLM
-    admin_b.mint(&provider, &10_000_0000000i128);  // 10,000 USDC
-    admin_a.mint(&trader, &1_000_0000000i128);     // 1,000 XLM
+    admin_b.mint(&provider, &10_000_0000000i128); // 10,000 USDC
+    admin_a.mint(&trader, &1_000_0000000i128); // 1,000 XLM
 
     let contract_id = env.register(SwapContract, ());
     let client = SwapContractClient::new(&env, &contract_id);

@@ -1,7 +1,6 @@
 #![no_std]
 use soroban_sdk::{
-    contract, contracterror, contractimpl, contracttype, symbol_short,
-    token, Address, Env,
+    contract, contracterror, contractimpl, contracttype, symbol_short, token, Address, Env,
 };
 
 #[contracterror]
@@ -34,7 +33,7 @@ pub enum DataKey {
 }
 
 const DEFAULT_EXTEND_TTL_THRESHOLD: u32 = 17_280; // ~1 day
-const DEFAULT_EXTEND_TTL_AMOUNT: u32 = 518_400;   // ~30 days
+const DEFAULT_EXTEND_TTL_AMOUNT: u32 = 518_400; // ~30 days
 
 #[contract]
 pub struct SwapContract;
@@ -71,10 +70,8 @@ impl SwapContract {
         env.storage().instance().set(&DataKey::FeeBps, &fee_bps);
         env.storage().instance().set(&DataKey::IsPaused, &false);
 
-        env.events().publish(
-            (symbol_short!("init"), admin),
-            (token_a, token_b, fee_bps),
-        );
+        env.events()
+            .publish((symbol_short!("init"), admin), (token_a, token_b, fee_bps));
 
         Ok(())
     }
@@ -94,10 +91,26 @@ impl SwapContract {
             return Err(Error::InvalidAmount);
         }
 
-        let token_a: Address = env.storage().instance().get(&DataKey::TokenA).ok_or(Error::NotInitialized)?;
-        let token_b: Address = env.storage().instance().get(&DataKey::TokenB).ok_or(Error::NotInitialized)?;
-        let reserve_a: i128 = env.storage().instance().get(&DataKey::ReserveA).unwrap_or(0);
-        let reserve_b: i128 = env.storage().instance().get(&DataKey::ReserveB).unwrap_or(0);
+        let token_a: Address = env
+            .storage()
+            .instance()
+            .get(&DataKey::TokenA)
+            .ok_or(Error::NotInitialized)?;
+        let token_b: Address = env
+            .storage()
+            .instance()
+            .get(&DataKey::TokenB)
+            .ok_or(Error::NotInitialized)?;
+        let reserve_a: i128 = env
+            .storage()
+            .instance()
+            .get(&DataKey::ReserveA)
+            .unwrap_or(0);
+        let reserve_b: i128 = env
+            .storage()
+            .instance()
+            .get(&DataKey::ReserveB)
+            .unwrap_or(0);
         let total_lp: i128 = env.storage().instance().get(&DataKey::TotalLp).unwrap_or(0);
 
         let lp_to_mint: i128 = if total_lp == 0 || reserve_a == 0 || reserve_b == 0 {
@@ -107,7 +120,11 @@ impl SwapContract {
             // Proportional share: min(amount_a * total_lp / reserve_a, amount_b * total_lp / reserve_b)
             let lp_a = (amount_a * total_lp) / reserve_a;
             let lp_b = (amount_b * total_lp) / reserve_b;
-            if lp_a < lp_b { lp_a } else { lp_b }
+            if lp_a < lp_b {
+                lp_a
+            } else {
+                lp_b
+            }
         };
 
         if lp_to_mint < min_lp || lp_to_mint <= 0 {
@@ -124,16 +141,25 @@ impl SwapContract {
         let new_reserve_b = reserve_b + amount_b;
         let new_total_lp = total_lp + lp_to_mint;
 
-        env.storage().instance().set(&DataKey::ReserveA, &new_reserve_a);
-        env.storage().instance().set(&DataKey::ReserveB, &new_reserve_b);
-        env.storage().instance().set(&DataKey::TotalLp, &new_total_lp);
+        env.storage()
+            .instance()
+            .set(&DataKey::ReserveA, &new_reserve_a);
+        env.storage()
+            .instance()
+            .set(&DataKey::ReserveB, &new_reserve_b);
+        env.storage()
+            .instance()
+            .set(&DataKey::TotalLp, &new_total_lp);
 
         let provider_lp: i128 = env
             .storage()
             .persistent()
             .get(&DataKey::LpBalance(provider.clone()))
             .unwrap_or(0);
-        env.storage().persistent().set(&DataKey::LpBalance(provider.clone()), &(provider_lp + lp_to_mint));
+        env.storage().persistent().set(
+            &DataKey::LpBalance(provider.clone()),
+            &(provider_lp + lp_to_mint),
+        );
         env.storage().persistent().extend_ttl(
             &DataKey::LpBalance(provider.clone()),
             DEFAULT_EXTEND_TTL_THRESHOLD,
@@ -173,10 +199,26 @@ impl SwapContract {
             return Err(Error::InsufficientLpBalance);
         }
 
-        let token_a: Address = env.storage().instance().get(&DataKey::TokenA).ok_or(Error::NotInitialized)?;
-        let token_b: Address = env.storage().instance().get(&DataKey::TokenB).ok_or(Error::NotInitialized)?;
-        let reserve_a: i128 = env.storage().instance().get(&DataKey::ReserveA).unwrap_or(0);
-        let reserve_b: i128 = env.storage().instance().get(&DataKey::ReserveB).unwrap_or(0);
+        let token_a: Address = env
+            .storage()
+            .instance()
+            .get(&DataKey::TokenA)
+            .ok_or(Error::NotInitialized)?;
+        let token_b: Address = env
+            .storage()
+            .instance()
+            .get(&DataKey::TokenB)
+            .ok_or(Error::NotInitialized)?;
+        let reserve_a: i128 = env
+            .storage()
+            .instance()
+            .get(&DataKey::ReserveA)
+            .unwrap_or(0);
+        let reserve_b: i128 = env
+            .storage()
+            .instance()
+            .get(&DataKey::ReserveB)
+            .unwrap_or(0);
         let total_lp: i128 = env.storage().instance().get(&DataKey::TotalLp).unwrap_or(0);
 
         if total_lp <= 0 {
@@ -200,10 +242,19 @@ impl SwapContract {
         let new_reserve_b = reserve_b - amount_b;
         let new_total_lp = total_lp - lp_amount;
 
-        env.storage().instance().set(&DataKey::ReserveA, &new_reserve_a);
-        env.storage().instance().set(&DataKey::ReserveB, &new_reserve_b);
-        env.storage().instance().set(&DataKey::TotalLp, &new_total_lp);
-        env.storage().persistent().set(&DataKey::LpBalance(provider.clone()), &(provider_lp - lp_amount));
+        env.storage()
+            .instance()
+            .set(&DataKey::ReserveA, &new_reserve_a);
+        env.storage()
+            .instance()
+            .set(&DataKey::ReserveB, &new_reserve_b);
+        env.storage()
+            .instance()
+            .set(&DataKey::TotalLp, &new_total_lp);
+        env.storage().persistent().set(
+            &DataKey::LpBalance(provider.clone()),
+            &(provider_lp - lp_amount),
+        );
 
         env.events().publish(
             (symbol_short!("withdraw"), provider),
@@ -228,10 +279,26 @@ impl SwapContract {
             return Err(Error::InvalidAmount);
         }
 
-        let token_a: Address = env.storage().instance().get(&DataKey::TokenA).ok_or(Error::NotInitialized)?;
-        let token_b: Address = env.storage().instance().get(&DataKey::TokenB).ok_or(Error::NotInitialized)?;
-        let reserve_a: i128 = env.storage().instance().get(&DataKey::ReserveA).unwrap_or(0);
-        let reserve_b: i128 = env.storage().instance().get(&DataKey::ReserveB).unwrap_or(0);
+        let token_a: Address = env
+            .storage()
+            .instance()
+            .get(&DataKey::TokenA)
+            .ok_or(Error::NotInitialized)?;
+        let token_b: Address = env
+            .storage()
+            .instance()
+            .get(&DataKey::TokenB)
+            .ok_or(Error::NotInitialized)?;
+        let reserve_a: i128 = env
+            .storage()
+            .instance()
+            .get(&DataKey::ReserveA)
+            .unwrap_or(0);
+        let reserve_b: i128 = env
+            .storage()
+            .instance()
+            .get(&DataKey::ReserveB)
+            .unwrap_or(0);
         let fee_bps: u32 = env.storage().instance().get(&DataKey::FeeBps).unwrap_or(30);
 
         let (is_a_in, reserve_in, reserve_out, token_out) = if token_in == token_a {
@@ -266,11 +333,19 @@ impl SwapContract {
 
         // Update reserves
         if is_a_in {
-            env.storage().instance().set(&DataKey::ReserveA, &(reserve_a + amount_in));
-            env.storage().instance().set(&DataKey::ReserveB, &(reserve_b - amount_out));
+            env.storage()
+                .instance()
+                .set(&DataKey::ReserveA, &(reserve_a + amount_in));
+            env.storage()
+                .instance()
+                .set(&DataKey::ReserveB, &(reserve_b - amount_out));
         } else {
-            env.storage().instance().set(&DataKey::ReserveA, &(reserve_a - amount_out));
-            env.storage().instance().set(&DataKey::ReserveB, &(reserve_b + amount_in));
+            env.storage()
+                .instance()
+                .set(&DataKey::ReserveA, &(reserve_a - amount_out));
+            env.storage()
+                .instance()
+                .set(&DataKey::ReserveB, &(reserve_b + amount_in));
         }
 
         env.events().publish(
@@ -283,10 +358,26 @@ impl SwapContract {
 
     /// Query estimated swap output given input amount
     pub fn get_rate(env: Env, token_in: Address, amount_in: i128) -> Result<i128, Error> {
-        let token_a: Address = env.storage().instance().get(&DataKey::TokenA).ok_or(Error::NotInitialized)?;
-        let token_b: Address = env.storage().instance().get(&DataKey::TokenB).ok_or(Error::NotInitialized)?;
-        let reserve_a: i128 = env.storage().instance().get(&DataKey::ReserveA).unwrap_or(0);
-        let reserve_b: i128 = env.storage().instance().get(&DataKey::ReserveB).unwrap_or(0);
+        let token_a: Address = env
+            .storage()
+            .instance()
+            .get(&DataKey::TokenA)
+            .ok_or(Error::NotInitialized)?;
+        let token_b: Address = env
+            .storage()
+            .instance()
+            .get(&DataKey::TokenB)
+            .ok_or(Error::NotInitialized)?;
+        let reserve_a: i128 = env
+            .storage()
+            .instance()
+            .get(&DataKey::ReserveA)
+            .unwrap_or(0);
+        let reserve_b: i128 = env
+            .storage()
+            .instance()
+            .get(&DataKey::ReserveB)
+            .unwrap_or(0);
         let fee_bps: u32 = env.storage().instance().get(&DataKey::FeeBps).unwrap_or(30);
 
         let (reserve_in, reserve_out) = if token_in == token_a {
@@ -310,8 +401,16 @@ impl SwapContract {
 
     /// Query current pool reserves and total LP supply
     pub fn get_reserves(env: Env) -> Result<(i128, i128, i128), Error> {
-        let reserve_a: i128 = env.storage().instance().get(&DataKey::ReserveA).unwrap_or(0);
-        let reserve_b: i128 = env.storage().instance().get(&DataKey::ReserveB).unwrap_or(0);
+        let reserve_a: i128 = env
+            .storage()
+            .instance()
+            .get(&DataKey::ReserveA)
+            .unwrap_or(0);
+        let reserve_b: i128 = env
+            .storage()
+            .instance()
+            .get(&DataKey::ReserveB)
+            .unwrap_or(0);
         let total_lp: i128 = env.storage().instance().get(&DataKey::TotalLp).unwrap_or(0);
         Ok((reserve_a, reserve_b, total_lp))
     }
@@ -327,7 +426,11 @@ impl SwapContract {
     /// Admin toggle emergency pause
     pub fn set_paused(env: Env, admin: Address, paused: bool) -> Result<(), Error> {
         admin.require_auth();
-        let stored_admin: Address = env.storage().instance().get(&DataKey::Admin).ok_or(Error::NotInitialized)?;
+        let stored_admin: Address = env
+            .storage()
+            .instance()
+            .get(&DataKey::Admin)
+            .ok_or(Error::NotInitialized)?;
         if stored_admin != admin {
             return Err(Error::Unauthorized);
         }
@@ -338,7 +441,11 @@ impl SwapContract {
     // ── Internal Helpers ──
 
     fn check_not_paused(env: &Env) -> Result<(), Error> {
-        let is_paused: bool = env.storage().instance().get(&DataKey::IsPaused).unwrap_or(false);
+        let is_paused: bool = env
+            .storage()
+            .instance()
+            .get(&DataKey::IsPaused)
+            .unwrap_or(false);
         if is_paused {
             return Err(Error::ContractPaused);
         }
