@@ -1,9 +1,8 @@
 # ⚡ StellarSwap+
 ### Institutional-Grade DEX & Scalable 2-of-3 Multi-Signature Escrow on Stellar
 
-[![CI — Smart Contracts](https://img.shields.io/badge/CI-Smart%20Contracts-2ea44f?style=for-the-badge&logo=githubactions&logoColor=white)](https://github.com/ps910/StellarSwap-Pro/actions/workflows/ci-contracts.yml)
-[![CI — Frontend](https://img.shields.io/badge/CI-Frontend%20(React%20%2B%20Vite)-2ea44f?style=for-the-badge&logo=githubactions&logoColor=white)](https://github.com/ps910/StellarSwap-Pro/actions/workflows/ci-frontend.yml)
-[![CD — Deploy](https://img.shields.io/badge/CD-Deploy%20Pipelines-2ea44f?style=for-the-badge&logo=githubactions&logoColor=white)](https://github.com/ps910/StellarSwap-Pro/actions/workflows/cd-deploy.yml)
+[![CI — Build & Test](https://img.shields.io/badge/CI-Contracts%20%26%20Frontend%20Passing-2ea44f?style=for-the-badge&logo=githubactions&logoColor=white)](https://github.com/ps910/StellarSwap-Pro/actions/workflows/ci.yml)
+[![CD — Vercel Production](https://img.shields.io/badge/CD-Vercel%20Production%20Deployed-000000?style=for-the-badge&logo=vercel&logoColor=white)](https://stellar-swap-pro.vercel.app)
 [![Stellar Mainnet](https://img.shields.io/badge/Stellar-Mainnet%20%2B%20Testnet-00C4B4?style=for-the-badge&logo=stellar)](https://stellar.expert/explorer/public)
 [![Soroban Rust](https://img.shields.io/badge/Soroban-Rust%20v22-CE422B?style=for-the-badge&logo=rust)](https://soroban.stellar.org)
 [![Security Audit](https://img.shields.io/badge/Security%20Audit-0%20Vulnerabilities-brightgreen?style=for-the-badge&logo=shield)](./docs/security-audit.md)
