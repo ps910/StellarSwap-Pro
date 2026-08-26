@@ -1,157 +1,364 @@
 #![no_std]
-use soroban_sdk::{contract, contractimpl, contracttype, symbol_short, Address, Env, Symbol};
+use soroban_sdk::{
+    contract, contracterror, contractimpl, contracttype, symbol_short,
+    token, Address, Env,
+};
+
+#[contracterror]
+#[derive(Copy, Clone, Debug, Eq, PartialEq, PartialOrd, Ord)]
+#[repr(u32)]
+pub enum Error {
+    AlreadyInitialized = 1,
+    NotInitialized = 2,
+    InvalidAmount = 3,
+    InvalidToken = 4,
+    InsufficientLiquidity = 5,
+    SlippageExceeded = 6,
+    Unauthorized = 7,
+    ContractPaused = 8,
+    InsufficientLpBalance = 9,
+}
 
 #[contracttype]
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum DataKey {
     Admin,
+    TokenA,
+    TokenB,
+    ReserveA,
+    ReserveB,
+    TotalLp,
     FeeBps,
-    Reserve(Symbol),
+    IsPaused,
+    LpBalance(Address),
 }
+
+const DEFAULT_EXTEND_TTL_THRESHOLD: u32 = 17_280; // ~1 day
+const DEFAULT_EXTEND_TTL_AMOUNT: u32 = 518_400;   // ~30 days
 
 #[contract]
 pub struct SwapContract;
 
 #[contractimpl]
 impl SwapContract {
-    /// Initialize DEX Liquidity Pool contract
-    pub fn initialize(env: Env, admin: Address, fee_bps: u32) {
+    /// Initialize AMM Liquidity Pool contract with token pair and swap fee in basis points
+    pub fn initialize(
+        env: Env,
+        admin: Address,
+        token_a: Address,
+        token_b: Address,
+        fee_bps: u32,
+    ) -> Result<(), Error> {
         if env.storage().instance().has(&DataKey::Admin) {
-            panic!("Already initialized");
+            return Err(Error::AlreadyInitialized);
         }
         admin.require_auth();
-        env.storage().instance().set(&DataKey::Admin, &admin);
-        env.storage().instance().set(&DataKey::FeeBps, &fee_bps);
 
-        // Initialize default token reserves
-        let xlm = symbol_short!("XLM");
-        let usdc = symbol_short!("USDC");
-        env.storage().instance().set(&DataKey::Reserve(xlm.clone()), &100_000_0000000i128); // 100,000 XLM
-        env.storage().instance().set(&DataKey::Reserve(usdc.clone()), &10_000_0000000i128); // 10,000 USDC
-
-        // Emit Initialization Event
-        env.events().publish((symbol_short!("init"), admin), fee_bps);
-    }
-
-    /// Deposit liquidity into token reserve
-    pub fn deposit(env: Env, from: Address, token: Symbol, amount: i128) -> i128 {
-        from.require_auth();
-        if amount <= 0 {
-            panic!("Deposit amount must be positive");
+        if token_a == token_b {
+            return Err(Error::InvalidToken);
+        }
+        if fee_bps > 500 {
+            // Maximum 5% fee
+            return Err(Error::InvalidAmount);
         }
 
-        let current_reserve: i128 = env
-            .storage()
-            .instance()
-            .get(&DataKey::Reserve(token.clone()))
-            .unwrap_or(0);
+        env.storage().instance().set(&DataKey::Admin, &admin);
+        env.storage().instance().set(&DataKey::TokenA, &token_a);
+        env.storage().instance().set(&DataKey::TokenB, &token_b);
+        env.storage().instance().set(&DataKey::ReserveA, &0i128);
+        env.storage().instance().set(&DataKey::ReserveB, &0i128);
+        env.storage().instance().set(&DataKey::TotalLp, &0i128);
+        env.storage().instance().set(&DataKey::FeeBps, &fee_bps);
+        env.storage().instance().set(&DataKey::IsPaused, &false);
 
-        let new_reserve = current_reserve + amount;
-        env.storage().instance().set(&DataKey::Reserve(token.clone()), &new_reserve);
-
-        // Emit deposit event: topics (symbol_short!("deposit"), from, token), data: (amount, new_reserve)
         env.events().publish(
-            (symbol_short!("deposit"), from.clone(), token),
-            (amount, new_reserve),
+            (symbol_short!("init"), admin),
+            (token_a, token_b, fee_bps),
         );
 
-        new_reserve
+        Ok(())
     }
 
-    /// Execute token swap
+    /// Deposit liquidity (Token A + Token B) and mint proportional LP shares
+    pub fn deposit(
+        env: Env,
+        provider: Address,
+        amount_a: i128,
+        amount_b: i128,
+        min_lp: i128,
+    ) -> Result<i128, Error> {
+        Self::check_not_paused(&env)?;
+        provider.require_auth();
+
+        if amount_a <= 0 || amount_b <= 0 {
+            return Err(Error::InvalidAmount);
+        }
+
+        let token_a: Address = env.storage().instance().get(&DataKey::TokenA).ok_or(Error::NotInitialized)?;
+        let token_b: Address = env.storage().instance().get(&DataKey::TokenB).ok_or(Error::NotInitialized)?;
+        let reserve_a: i128 = env.storage().instance().get(&DataKey::ReserveA).unwrap_or(0);
+        let reserve_b: i128 = env.storage().instance().get(&DataKey::ReserveB).unwrap_or(0);
+        let total_lp: i128 = env.storage().instance().get(&DataKey::TotalLp).unwrap_or(0);
+
+        let lp_to_mint: i128 = if total_lp == 0 || reserve_a == 0 || reserve_b == 0 {
+            // Initial liquidity: geometric mean approximation via integer sqrt
+            Self::integer_sqrt(amount_a * amount_b)
+        } else {
+            // Proportional share: min(amount_a * total_lp / reserve_a, amount_b * total_lp / reserve_b)
+            let lp_a = (amount_a * total_lp) / reserve_a;
+            let lp_b = (amount_b * total_lp) / reserve_b;
+            if lp_a < lp_b { lp_a } else { lp_b }
+        };
+
+        if lp_to_mint < min_lp || lp_to_mint <= 0 {
+            return Err(Error::SlippageExceeded);
+        }
+
+        // Real SAC Token Transfers from Provider to Pool Contract
+        let contract_address = env.current_contract_address();
+        token::Client::new(&env, &token_a).transfer(&provider, &contract_address, &amount_a);
+        token::Client::new(&env, &token_b).transfer(&provider, &contract_address, &amount_b);
+
+        // Update reserves and LP accounting
+        let new_reserve_a = reserve_a + amount_a;
+        let new_reserve_b = reserve_b + amount_b;
+        let new_total_lp = total_lp + lp_to_mint;
+
+        env.storage().instance().set(&DataKey::ReserveA, &new_reserve_a);
+        env.storage().instance().set(&DataKey::ReserveB, &new_reserve_b);
+        env.storage().instance().set(&DataKey::TotalLp, &new_total_lp);
+
+        let provider_lp: i128 = env
+            .storage()
+            .persistent()
+            .get(&DataKey::LpBalance(provider.clone()))
+            .unwrap_or(0);
+        env.storage().persistent().set(&DataKey::LpBalance(provider.clone()), &(provider_lp + lp_to_mint));
+        env.storage().persistent().extend_ttl(
+            &DataKey::LpBalance(provider.clone()),
+            DEFAULT_EXTEND_TTL_THRESHOLD,
+            DEFAULT_EXTEND_TTL_AMOUNT,
+        );
+
+        env.events().publish(
+            (symbol_short!("deposit"), provider),
+            (amount_a, amount_b, lp_to_mint),
+        );
+
+        Ok(lp_to_mint)
+    }
+
+    /// Withdraw liquidity by burning LP shares and receiving proportional Token A + Token B
+    pub fn withdraw(
+        env: Env,
+        provider: Address,
+        lp_amount: i128,
+        min_a: i128,
+        min_b: i128,
+    ) -> Result<(i128, i128), Error> {
+        Self::check_not_paused(&env)?;
+        provider.require_auth();
+
+        if lp_amount <= 0 {
+            return Err(Error::InvalidAmount);
+        }
+
+        let provider_lp: i128 = env
+            .storage()
+            .persistent()
+            .get(&DataKey::LpBalance(provider.clone()))
+            .unwrap_or(0);
+
+        if provider_lp < lp_amount {
+            return Err(Error::InsufficientLpBalance);
+        }
+
+        let token_a: Address = env.storage().instance().get(&DataKey::TokenA).ok_or(Error::NotInitialized)?;
+        let token_b: Address = env.storage().instance().get(&DataKey::TokenB).ok_or(Error::NotInitialized)?;
+        let reserve_a: i128 = env.storage().instance().get(&DataKey::ReserveA).unwrap_or(0);
+        let reserve_b: i128 = env.storage().instance().get(&DataKey::ReserveB).unwrap_or(0);
+        let total_lp: i128 = env.storage().instance().get(&DataKey::TotalLp).unwrap_or(0);
+
+        if total_lp <= 0 {
+            return Err(Error::InsufficientLiquidity);
+        }
+
+        let amount_a = (lp_amount * reserve_a) / total_lp;
+        let amount_b = (lp_amount * reserve_b) / total_lp;
+
+        if amount_a < min_a || amount_b < min_b {
+            return Err(Error::SlippageExceeded);
+        }
+
+        // Real SAC Token Transfers from Contract to Provider
+        let contract_address = env.current_contract_address();
+        token::Client::new(&env, &token_a).transfer(&contract_address, &provider, &amount_a);
+        token::Client::new(&env, &token_b).transfer(&contract_address, &provider, &amount_b);
+
+        // Update reserves and LP balances
+        let new_reserve_a = reserve_a - amount_a;
+        let new_reserve_b = reserve_b - amount_b;
+        let new_total_lp = total_lp - lp_amount;
+
+        env.storage().instance().set(&DataKey::ReserveA, &new_reserve_a);
+        env.storage().instance().set(&DataKey::ReserveB, &new_reserve_b);
+        env.storage().instance().set(&DataKey::TotalLp, &new_total_lp);
+        env.storage().persistent().set(&DataKey::LpBalance(provider.clone()), &(provider_lp - lp_amount));
+
+        env.events().publish(
+            (symbol_short!("withdraw"), provider),
+            (amount_a, amount_b, lp_amount),
+        );
+
+        Ok((amount_a, amount_b))
+    }
+
+    /// Swap Token In for Token Out using Constant Product formula ($x \cdot y = k$)
     pub fn swap(
         env: Env,
         user: Address,
-        token_in: Symbol,
-        token_out: Symbol,
+        token_in: Address,
         amount_in: i128,
         min_amount_out: i128,
-    ) -> i128 {
+    ) -> Result<i128, Error> {
+        Self::check_not_paused(&env)?;
         user.require_auth();
 
         if amount_in <= 0 {
-            panic!("Amount in must be positive");
+            return Err(Error::InvalidAmount);
         }
 
-        let reserve_in: i128 = env
-            .storage()
-            .instance()
-            .get(&DataKey::Reserve(token_in.clone()))
-            .unwrap_or(0);
-        let reserve_out: i128 = env
-            .storage()
-            .instance()
-            .get(&DataKey::Reserve(token_out.clone()))
-            .unwrap_or(0);
+        let token_a: Address = env.storage().instance().get(&DataKey::TokenA).ok_or(Error::NotInitialized)?;
+        let token_b: Address = env.storage().instance().get(&DataKey::TokenB).ok_or(Error::NotInitialized)?;
+        let reserve_a: i128 = env.storage().instance().get(&DataKey::ReserveA).unwrap_or(0);
+        let reserve_b: i128 = env.storage().instance().get(&DataKey::ReserveB).unwrap_or(0);
+        let fee_bps: u32 = env.storage().instance().get(&DataKey::FeeBps).unwrap_or(30);
+
+        let (is_a_in, reserve_in, reserve_out, token_out) = if token_in == token_a {
+            (true, reserve_a, reserve_b, token_b.clone())
+        } else if token_in == token_b {
+            (false, reserve_b, reserve_a, token_a.clone())
+        } else {
+            return Err(Error::InvalidToken);
+        };
 
         if reserve_in <= 0 || reserve_out <= 0 {
-            panic!("Insufficient pool liquidity");
+            return Err(Error::InsufficientLiquidity);
         }
 
-        // Apply 0.3% fee (30 bps)
-        let fee_bps: u32 = env.storage().instance().get(&DataKey::FeeBps).unwrap_or(30);
-        let amount_in_with_fee = amount_in * (10000 - fee_bps as i128);
-        
-        // Constant product formula: dy = (y * dx_with_fee) / (x * 10000 + dx_with_fee)
-        let numerator = reserve_out * amount_in_with_fee;
-        let denominator = (reserve_in * 10000) + amount_in_with_fee;
+        // Constant Product Swap with Fee: dy = (reserve_out * dx * (10000 - fee)) / (reserve_in * 10000 + dx * (10000 - fee))
+        let effective_dx = amount_in * (10_000 - fee_bps as i128);
+        let numerator = reserve_out * effective_dx;
+        let denominator = (reserve_in * 10_000) + effective_dx;
         let amount_out = numerator / denominator;
 
         if amount_out < min_amount_out {
-            panic!("Slippage tolerance exceeded");
+            return Err(Error::SlippageExceeded);
+        }
+        if amount_out >= reserve_out {
+            return Err(Error::InsufficientLiquidity);
         }
 
-        if amount_out > reserve_out {
-            panic!("Insufficient reserve balance for payout");
-        }
+        // Execute Real SAC Token Transfers
+        let contract_address = env.current_contract_address();
+        token::Client::new(&env, &token_in).transfer(&user, &contract_address, &amount_in);
+        token::Client::new(&env, &token_out).transfer(&contract_address, &user, &amount_out);
 
         // Update reserves
-        let new_reserve_in = reserve_in + amount_in;
-        let new_reserve_out = reserve_out - amount_out;
+        if is_a_in {
+            env.storage().instance().set(&DataKey::ReserveA, &(reserve_a + amount_in));
+            env.storage().instance().set(&DataKey::ReserveB, &(reserve_b - amount_out));
+        } else {
+            env.storage().instance().set(&DataKey::ReserveA, &(reserve_a - amount_out));
+            env.storage().instance().set(&DataKey::ReserveB, &(reserve_b + amount_in));
+        }
 
-        env.storage().instance().set(&DataKey::Reserve(token_in.clone()), &new_reserve_in);
-        env.storage().instance().set(&DataKey::Reserve(token_out.clone()), &new_reserve_out);
-
-        // Publish Swap Soroban Event
         env.events().publish(
-            (symbol_short!("swap"), user.clone(), token_in, token_out),
-            (amount_in, amount_out, new_reserve_in, new_reserve_out),
+            (symbol_short!("swap"), user, token_in),
+            (amount_in, amount_out, token_out),
         );
 
-        amount_out
+        Ok(amount_out)
     }
 
-    /// Query current pool reserve for token
-    pub fn get_reserve(env: Env, token: Symbol) -> i128 {
+    /// Query estimated swap output given input amount
+    pub fn get_rate(env: Env, token_in: Address, amount_in: i128) -> Result<i128, Error> {
+        let token_a: Address = env.storage().instance().get(&DataKey::TokenA).ok_or(Error::NotInitialized)?;
+        let token_b: Address = env.storage().instance().get(&DataKey::TokenB).ok_or(Error::NotInitialized)?;
+        let reserve_a: i128 = env.storage().instance().get(&DataKey::ReserveA).unwrap_or(0);
+        let reserve_b: i128 = env.storage().instance().get(&DataKey::ReserveB).unwrap_or(0);
+        let fee_bps: u32 = env.storage().instance().get(&DataKey::FeeBps).unwrap_or(30);
+
+        let (reserve_in, reserve_out) = if token_in == token_a {
+            (reserve_a, reserve_b)
+        } else if token_in == token_b {
+            (reserve_b, reserve_a)
+        } else {
+            return Err(Error::InvalidToken);
+        };
+
+        if reserve_in <= 0 || reserve_out <= 0 || amount_in <= 0 {
+            return Ok(0);
+        }
+
+        let effective_dx = amount_in * (10_000 - fee_bps as i128);
+        let numerator = reserve_out * effective_dx;
+        let denominator = (reserve_in * 10_000) + effective_dx;
+
+        Ok(numerator / denominator)
+    }
+
+    /// Query current pool reserves and total LP supply
+    pub fn get_reserves(env: Env) -> Result<(i128, i128, i128), Error> {
+        let reserve_a: i128 = env.storage().instance().get(&DataKey::ReserveA).unwrap_or(0);
+        let reserve_b: i128 = env.storage().instance().get(&DataKey::ReserveB).unwrap_or(0);
+        let total_lp: i128 = env.storage().instance().get(&DataKey::TotalLp).unwrap_or(0);
+        Ok((reserve_a, reserve_b, total_lp))
+    }
+
+    /// Query provider LP share balance
+    pub fn get_lp_balance(env: Env, provider: Address) -> i128 {
         env.storage()
-            .instance()
-            .get(&DataKey::Reserve(token))
+            .persistent()
+            .get(&DataKey::LpBalance(provider))
             .unwrap_or(0)
     }
 
-    /// Query estimated output for swap
-    pub fn get_rate(env: Env, token_in: Symbol, token_out: Symbol, amount_in: i128) -> i128 {
-        let reserve_in: i128 = env
-            .storage()
-            .instance()
-            .get(&DataKey::Reserve(token_in))
-            .unwrap_or(0);
-        let reserve_out: i128 = env
-            .storage()
-            .instance()
-            .get(&DataKey::Reserve(token_out))
-            .unwrap_or(0);
+    /// Admin toggle emergency pause
+    pub fn set_paused(env: Env, admin: Address, paused: bool) -> Result<(), Error> {
+        admin.require_auth();
+        let stored_admin: Address = env.storage().instance().get(&DataKey::Admin).ok_or(Error::NotInitialized)?;
+        if stored_admin != admin {
+            return Err(Error::Unauthorized);
+        }
+        env.storage().instance().set(&DataKey::IsPaused, &paused);
+        Ok(())
+    }
 
-        if reserve_in == 0 || reserve_out == 0 || amount_in <= 0 {
+    // ── Internal Helpers ──
+
+    fn check_not_paused(env: &Env) -> Result<(), Error> {
+        let is_paused: bool = env.storage().instance().get(&DataKey::IsPaused).unwrap_or(false);
+        if is_paused {
+            return Err(Error::ContractPaused);
+        }
+        Ok(())
+    }
+
+    fn integer_sqrt(y: i128) -> i128 {
+        if y < 0 {
             return 0;
         }
-
-        let fee_bps: u32 = env.storage().instance().get(&DataKey::FeeBps).unwrap_or(30);
-        let amount_in_with_fee = amount_in * (10000 - fee_bps as i128);
-        let numerator = reserve_out * amount_in_with_fee;
-        let denominator = (reserve_in * 10000) + amount_in_with_fee;
-        
-        numerator / denominator
+        if y == 0 {
+            return 0;
+        }
+        let mut z = y;
+        let mut x = y / 2 + 1;
+        while x < z {
+            z = x;
+            x = (y / x + x) / 2;
+        }
+        z
     }
 }
 

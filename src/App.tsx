@@ -1,11 +1,30 @@
 import React, { useState, useEffect, Suspense, lazy } from 'react';
-import { WalletState, WalletType, AppError, TxStatus, ContractEvent, PoolReserves, EscrowItem, AppTab } from './types';
+import {
+  WalletState,
+  WalletType,
+  AppError,
+  TxStatus,
+  ContractEvent,
+  PoolReserves,
+  EscrowItem,
+  AppTab,
+  NetworkMode,
+} from './types';
 import { SUPPORTED_WALLETS, checkInstalledWallets, connectWallet, parseWalletError } from './services/wallet';
 import { fetchPoolReserves, executeContractSwap, executeContractDeposit } from './services/contract';
-import { INITIAL_ESCROWS, executeCreateEscrow, executeFundEscrow, executeReleaseEscrow, executeRefundEscrow } from './services/escrow';
+import {
+  INITIAL_ESCROWS,
+  executeCreateEscrow,
+  executeFundEscrow,
+  executeApproveEscrow,
+  executeReleaseEscrow,
+  executeRefundEscrow,
+  executeDisputeEscrow,
+  executeResolveDispute,
+} from './services/escrow';
 import { eventStreamService, INITIAL_EVENTS } from './services/events';
 import { analytics } from './services/analytics';
-import { STELLAR_CONFIG } from './config/stellar';
+import { STELLAR_CONFIG, NETWORKS } from './config/stellar';
 import { fetchAccountBalances, AccountBalancesData } from './services/accountBalances';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { LoadingSkeleton } from './components/LoadingSkeleton';
@@ -17,7 +36,7 @@ import { TransactionTracker } from './components/TransactionTracker';
 import { ErrorModal } from './components/ErrorModal';
 import { FeedbackModal } from './components/FeedbackModal';
 
-// Helper to handle dynamic chunk loading errors caused by fresh deployments / stale browser cache
+// Helper to handle dynamic chunk loading errors
 function lazyRetry<T extends React.ComponentType<any>>(
   importFn: () => Promise<{ default: T }>,
   name: string
@@ -41,20 +60,19 @@ function lazyRetry<T extends React.ComponentType<any>>(
   });
 }
 
-// Code-split heavy components with resilient chunk loading
-const LandingHero = lazyRetry(() => import('./components/LandingHero').then(m => ({ default: m.LandingHero })), 'LandingHero');
-const LandingFeatures = lazyRetry(() => import('./components/LandingFeatures').then(m => ({ default: m.LandingFeatures })), 'LandingFeatures');
-const SwapInterface = lazyRetry(() => import('./components/SwapInterface').then(m => ({ default: m.SwapInterface })), 'SwapInterface');
-const EscrowInterface = lazyRetry(() => import('./components/EscrowInterface').then(m => ({ default: m.EscrowInterface })), 'EscrowInterface');
-const ActivityTable = lazyRetry(() => import('./components/ActivityTable').then(m => ({ default: m.ActivityTable })), 'ActivityTable');
-
-// Level 5: New lazy-loaded components
-const AnalyticsDashboard = lazyRetry(() => import('./components/AnalyticsDashboard').then(m => ({ default: m.AnalyticsDashboard })), 'AnalyticsDashboard');
-const OnboardingHub = lazyRetry(() => import('./components/OnboardingHub').then(m => ({ default: m.OnboardingHub })), 'OnboardingHub');
+// Code-split components
+const LandingHero = lazyRetry(() => import('./components/LandingHero').then((m) => ({ default: m.LandingHero })), 'LandingHero');
+const LandingFeatures = lazyRetry(() => import('./components/LandingFeatures').then((m) => ({ default: m.LandingFeatures })), 'LandingFeatures');
+const SwapInterface = lazyRetry(() => import('./components/SwapInterface').then((m) => ({ default: m.SwapInterface })), 'SwapInterface');
+const EscrowInterface = lazyRetry(() => import('./components/EscrowInterface').then((m) => ({ default: m.EscrowInterface })), 'EscrowInterface');
+const ActivityTable = lazyRetry(() => import('./components/ActivityTable').then((m) => ({ default: m.ActivityTable })), 'ActivityTable');
+const AnalyticsDashboard = lazyRetry(() => import('./components/AnalyticsDashboard').then((m) => ({ default: m.AnalyticsDashboard })), 'AnalyticsDashboard');
+const OnboardingHub = lazyRetry(() => import('./components/OnboardingHub').then((m) => ({ default: m.OnboardingHub })), 'OnboardingHub');
 
 export const AppContent: React.FC = () => {
-  // Navigation State — Level 5: extended with 'analytics' tab
+  // Navigation State
   const [activeTab, setActiveTab] = useState<AppTab>('swap');
+  const [networkMode, setNetworkMode] = useState<NetworkMode>('testnet');
 
   // Wallet State
   const [walletState, setWalletState] = useState<WalletState>({
@@ -64,6 +82,8 @@ export const AppContent: React.FC = () => {
     walletName: null,
     balanceXlm: '1,500.00',
     balanceUsdc: '250.00',
+    balanceEurc: '100.00',
+    balanceYxlm: '500.00',
   });
 
   const [installedWallets, setInstalledWallets] = useState<Record<WalletType, boolean>>({
@@ -98,7 +118,7 @@ export const AppContent: React.FC = () => {
     feeBps: 30,
   });
 
-  // Escrows State
+  // Escrows State (Level 6 Multi-Sig & Dispute items)
   const [escrows, setEscrows] = useState<EscrowItem[]>(INITIAL_ESCROWS);
 
   // Live Horizon Account Balances State
@@ -116,13 +136,12 @@ export const AppContent: React.FC = () => {
     }));
   };
 
-  // 1. Initial Load: Check installed extensions & load pool reserves
+  // 1. Initial Load
   useEffect(() => {
     checkInstalledWallets().then(setInstalledWallets);
-    fetchPoolReserves(STELLAR_CONFIG.contractId).then(setReserves);
-    analytics.track('app_initialized', { network: STELLAR_CONFIG.network });
+    fetchPoolReserves(NETWORKS[networkMode].contractId).then(setReserves);
+    analytics.track('app_initialized', { network: networkMode });
 
-    // Subscribe to live Soroban RPC contract event stream
     const unsubscribe = eventStreamService.subscribe((newEvent) => {
       setEvents((prev) => [newEvent, ...prev.slice(0, 19)]);
     });
@@ -133,7 +152,7 @@ export const AppContent: React.FC = () => {
       unsubscribe();
       eventStreamService.stop();
     };
-  }, []);
+  }, [networkMode]);
 
   // Poll balances every 15s when wallet is connected
   useEffect(() => {
@@ -161,12 +180,14 @@ export const AppContent: React.FC = () => {
         walletName: selectedWallet?.name || walletId,
         balanceXlm: '1,500.00',
         balanceUsdc: '250.00',
+        balanceEurc: '100.00',
+        balanceYxlm: '500.00',
       });
 
       handleRefreshBalances(address);
       analytics.identifyUser(address);
-      analytics.trackUserOnboarded(address); // Level 5: Track user growth
-      analytics.track('wallet_connected', { walletId, address });
+      analytics.trackUserOnboarded(address);
+      analytics.track('wallet_connected', { walletId, address, network: networkMode });
       setIsWalletModalOpen(false);
     } catch (err: any) {
       analytics.captureError(err, { walletId });
@@ -189,6 +210,11 @@ export const AppContent: React.FC = () => {
     });
   };
 
+  const handleToggleNetwork = (mode: NetworkMode) => {
+    setNetworkMode(mode);
+    analytics.track('network_switched', { mode });
+  };
+
   // Handle Soroban Token Swap Execution
   const handleExecuteSwap = async (
     tokenIn: string,
@@ -201,21 +227,26 @@ export const AppContent: React.FC = () => {
       return;
     }
 
-    const currentBalance = tokenIn === 'XLM' ? parseFloat(walletState.balanceXlm.replace(/,/g, '')) : parseFloat(walletState.balanceUsdc.replace(/,/g, ''));
+    const currentBalance =
+      tokenIn === 'XLM'
+        ? parseFloat(walletState.balanceXlm.replace(/,/g, ''))
+        : parseFloat(walletState.balanceUsdc.replace(/,/g, ''));
+
     if (parseFloat(amountIn) > currentBalance) {
       setActiveError({
         type: 'INSUFFICIENT_BALANCE',
         title: 'Insufficient Token Balance',
         message: `Your balance of ${currentBalance} ${tokenIn} is less than requested swap amount of ${amountIn} ${tokenIn}.`,
-        actionHint: 'Use Stellar Friendbot to fund your testnet balance or enter a smaller amount.',
+        actionHint: 'Use Stellar Friendbot or fund your account with sufficient balance.',
       });
       return;
     }
 
     setIsProcessingTx(true);
     try {
+      const currentContractId = NETWORKS[networkMode].contractId;
       const txHash = await executeContractSwap(
-        STELLAR_CONFIG.contractId,
+        currentContractId,
         walletState.address,
         walletState.walletId,
         tokenIn,
@@ -225,7 +256,7 @@ export const AppContent: React.FC = () => {
         setTxStatus
       );
 
-      analytics.track('swap_executed', { tokenIn, tokenOut, amountIn, txHash });
+      analytics.track('swap_executed', { tokenIn, tokenOut, amountIn, txHash, network: networkMode });
 
       const newEvt: ContractEvent = {
         id: `evt-${Date.now()}`,
@@ -265,8 +296,9 @@ export const AppContent: React.FC = () => {
 
     setIsProcessingTx(true);
     try {
+      const currentContractId = NETWORKS[networkMode].contractId;
       const txHash = await executeContractDeposit(
-        STELLAR_CONFIG.contractId,
+        currentContractId,
         walletState.address,
         walletState.walletId,
         token,
@@ -300,33 +332,52 @@ export const AppContent: React.FC = () => {
     }
   };
 
-  // Escrow Operations
-  const handleCreateEscrow = async (payee: string, token: string, amount: string, lockupHours: number) => {
+  // ── Multi-Sig Escrow Operations ──
+
+  const handleCreateEscrow = async (
+    payee: string,
+    arbiter: string | undefined,
+    token: string,
+    amount: string,
+    lockupHours: number,
+    description: string
+  ) => {
     if (!walletState.address) return;
     setIsProcessingTx(true);
     try {
+      const currentEscrowContractId = NETWORKS[networkMode].escrowContractId;
       const { escrowId, txHash } = await executeCreateEscrow(
-        STELLAR_CONFIG.escrowContractId,
+        currentEscrowContractId,
         walletState.address,
         payee,
+        arbiter,
         token,
         amount,
         lockupHours,
+        description,
         setTxStatus
       );
 
-      analytics.track('escrow_created', { escrowId, payee, token, amount });
+      analytics.track('escrow_created', { escrowId, payee, arbiter, token, amount, network: networkMode });
+
+      const feeAmount = (parseFloat(amount) * 0.005).toFixed(2);
 
       const newEscrow: EscrowItem = {
         id: escrowId,
-        payer: `${walletState.address.slice(0, 5)}...${walletState.address.slice(-4)}`,
-        payee: payee.length > 12 ? `${payee.slice(0, 5)}...${payee.slice(-4)}` : payee,
+        payer: walletState.address,
+        payee,
+        arbiter,
         token,
         amount,
+        feeAmount,
         state: 'Created',
-        timeoutLedger: 54000,
+        timeoutLedger: 590000,
         createdAt: 'Just now',
         txHash,
+        payerApproved: false,
+        payeeApproved: false,
+        arbiterApproved: false,
+        description,
       };
 
       setEscrows((prev) => [newEscrow, ...prev]);
@@ -380,6 +431,46 @@ export const AppContent: React.FC = () => {
     }
   };
 
+  const handleApproveEscrow = async (escrowId: number, role: 'payer' | 'payee' | 'arbiter') => {
+    if (!walletState.address) return;
+    setIsProcessingTx(true);
+    try {
+      const { txHash, autoReleased } = await executeApproveEscrow(escrowId, role, setTxStatus);
+      analytics.track('escrow_approved', { escrowId, role, autoReleased });
+
+      setEscrows((prev) =>
+        prev.map((e) => {
+          if (e.id !== escrowId) return e;
+          const updated = {
+            ...e,
+            payerApproved: role === 'payer' ? true : e.payerApproved,
+            payeeApproved: role === 'payee' ? true : e.payeeApproved,
+            arbiterApproved: role === 'arbiter' ? true : e.arbiterApproved,
+            state: autoReleased ? ('Released' as const) : e.state,
+            txHash,
+          };
+          return updated;
+        })
+      );
+
+      const newEvt: ContractEvent = {
+        id: `evt-${Date.now()}`,
+        type: 'escrow_approve',
+        user: `${walletState.address.slice(0, 5)}...${walletState.address.slice(-4)}`,
+        escrowId,
+        timestamp: 'Just now',
+        txHash,
+      };
+      setEvents((prev) => [newEvt, ...prev]);
+    } catch (err: any) {
+      analytics.captureError(err, { operation: 'approve_escrow' });
+      const parsed = parseWalletError(err);
+      setActiveError(parsed);
+    } finally {
+      setIsProcessingTx(false);
+    }
+  };
+
   const handleReleaseEscrow = async (escrowId: number) => {
     if (!walletState.address) return;
     setIsProcessingTx(true);
@@ -402,6 +493,64 @@ export const AppContent: React.FC = () => {
       setEvents((prev) => [newEvt, ...prev]);
     } catch (err: any) {
       analytics.captureError(err, { operation: 'release_escrow' });
+      const parsed = parseWalletError(err);
+      setActiveError(parsed);
+    } finally {
+      setIsProcessingTx(false);
+    }
+  };
+
+  const handleDisputeEscrow = async (escrowId: number) => {
+    if (!walletState.address) return;
+    setIsProcessingTx(true);
+    try {
+      const txHash = await executeDisputeEscrow(escrowId, setTxStatus);
+      analytics.track('escrow_disputed', { escrowId, txHash });
+
+      setEscrows((prev) =>
+        prev.map((e) => (e.id === escrowId ? { ...e, state: 'Disputed', txHash } : e))
+      );
+
+      const newEvt: ContractEvent = {
+        id: `evt-${Date.now()}`,
+        type: 'escrow_dispute',
+        user: `${walletState.address.slice(0, 5)}...${walletState.address.slice(-4)}`,
+        escrowId,
+        timestamp: 'Just now',
+        txHash,
+      };
+      setEvents((prev) => [newEvt, ...prev]);
+    } catch (err: any) {
+      analytics.captureError(err, { operation: 'dispute_escrow' });
+      const parsed = parseWalletError(err);
+      setActiveError(parsed);
+    } finally {
+      setIsProcessingTx(false);
+    }
+  };
+
+  const handleResolveDispute = async (escrowId: number, payeeShareBps: number) => {
+    if (!walletState.address) return;
+    setIsProcessingTx(true);
+    try {
+      const txHash = await executeResolveDispute(escrowId, payeeShareBps, setTxStatus);
+      analytics.track('escrow_dispute_resolved', { escrowId, payeeShareBps, txHash });
+
+      setEscrows((prev) =>
+        prev.map((e) => (e.id === escrowId ? { ...e, state: 'Resolved', txHash } : e))
+      );
+
+      const newEvt: ContractEvent = {
+        id: `evt-${Date.now()}`,
+        type: 'escrow_resolve',
+        user: `${walletState.address.slice(0, 5)}...${walletState.address.slice(-4)}`,
+        escrowId,
+        timestamp: 'Just now',
+        txHash,
+      };
+      setEvents((prev) => [newEvt, ...prev]);
+    } catch (err: any) {
+      analytics.captureError(err, { operation: 'resolve_dispute' });
       const parsed = parseWalletError(err);
       setActiveError(parsed);
     } finally {
@@ -455,6 +604,8 @@ export const AppContent: React.FC = () => {
           onOpenWalletModal={() => setIsWalletModalOpen(true)}
           onDisconnect={handleDisconnect}
           onOpenFeedback={() => setIsFeedbackModalOpen(true)}
+          networkMode={networkMode}
+          onToggleNetwork={handleToggleNetwork}
         />
 
         {/* Main Content Area */}
@@ -464,7 +615,6 @@ export const AppContent: React.FC = () => {
             <Suspense fallback={<div className="min-h-screen" />}>
               <LandingHero onConnectWallet={() => setIsWalletModalOpen(true)} />
               <LandingFeatures />
-              {/* Level 5: Onboarding Hub on landing page */}
               <OnboardingHub
                 onConnectWallet={() => setIsWalletModalOpen(true)}
                 isConnected={false}
@@ -472,7 +622,7 @@ export const AppContent: React.FC = () => {
             </Suspense>
           </main>
         ) : (
-          /* Connected State: Dashboard with Swap / Escrow / Analytics tabs */
+          /* Connected State: Dashboard with Swap / Escrow / Multisig / Analytics tabs */
           <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
             {/* 01 Portfolio Banner */}
             <PortfolioBanner
@@ -483,13 +633,12 @@ export const AppContent: React.FC = () => {
 
             {/* Tab Content */}
             {activeTab === 'analytics' ? (
-              /* Level 5: Analytics Dashboard */
               <Suspense fallback={<LoadingSkeleton lines={8} />}>
                 <AnalyticsDashboard />
               </Suspense>
             ) : (
               <>
-                {/* Main Grid: Swap (Left) + Escrow (Right) */}
+                {/* Main Grid: Swap (Left) + Escrow / Multi-Sig (Right) */}
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
                   <div className="lg:col-span-6">
                     <Suspense fallback={<LoadingSkeleton lines={6} />}>
@@ -513,8 +662,11 @@ export const AppContent: React.FC = () => {
                         onOpenWalletModal={() => setIsWalletModalOpen(true)}
                         onCreateEscrow={handleCreateEscrow}
                         onFundEscrow={handleFundEscrow}
+                        onApproveEscrow={handleApproveEscrow}
                         onReleaseEscrow={handleReleaseEscrow}
                         onRefundEscrow={handleRefundEscrow}
+                        onDisputeEscrow={handleDisputeEscrow}
+                        onResolveDispute={handleResolveDispute}
                         isProcessing={isProcessingTx}
                       />
                     </Suspense>

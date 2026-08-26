@@ -33,7 +33,7 @@ export const WalletModal: React.FC<WalletModalProps> = ({
             </div>
             <div>
               <h3 className="text-base font-bold text-text-primary">Connect Stellar Wallet</h3>
-              <p className="text-[10px] text-text-tertiary">Select network endpoint ({STELLAR_CONFIG.network})</p>
+              <p className="text-[10px] text-text-tertiary">Select network endpoint ({STELLAR_CONFIG.name})</p>
             </div>
           </div>
           <button
