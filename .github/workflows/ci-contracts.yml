@@ -111,10 +111,10 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-cargo-test-
 
-      - name: Test Escrow Contract (7 tests: 2-of-3, dispute, timelock, SAC token)
+      - name: "Test Escrow Contract (7 tests)"
         working-directory: contracts/escrow_contract
         run: cargo test --verbose
 
-      - name: Test Swap Contract (4 tests: deposit, swap, reverse swap, pause guard)
+      - name: "Test Swap Contract (4 tests)"
         working-directory: contracts/swap_contract
         run: cargo test --verbose
