@@ -1,5 +1,5 @@
-# ⚡ StellarSwap+
-### Institutional-Grade DEX & Scalable 2-of-3 Multi-Signature Escrow on Stellar
+# ⚡ StellarSwap Prime
+### Next-Gen High-Velocity DEX & Sovereign 2-of-3 Multi-Sig Settlement Matrix on Stellar
 
 [![CI — Build & Test](https://img.shields.io/badge/CI-Contracts%20%26%20Frontend%20Passing-2ea44f?style=for-the-badge&logo=githubactions&logoColor=white)](https://github.com/ps910/StellarSwap-Pro/actions/workflows/ci.yml)
 [![CD — Vercel Production](https://img.shields.io/badge/CD-Vercel%20Production%20Deployed-000000?style=for-the-badge&logo=vercel&logoColor=white)](https://stellar-swap-pro.vercel.app)

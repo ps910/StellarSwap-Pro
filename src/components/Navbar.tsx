@@ -180,8 +180,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <span className="font-extrabold text-lg text-text-primary tracking-tight group-hover:text-gold transition-colors">
                   StellarSwap
                 </span>
-                <span className="text-gold font-black text-lg">+</span>
-                <span className="badge-gold ml-1 text-[9px] font-black tracking-wider uppercase">PRO</span>
+                <span className="badge-gold ml-1.5 text-[9px] font-black tracking-wider uppercase">PRIME</span>
               </div>
 
               {/* Nav Tabs — displayed when wallet is connected */}
