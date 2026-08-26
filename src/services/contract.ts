@@ -7,14 +7,25 @@ import {
   scValToNative,
   Account,
 } from '@stellar/stellar-sdk';
-import { STELLAR_CONFIG } from '../config/stellar';
+import { STELLAR_CONFIG, NETWORKS } from '../config/stellar';
 import { PoolReserves, TxStatus } from '../types';
 import { signTransaction as signWithFreighter } from '@stellar/freighter-api';
 import albedo from '@albedo-link/intent';
 import { withRetry } from './rpc';
 
-const rpcServer = new rpc.Server(STELLAR_CONFIG.rpcUrl);
-const horizonServer = new Horizon.Server(STELLAR_CONFIG.horizonUrl);
+const getConfig = () => STELLAR_CONFIG || NETWORKS.testnet;
+let _rpcServer: rpc.Server | null = null;
+let _horizonServer: Horizon.Server | null = null;
+
+function getRpcServer(): rpc.Server {
+  if (!_rpcServer) _rpcServer = new rpc.Server(getConfig().rpcUrl);
+  return _rpcServer;
+}
+
+function getHorizonServer(): Horizon.Server {
+  if (!_horizonServer) _horizonServer = new Horizon.Server(getConfig().horizonUrl);
+  return _horizonServer;
+}
 
 /**
  * Fetch reserve balances for XLM and USDC from the deployed Soroban contract
@@ -29,20 +40,20 @@ export async function fetchPoolReserves(contractId: string): Promise<PoolReserve
 
         const dummyAccount = new Account('GAAZI4TCR3TY5OJHCTJC2A4QSYRZPBW64EGLYJFMGWYVJ3M2B36JGG4A', '0');
 
-        const xlmRes = await rpcServer.simulateTransaction(
+        const xlmRes = await getRpcServer().simulateTransaction(
           new TransactionBuilder(dummyAccount, {
             fee: '100',
-            networkPassphrase: STELLAR_CONFIG.networkPassphrase,
+            networkPassphrase: getConfig().networkPassphrase,
           })
             .addOperation(contract.call('get_reserve', xlmSymbol))
             .setTimeout(30)
             .build()
         );
 
-        const usdcRes = await rpcServer.simulateTransaction(
+        const usdcRes = await getRpcServer().simulateTransaction(
           new TransactionBuilder(dummyAccount, {
             fee: '100',
-            networkPassphrase: STELLAR_CONFIG.networkPassphrase,
+            networkPassphrase: getConfig().networkPassphrase,
           })
             .addOperation(contract.call('get_reserve', usdcSymbol))
             .setTimeout(30)
@@ -108,7 +119,7 @@ export async function executeContractSwap(
 
   const tx = new TransactionBuilder(dummyAccount, {
     fee: '10000',
-    networkPassphrase: STELLAR_CONFIG.networkPassphrase,
+    networkPassphrase: getConfig().networkPassphrase,
   })
     .addOperation(
       contract.call('swap', userScVal, tokenInScVal, tokenOutScVal, amountInScVal, minOutScVal)
@@ -126,7 +137,7 @@ export async function executeContractSwap(
   try {
     if (walletType === 'freighter') {
       const res = await signWithFreighter(xdrString, {
-        networkPassphrase: STELLAR_CONFIG.networkPassphrase,
+        networkPassphrase: getConfig().networkPassphrase,
       });
       if (typeof res === 'object' && res?.error) {
         throw new Error(res.error);
@@ -134,7 +145,7 @@ export async function executeContractSwap(
     } else if (walletType === 'albedo') {
       await albedo.tx({
         xdr: xdrString,
-        network: STELLAR_CONFIG.networkPassphrase,
+        network: getConfig().networkPassphrase,
       });
     } else {
       await new Promise((r) => setTimeout(r, 1500));

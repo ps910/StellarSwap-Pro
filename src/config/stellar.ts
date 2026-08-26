@@ -43,9 +43,9 @@ export const NETWORKS: Record<NetworkMode, NetworkConfig> = {
 };
 
 export const DEFAULT_NETWORK_MODE: NetworkMode =
-  (import.meta.env.VITE_STELLAR_NETWORK as NetworkMode) || 'testnet';
+  (import.meta.env.VITE_STELLAR_NETWORK === 'mainnet' ? 'mainnet' : 'testnet');
 
-export const STELLAR_CONFIG = NETWORKS[DEFAULT_NETWORK_MODE];
+export const STELLAR_CONFIG: NetworkConfig = NETWORKS[DEFAULT_NETWORK_MODE] || NETWORKS.testnet;
 
 export const SUPPORTED_TOKENS = [
   { symbol: 'XLM', name: 'Stellar Lumens', decimals: 7, icon: '⚡', priceUsd: 0.1145 },

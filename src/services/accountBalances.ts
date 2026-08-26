@@ -10,10 +10,15 @@
  */
 
 import { Horizon } from '@stellar/stellar-sdk';
-import { STELLAR_CONFIG } from '../config/stellar';
+import { STELLAR_CONFIG, NETWORKS } from '../config/stellar';
 import { analytics } from './analytics';
 
-const horizonServer = new Horizon.Server(STELLAR_CONFIG.horizonUrl);
+const getConfig = () => STELLAR_CONFIG || NETWORKS.testnet;
+let _horizonServer: Horizon.Server | null = null;
+function getHorizonServer(): Horizon.Server {
+  if (!_horizonServer) _horizonServer = new Horizon.Server(getConfig().horizonUrl);
+  return _horizonServer;
+}
 const CACHE_TTL_MS = 5000;
 
 // ---------- Asset Types & Interfaces ----------
@@ -84,7 +89,7 @@ export async function fetchAccountBalances(
   }
 
   try {
-    const account = await horizonServer.loadAccount(publicKey);
+    const account = await getHorizonServer().loadAccount(publicKey);
     const subentries = account.subentry_count || 0;
     const baseReserve = 0.5; // SDF base reserve per entry
     const xlmReserve = (2 + subentries) * baseReserve;
