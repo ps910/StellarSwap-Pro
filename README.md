@@ -13,7 +13,7 @@
 
 ## Executive Summary
 
-**StellarSwap+** is a non-custodial, institutional-grade decentralized finance platform purpose-built for the **Stellar Ecosystem (Level 6 / Black Belt Final Certification)**. Engineered with high-frequency trading ergonomics, it combines native Stellar Path Payment orderbook aggregation with a **high-throughput Soroban Rust 2-of-3 Multi-Signature Escrow Vault**, SAC token transfers, Arbiter dispute resolution, persistent TTL state management, trustline pre-flight checks, 4-stage transaction tracking, and continuous CI/CD deployment.
+**StellarSwap Prime** is a non-custodial, institutional-grade decentralized finance platform purpose-built for the **Stellar Ecosystem (Level 6 / Black Belt Final Certification)**. Engineered with high-frequency trading ergonomics, it combines native Stellar Path Payment orderbook aggregation with a **high-throughput Soroban Rust 2-of-3 Multi-Signature Escrow Vault**, SAC token transfers, Arbiter dispute resolution, persistent TTL state management, trustline pre-flight checks, 4-stage transaction tracking, and continuous CI/CD deployment.
 
 - 🌐 **Live Web Application**: [https://stellar-swap-pro.vercel.app](https://stellar-swap-pro.vercel.app)
 - 📦 **Source Repository**: [https://github.com/ps910/StellarSwap-Pro](https://github.com/ps910/StellarSwap-Pro)
