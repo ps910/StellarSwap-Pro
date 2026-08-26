@@ -17,44 +17,19 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  # ──────────────────────────────────────────────
-  # 1. Format & Lint Check
-  # ──────────────────────────────────────────────
-  lint-and-format:
-    name: Rustfmt & Clippy Check
+  test-and-build:
+    name: Test & Build Smart Contracts
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          components: rustfmt
-
-      - name: Format Check — Escrow Contract
-        working-directory: contracts/escrow_contract
-        run: cargo fmt --all -- --check
-
-      - name: Format Check — Swap Contract
-        working-directory: contracts/swap_contract
-        run: cargo fmt --all -- --check
-
-  # ──────────────────────────────────────────────
-  # 2. WASM Compilation
-  # ──────────────────────────────────────────────
-  build-wasm:
-    name: Build Soroban Contracts (WASM)
-    runs-on: ubuntu-latest
-    needs: lint-and-format
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Install Rust toolchain
+      - name: Install Rust Toolchain
         uses: dtolnay/rust-toolchain@stable
         with:
           targets: wasm32-unknown-unknown
+          components: rustfmt
 
       - name: Cache Cargo Dependencies
         uses: actions/cache@v4
@@ -64,9 +39,25 @@ jobs:
             ~/.cargo/git
             contracts/escrow_contract/target
             contracts/swap_contract/target
-          key: ${{ runner.os }}-cargo-build-${{ hashFiles('contracts/**/Cargo.lock') }}
+          key: ${{ runner.os }}-cargo-${{ hashFiles('contracts/**/Cargo.lock') }}
           restore-keys: |
-            ${{ runner.os }}-cargo-build-
+            ${{ runner.os }}-cargo-
+
+      - name: Check Formatting — Escrow Contract
+        working-directory: contracts/escrow_contract
+        run: cargo fmt --all -- --check
+
+      - name: Check Formatting — Swap Contract
+        working-directory: contracts/swap_contract
+        run: cargo fmt --all -- --check
+
+      - name: Run Escrow Contract Tests (7 tests)
+        working-directory: contracts/escrow_contract
+        run: cargo test --verbose
+
+      - name: Run Swap Contract Tests (4 tests)
+        working-directory: contracts/swap_contract
+        run: cargo test --verbose
 
       - name: Build Escrow Contract (WASM)
         working-directory: contracts/escrow_contract
@@ -84,37 +75,3 @@ jobs:
             contracts/escrow_contract/target/wasm32-unknown-unknown/release/*.wasm
             contracts/swap_contract/target/wasm32-unknown-unknown/release/*.wasm
           retention-days: 14
-
-  # ──────────────────────────────────────────────
-  # 3. Automated Test Suite (11 Tests)
-  # ──────────────────────────────────────────────
-  test-contracts:
-    name: Run Soroban Unit Tests
-    runs-on: ubuntu-latest
-    needs: lint-and-format
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@stable
-
-      - name: Cache Cargo Dependencies
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-            contracts/escrow_contract/target
-            contracts/swap_contract/target
-          key: ${{ runner.os }}-cargo-test-${{ hashFiles('contracts/**/Cargo.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-cargo-test-
-
-      - name: "Test Escrow Contract (7 tests)"
-        working-directory: contracts/escrow_contract
-        run: cargo test --verbose
-
-      - name: "Test Swap Contract (4 tests)"
-        working-directory: contracts/swap_contract
-        run: cargo test --verbose
