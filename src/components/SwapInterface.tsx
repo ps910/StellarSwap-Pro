@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { WalletState, PoolReserves } from '../types';
-import { SUPPORTED_TOKENS } from '../config/stellar';
+import { WalletState, PoolReserves, NetworkMode } from '../types';
+import { SUPPORTED_TOKENS, STELLAR_CONFIG, NETWORKS } from '../config/stellar';
 import { ArrowDownUp, RefreshCw, Settings, ArrowRight, ShieldCheck, Percent, X } from 'lucide-react';
 import { TrustlineCheck } from './TrustlineCheck';
 import { AccountBalancesData, hasTrustline } from '../services/accountBalances';
@@ -16,6 +16,7 @@ interface SwapInterfaceProps {
   onOpenPriceAlert?: (symbol: string) => void;
   onToggleProChart?: () => void;
   isProChartOpen?: boolean;
+  networkMode?: NetworkMode;
 }
 
 const TOKEN_ICONS: Record<string, { bg: string; char: string }> = {
@@ -42,7 +43,9 @@ export const SwapInterface: React.FC<SwapInterfaceProps> = ({
   onOpenPriceAlert,
   onToggleProChart,
   isProChartOpen,
+  networkMode = 'testnet',
 }) => {
+  const currentConfig = (networkMode && NETWORKS[networkMode]) ? NETWORKS[networkMode] : STELLAR_CONFIG;
   const [activeTab, setActiveTab] = useState<'swap' | 'limit' | 'routing' | 'deposit'>('swap');
   const [tokenIn, setTokenIn] = useState('XLM');
   const [tokenOut, setTokenOut] = useState('USDC');
@@ -299,8 +302,10 @@ export const SwapInterface: React.FC<SwapInterfaceProps> = ({
             </div>
             <div className="p-3.5 rounded-xl bg-canvas border border-b-border space-y-2 text-xs font-mono">
               <div className="text-text-tertiary flex justify-between">
-                <span>Contract:</span>
-                <span className="text-gold truncate max-w-[200px]" title="CAG5LRYQ5JVEUI5TEID72EYOVX44TTUJT5BQR2J6J77FH65PCCFAJDDH">CAG5LRYQ5J...JDDH</span>
+                <span>Contract ({networkMode === 'mainnet' ? 'Mainnet' : 'Testnet'}):</span>
+                <span className="text-gold truncate max-w-[200px]" title={currentConfig.contractId}>
+                  {currentConfig.contractId.slice(0, 10)}...{currentConfig.contractId.slice(-4)}
+                </span>
               </div>
               <div className="text-text-tertiary flex justify-between">
                 <span>Function:</span>
@@ -671,6 +676,15 @@ export const SwapInterface: React.FC<SwapInterfaceProps> = ({
           <span>DEPOSIT {depositAmount} {depositToken}</span>
         )}
       </button>
+
+      {/* Network Execution Telemetry */}
+      <div className="mt-2.5 flex items-center justify-between text-[11px] text-text-tertiary px-1">
+        <span className="flex items-center gap-1.5 font-medium">
+          <span className={`w-2 h-2 rounded-full ${networkMode === 'mainnet' ? 'bg-bullish animate-pulse' : 'bg-gold animate-pulse'}`} />
+          <span>Network: <strong className={networkMode === 'mainnet' ? 'text-bullish' : 'text-gold'}>{networkMode === 'mainnet' ? 'Stellar Mainnet (Public Live)' : 'Stellar Testnet (SDF)'}</strong></span>
+        </span>
+        <span className="font-mono text-[10px] text-text-disabled">Contract: #{currentConfig.contractId.slice(0, 6)}...</span>
+      </div>
     </div>
   );
 };

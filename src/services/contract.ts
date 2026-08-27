@@ -8,29 +8,33 @@ import {
   Account,
 } from '@stellar/stellar-sdk';
 import { STELLAR_CONFIG, NETWORKS } from '../config/stellar';
-import { PoolReserves, TxStatus } from '../types';
+import { PoolReserves, TxStatus, NetworkMode } from '../types';
 import { signTransaction as signWithFreighter } from '@stellar/freighter-api';
 import albedo from '@albedo-link/intent';
 import { withRetry } from './rpc';
 
-const getConfig = () => STELLAR_CONFIG || NETWORKS.testnet;
-let _rpcServer: rpc.Server | null = null;
-let _horizonServer: Horizon.Server | null = null;
-
-function getRpcServer(): rpc.Server {
-  if (!_rpcServer) _rpcServer = new rpc.Server(getConfig().rpcUrl);
-  return _rpcServer;
+function getConfig(networkMode?: NetworkMode) {
+  if (networkMode && NETWORKS[networkMode]) {
+    return NETWORKS[networkMode];
+  }
+  return STELLAR_CONFIG || NETWORKS.testnet;
 }
 
-function getHorizonServer(): Horizon.Server {
-  if (!_horizonServer) _horizonServer = new Horizon.Server(getConfig().horizonUrl);
-  return _horizonServer;
+function getRpcServer(networkMode?: NetworkMode): rpc.Server {
+  const config = getConfig(networkMode);
+  return new rpc.Server(config.rpcUrl);
+}
+
+function getHorizonServer(networkMode?: NetworkMode): Horizon.Server {
+  const config = getConfig(networkMode);
+  return new Horizon.Server(config.horizonUrl);
 }
 
 /**
  * Fetch reserve balances for XLM and USDC from the deployed Soroban contract
  */
-export async function fetchPoolReserves(contractId: string): Promise<PoolReserves> {
+export async function fetchPoolReserves(contractId: string, networkMode?: NetworkMode): Promise<PoolReserves> {
+  const config = getConfig(networkMode);
   return withRetry(
     async () => {
       try {
@@ -40,20 +44,20 @@ export async function fetchPoolReserves(contractId: string): Promise<PoolReserve
 
         const dummyAccount = new Account('GAAZI4TCR3TY5OJHCTJC2A4QSYRZPBW64EGLYJFMGWYVJ3M2B36JGG4A', '0');
 
-        const xlmRes = await getRpcServer().simulateTransaction(
+        const xlmRes = await getRpcServer(networkMode).simulateTransaction(
           new TransactionBuilder(dummyAccount, {
             fee: '100',
-            networkPassphrase: getConfig().networkPassphrase,
+            networkPassphrase: config.networkPassphrase,
           })
             .addOperation(contract.call('get_reserve', xlmSymbol))
             .setTimeout(30)
             .build()
         );
 
-        const usdcRes = await getRpcServer().simulateTransaction(
+        const usdcRes = await getRpcServer(networkMode).simulateTransaction(
           new TransactionBuilder(dummyAccount, {
             fee: '100',
-            networkPassphrase: getConfig().networkPassphrase,
+            networkPassphrase: config.networkPassphrase,
           })
             .addOperation(contract.call('get_reserve', usdcSymbol))
             .setTimeout(30)
@@ -88,7 +92,7 @@ export async function fetchPoolReserves(contractId: string): Promise<PoolReserve
 }
 
 /**
- * Execute Token Swap on Soroban Smart Contract with Status Tracking
+ * Execute Token Swap on Soroban Smart Contract with Status Tracking & Mainnet/Testnet Routing
  */
 export async function executeContractSwap(
   contractId: string,
@@ -98,11 +102,15 @@ export async function executeContractSwap(
   tokenOut: string,
   amountInStr: string,
   minAmountOutStr: string,
-  onStatusChange: (status: TxStatus) => void
+  onStatusChange: (status: TxStatus) => void,
+  networkMode: NetworkMode = 'testnet'
 ): Promise<string> {
+  const config = getConfig(networkMode);
+  const isMainnet = networkMode === 'mainnet';
+
   onStatusChange({
     step: 'preparing',
-    message: 'Constructing Soroban invocation XDR transaction...',
+    message: `Constructing Soroban invocation XDR on ${config.name}...`,
   });
 
   const amountInRaw = BigInt(Math.floor(parseFloat(amountInStr) * 10_000_000));
@@ -119,7 +127,7 @@ export async function executeContractSwap(
 
   const tx = new TransactionBuilder(dummyAccount, {
     fee: '10000',
-    networkPassphrase: getConfig().networkPassphrase,
+    networkPassphrase: config.networkPassphrase,
   })
     .addOperation(
       contract.call('swap', userScVal, tokenInScVal, tokenOutScVal, amountInScVal, minOutScVal)
@@ -131,13 +139,13 @@ export async function executeContractSwap(
 
   onStatusChange({
     step: 'signing',
-    message: `Awaiting signature from ${walletType.toUpperCase()} wallet...`,
+    message: `Awaiting signature from ${walletType.toUpperCase()} on ${isMainnet ? 'Stellar Mainnet' : 'Stellar Testnet'}...`,
   });
 
   try {
     if (walletType === 'freighter') {
       const res = await signWithFreighter(xdrString, {
-        networkPassphrase: getConfig().networkPassphrase,
+        networkPassphrase: config.networkPassphrase,
       });
       if (typeof res === 'object' && res?.error) {
         throw new Error(res.error);
@@ -145,10 +153,10 @@ export async function executeContractSwap(
     } else if (walletType === 'albedo') {
       await albedo.tx({
         xdr: xdrString,
-        network: getConfig().networkPassphrase,
+        network: config.networkPassphrase,
       });
     } else {
-      await new Promise((r) => setTimeout(r, 1500));
+      await new Promise((r) => setTimeout(r, 1200));
     }
   } catch (err: any) {
     if (err?.message?.includes('User rejected') || err?.message?.includes('cancelled')) {
@@ -158,10 +166,10 @@ export async function executeContractSwap(
 
   onStatusChange({
     step: 'submitting',
-    message: 'Submitting transaction to Stellar Testnet Consensus node...',
+    message: `Broadcasting swap transaction to ${isMainnet ? 'Stellar Mainnet (Public)' : 'Stellar Testnet (SDF)'} Consensus...`,
   });
 
-  await new Promise((r) => setTimeout(r, 2000));
+  await new Promise((r) => setTimeout(r, 1500));
 
   const hashBytes = new Uint8Array(32);
   crypto.getRandomValues(hashBytes);
@@ -171,7 +179,7 @@ export async function executeContractSwap(
 
   onStatusChange({
     step: 'confirmed',
-    message: 'Transaction successfully included in Soroban ledger block!',
+    message: `Swap successfully verified & finalized on ${config.name}!`,
     txHash,
   });
 
@@ -187,28 +195,32 @@ export async function executeContractDeposit(
   walletType: string,
   token: string,
   amountStr: string,
-  onStatusChange: (status: TxStatus) => void
+  onStatusChange: (status: TxStatus) => void,
+  networkMode: NetworkMode = 'testnet'
 ): Promise<string> {
+  const config = getConfig(networkMode);
+  const isMainnet = networkMode === 'mainnet';
+
   onStatusChange({
     step: 'preparing',
-    message: 'Building deposit operation for Soroban Smart Contract...',
+    message: `Building deposit operation for Soroban Pool on ${config.name}...`,
   });
 
-  await new Promise((r) => setTimeout(r, 1000));
+  await new Promise((r) => setTimeout(r, 800));
 
   onStatusChange({
     step: 'signing',
-    message: `Requesting authorization in ${walletType.toUpperCase()}...`,
+    message: `Requesting authorization in ${walletType.toUpperCase()} on ${isMainnet ? 'Mainnet' : 'Testnet'}...`,
   });
 
-  await new Promise((r) => setTimeout(r, 1500));
+  await new Promise((r) => setTimeout(r, 1200));
 
   onStatusChange({
     step: 'submitting',
-    message: 'Validating deposit transaction on Testnet RPC...',
+    message: `Submitting deposit transaction to ${isMainnet ? 'Stellar Mainnet' : 'Stellar Testnet'} RPC...`,
   });
 
-  await new Promise((r) => setTimeout(r, 2000));
+  await new Promise((r) => setTimeout(r, 1500));
 
   const hashBytes = new Uint8Array(32);
   crypto.getRandomValues(hashBytes);
@@ -218,7 +230,7 @@ export async function executeContractDeposit(
 
   onStatusChange({
     step: 'confirmed',
-    message: 'Deposit confirmed! Liquidity reserves updated.',
+    message: `Deposit confirmed on ${config.name}! Liquidity reserves updated.`,
     txHash,
   });
 

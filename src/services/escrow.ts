@@ -1,5 +1,12 @@
-import { EscrowItem, EscrowStatus, TxStatus } from '../types';
-import { STELLAR_CONFIG } from '../config/stellar';
+import { EscrowItem, EscrowStatus, TxStatus, NetworkMode } from '../types';
+import { STELLAR_CONFIG, NETWORKS } from '../config/stellar';
+
+function getExplorerUrl(networkMode?: NetworkMode) {
+  if (networkMode && NETWORKS[networkMode]) {
+    return NETWORKS[networkMode].explorerUrl;
+  }
+  return STELLAR_CONFIG?.explorerUrl || NETWORKS.testnet.explorerUrl;
+}
 
 // Mock Initial Escrows to demonstrate real-world Level 6 Multi-Signature & Dispute flows
 export const INITIAL_ESCROWS: EscrowItem[] = [
@@ -84,11 +91,13 @@ export async function executeCreateEscrow(
   amount: string,
   lockupHours: number,
   description: string,
-  onStatusUpdate: (status: TxStatus) => void
+  onStatusUpdate: (status: TxStatus) => void,
+  networkMode: NetworkMode = 'testnet'
 ): Promise<{ escrowId: number; txHash: string }> {
+  const explorerUrl = getExplorerUrl(networkMode);
   onStatusUpdate({
     step: 'preparing',
-    message: 'Constructing Soroban Multi-Sig Escrow envelope with persistent storage allocation...',
+    message: `Constructing Soroban Multi-Sig Escrow on ${networkMode === 'mainnet' ? 'Stellar Mainnet' : 'Stellar Testnet'} with persistent storage...`,
   });
   await new Promise((res) => setTimeout(res, 600));
 
@@ -100,7 +109,7 @@ export async function executeCreateEscrow(
 
   onStatusUpdate({
     step: 'submitting',
-    message: 'Broadcasting contract invocation to Soroban RPC node...',
+    message: `Broadcasting contract invocation to ${networkMode === 'mainnet' ? 'Stellar Mainnet (Public)' : 'Stellar Testnet (SDF)'} RPC node...`,
   });
   await new Promise((res) => setTimeout(res, 1000));
 
@@ -109,9 +118,9 @@ export async function executeCreateEscrow(
 
   onStatusUpdate({
     step: 'confirmed',
-    message: `Multi-Sig Escrow #${newEscrowId} registered on-chain with 30-day persistent TTL!`,
+    message: `Multi-Sig Escrow #${newEscrowId} registered on ${networkMode === 'mainnet' ? 'Stellar Mainnet' : 'Stellar Testnet'} with 30-day TTL!`,
     txHash,
-    explorerUrl: `${STELLAR_CONFIG.explorerUrl}/tx/${txHash}`,
+    explorerUrl: `${explorerUrl}/tx/${txHash}`,
   });
 
   return { escrowId: newEscrowId, txHash };
@@ -123,11 +132,13 @@ export async function executeCreateEscrow(
 export async function executeFundEscrow(
   escrowId: number,
   payerAddress: string,
-  onStatusUpdate: (status: TxStatus) => void
+  onStatusUpdate: (status: TxStatus) => void,
+  networkMode: NetworkMode = 'testnet'
 ): Promise<string> {
+  const explorerUrl = getExplorerUrl(networkMode);
   onStatusUpdate({
     step: 'preparing',
-    message: `Preparing SAC token transfer envelope for Escrow #${escrowId}...`,
+    message: `Preparing SAC token transfer on ${networkMode === 'mainnet' ? 'Stellar Mainnet' : 'Stellar Testnet'} for Escrow #${escrowId}...`,
   });
   await new Promise((res) => setTimeout(res, 600));
 
@@ -139,7 +150,7 @@ export async function executeFundEscrow(
 
   onStatusUpdate({
     step: 'submitting',
-    message: 'Broadcasting fund transaction to Stellar RPC...',
+    message: `Broadcasting fund transaction to ${networkMode === 'mainnet' ? 'Stellar Mainnet (Public)' : 'Stellar Testnet (SDF)'} RPC...`,
   });
   await new Promise((res) => setTimeout(res, 1000));
 
@@ -147,9 +158,9 @@ export async function executeFundEscrow(
 
   onStatusUpdate({
     step: 'confirmed',
-    message: `Escrow #${escrowId} successfully funded into Soroban vault!`,
+    message: `Escrow #${escrowId} successfully funded into Soroban vault on ${networkMode === 'mainnet' ? 'Mainnet' : 'Testnet'}!`,
     txHash,
-    explorerUrl: `${STELLAR_CONFIG.explorerUrl}/tx/${txHash}`,
+    explorerUrl: `${explorerUrl}/tx/${txHash}`,
   });
 
   return txHash;
@@ -161,8 +172,10 @@ export async function executeFundEscrow(
 export async function executeApproveEscrow(
   escrowId: number,
   callerRole: 'payer' | 'payee' | 'arbiter',
-  onStatusUpdate: (status: TxStatus) => void
+  onStatusUpdate: (status: TxStatus) => void,
+  networkMode: NetworkMode = 'testnet'
 ): Promise<{ txHash: string; autoReleased: boolean }> {
+  const explorerUrl = getExplorerUrl(networkMode);
   onStatusUpdate({
     step: 'preparing',
     message: `Preparing Multi-Sig approval transaction (${callerRole.toUpperCase()}) for Escrow #${escrowId}...`,
@@ -177,7 +190,7 @@ export async function executeApproveEscrow(
 
   onStatusUpdate({
     step: 'submitting',
-    message: 'Evaluating multi-sig threshold on Soroban contract...',
+    message: `Evaluating multi-sig threshold on ${networkMode === 'mainnet' ? 'Stellar Mainnet' : 'Stellar Testnet'} Soroban contract...`,
   });
   await new Promise((res) => setTimeout(res, 900));
 
@@ -190,7 +203,7 @@ export async function executeApproveEscrow(
       ? `Multi-sig threshold met! Escrow #${escrowId} payout executed to payee.`
       : `Approval from ${callerRole.toUpperCase()} recorded. Awaiting 2nd signature.`,
     txHash,
-    explorerUrl: `${STELLAR_CONFIG.explorerUrl}/tx/${txHash}`,
+    explorerUrl: `${explorerUrl}/tx/${txHash}`,
   });
 
   return { txHash, autoReleased };
@@ -202,8 +215,10 @@ export async function executeApproveEscrow(
 export async function executeReleaseEscrow(
   escrowId: number,
   payeeAddress: string,
-  onStatusUpdate: (status: TxStatus) => void
+  onStatusUpdate: (status: TxStatus) => void,
+  networkMode: NetworkMode = 'testnet'
 ): Promise<string> {
+  const explorerUrl = getExplorerUrl(networkMode);
   onStatusUpdate({
     step: 'preparing',
     message: `Preparing release transaction for Escrow #${escrowId}...`,
@@ -218,7 +233,7 @@ export async function executeReleaseEscrow(
 
   onStatusUpdate({
     step: 'submitting',
-    message: 'Executing SAC token transfer from contract to payee...',
+    message: `Executing SAC token transfer from contract to payee on ${networkMode === 'mainnet' ? 'Stellar Mainnet' : 'Stellar Testnet'}...`,
   });
   await new Promise((res) => setTimeout(res, 1000));
 
@@ -228,7 +243,7 @@ export async function executeReleaseEscrow(
     step: 'confirmed',
     message: `Escrow #${escrowId} released! Tokens transferred to payee.`,
     txHash,
-    explorerUrl: `${STELLAR_CONFIG.explorerUrl}/tx/${txHash}`,
+    explorerUrl: `${explorerUrl}/tx/${txHash}`,
   });
 
   return txHash;
@@ -239,8 +254,10 @@ export async function executeReleaseEscrow(
  */
 export async function executeDisputeEscrow(
   escrowId: number,
-  onStatusUpdate: (status: TxStatus) => void
+  onStatusUpdate: (status: TxStatus) => void,
+  networkMode: NetworkMode = 'testnet'
 ): Promise<string> {
+  const explorerUrl = getExplorerUrl(networkMode);
   onStatusUpdate({
     step: 'preparing',
     message: `Raising dispute for Escrow #${escrowId} to freeze vault...`,
@@ -255,7 +272,7 @@ export async function executeDisputeEscrow(
 
   onStatusUpdate({
     step: 'submitting',
-    message: 'Freezing escrow state on Soroban contract...',
+    message: `Freezing escrow state on ${networkMode === 'mainnet' ? 'Stellar Mainnet' : 'Stellar Testnet'} Soroban contract...`,
   });
   await new Promise((res) => setTimeout(res, 900));
 
@@ -265,7 +282,7 @@ export async function executeDisputeEscrow(
     step: 'confirmed',
     message: `Escrow #${escrowId} placed in DISPUTE. Vault frozen pending Arbiter resolution.`,
     txHash,
-    explorerUrl: `${STELLAR_CONFIG.explorerUrl}/tx/${txHash}`,
+    explorerUrl: `${explorerUrl}/tx/${txHash}`,
   });
 
   return txHash;
@@ -277,8 +294,10 @@ export async function executeDisputeEscrow(
 export async function executeResolveDispute(
   escrowId: number,
   payeeShareBps: number,
-  onStatusUpdate: (status: TxStatus) => void
+  onStatusUpdate: (status: TxStatus) => void,
+  networkMode: NetworkMode = 'testnet'
 ): Promise<string> {
+  const explorerUrl = getExplorerUrl(networkMode);
   const payeePct = (payeeShareBps / 100).toFixed(0);
   const payerPct = (100 - payeeShareBps / 100).toFixed(0);
 
@@ -296,7 +315,7 @@ export async function executeResolveDispute(
 
   onStatusUpdate({
     step: 'submitting',
-    message: 'Distributing dual SAC token payouts to Payer and Payee...',
+    message: `Distributing dual SAC token payouts on ${networkMode === 'mainnet' ? 'Stellar Mainnet' : 'Stellar Testnet'}...`,
   });
   await new Promise((res) => setTimeout(res, 1100));
 
@@ -306,7 +325,7 @@ export async function executeResolveDispute(
     step: 'confirmed',
     message: `Dispute on Escrow #${escrowId} resolved! Split: ${payeePct}% to Payee, ${payerPct}% to Payer.`,
     txHash,
-    explorerUrl: `${STELLAR_CONFIG.explorerUrl}/tx/${txHash}`,
+    explorerUrl: `${explorerUrl}/tx/${txHash}`,
   });
 
   return txHash;
@@ -318,8 +337,10 @@ export async function executeResolveDispute(
 export async function executeRefundEscrow(
   escrowId: number,
   payerAddress: string,
-  onStatusUpdate: (status: TxStatus) => void
+  onStatusUpdate: (status: TxStatus) => void,
+  networkMode: NetworkMode = 'testnet'
 ): Promise<string> {
+  const explorerUrl = getExplorerUrl(networkMode);
   onStatusUpdate({
     step: 'preparing',
     message: `Verifying timeout ledger expiration for Escrow #${escrowId}...`,
@@ -334,7 +355,7 @@ export async function executeRefundEscrow(
 
   onStatusUpdate({
     step: 'submitting',
-    message: 'Reclaiming SAC tokens from contract vault back to payer...',
+    message: `Reclaiming SAC tokens from contract vault on ${networkMode === 'mainnet' ? 'Stellar Mainnet' : 'Stellar Testnet'}...`,
   });
   await new Promise((res) => setTimeout(res, 1000));
 
@@ -344,7 +365,7 @@ export async function executeRefundEscrow(
     step: 'confirmed',
     message: `Escrow #${escrowId} refunded! Tokens returned to payer.`,
     txHash,
-    explorerUrl: `${STELLAR_CONFIG.explorerUrl}/tx/${txHash}`,
+    explorerUrl: `${explorerUrl}/tx/${txHash}`,
   });
 
   return txHash;
@@ -368,14 +389,16 @@ export async function executeBatchFundEscrows(
   escrowIds: number[],
   payerAddress: string,
   onProgress?: (completed: number, total: number) => void,
-  onStatusUpdate?: (status: TxStatus) => void
+  onStatusUpdate?: (status: TxStatus) => void,
+  networkMode: NetworkMode = 'testnet'
 ): Promise<string[]> {
+  const explorerUrl = getExplorerUrl(networkMode);
   const txHashes: string[] = [];
   const total = escrowIds.length;
 
   onStatusUpdate?.({
     step: 'preparing',
-    message: `Batch Funding: Preparing multi-vault transfer for ${total} escrows...`,
+    message: `Batch Funding: Preparing multi-vault transfer on ${networkMode === 'mainnet' ? 'Stellar Mainnet' : 'Stellar Testnet'} for ${total} escrows...`,
   });
   await new Promise((res) => setTimeout(res, 600));
 
@@ -400,9 +423,9 @@ export async function executeBatchFundEscrows(
   const finalHash = txHashes[txHashes.length - 1];
   onStatusUpdate?.({
     step: 'confirmed',
-    message: `Batch Funding Complete! Successfully funded ${total} escrow vaults in sequence.`,
+    message: `Batch Funding Complete on ${networkMode === 'mainnet' ? 'Stellar Mainnet' : 'Stellar Testnet'}! Successfully funded ${total} escrow vaults.`,
     txHash: finalHash,
-    explorerUrl: `${STELLAR_CONFIG.explorerUrl}/tx/${finalHash}`,
+    explorerUrl: `${explorerUrl}/tx/${finalHash}`,
   });
 
   return txHashes;
@@ -415,14 +438,16 @@ export async function executeBatchApproveEscrows(
   escrowIds: number[],
   role: 'payer' | 'payee' | 'arbiter',
   onProgress?: (completed: number, total: number) => void,
-  onStatusUpdate?: (status: TxStatus) => void
+  onStatusUpdate?: (status: TxStatus) => void,
+  networkMode: NetworkMode = 'testnet'
 ): Promise<string[]> {
+  const explorerUrl = getExplorerUrl(networkMode);
   const txHashes: string[] = [];
   const total = escrowIds.length;
 
   onStatusUpdate?.({
     step: 'preparing',
-    message: `Batch Approval: Compiling multi-signature proofs for ${total} escrows as ${role.toUpperCase()}...`,
+    message: `Batch Approval: Compiling multi-signature proofs on ${networkMode === 'mainnet' ? 'Stellar Mainnet' : 'Stellar Testnet'} for ${total} escrows as ${role.toUpperCase()}...`,
   });
   await new Promise((res) => setTimeout(res, 600));
 
@@ -447,9 +472,9 @@ export async function executeBatchApproveEscrows(
   const finalHash = txHashes[txHashes.length - 1];
   onStatusUpdate?.({
     step: 'confirmed',
-    message: `Batch Signatures Complete! Successfully approved ${total} escrow agreements.`,
+    message: `Batch Signatures Complete on ${networkMode === 'mainnet' ? 'Stellar Mainnet' : 'Stellar Testnet'}! Successfully approved ${total} escrow agreements.`,
     txHash: finalHash,
-    explorerUrl: `${STELLAR_CONFIG.explorerUrl}/tx/${finalHash}`,
+    explorerUrl: `${explorerUrl}/tx/${finalHash}`,
   });
 
   return txHashes;
@@ -461,14 +486,16 @@ export async function executeBatchApproveEscrows(
 export async function executeBatchReleaseEscrows(
   escrowIds: number[],
   onProgress?: (completed: number, total: number) => void,
-  onStatusUpdate?: (status: TxStatus) => void
+  onStatusUpdate?: (status: TxStatus) => void,
+  networkMode: NetworkMode = 'testnet'
 ): Promise<string[]> {
+  const explorerUrl = getExplorerUrl(networkMode);
   const txHashes: string[] = [];
   const total = escrowIds.length;
 
   onStatusUpdate?.({
     step: 'preparing',
-    message: `Batch Release: Preparing bulk settlement for ${total} escrow vaults...`,
+    message: `Batch Release: Preparing bulk settlement on ${networkMode === 'mainnet' ? 'Stellar Mainnet' : 'Stellar Testnet'} for ${total} escrow vaults...`,
   });
   await new Promise((res) => setTimeout(res, 600));
 
@@ -487,9 +514,9 @@ export async function executeBatchReleaseEscrows(
   const finalHash = txHashes[txHashes.length - 1];
   onStatusUpdate?.({
     step: 'confirmed',
-    message: `Batch Release Complete! Dispatched settlements to all ${total} payees.`,
+    message: `Batch Release Complete on ${networkMode === 'mainnet' ? 'Stellar Mainnet' : 'Stellar Testnet'}! Dispatched settlements to all ${total} payees.`,
     txHash: finalHash,
-    explorerUrl: `${STELLAR_CONFIG.explorerUrl}/tx/${finalHash}`,
+    explorerUrl: `${explorerUrl}/tx/${finalHash}`,
   });
 
   return txHashes;
@@ -503,14 +530,16 @@ export async function executeBatchCreateEscrows(
   payerAddress: string,
   items: BatchCreateItem[],
   onProgress?: (completed: number, total: number) => void,
-  onStatusUpdate?: (status: TxStatus) => void
+  onStatusUpdate?: (status: TxStatus) => void,
+  networkMode: NetworkMode = 'testnet'
 ): Promise<{ escrowIds: number[]; txHash: string }> {
+  const explorerUrl = getExplorerUrl(networkMode);
   const total = items.length;
   const createdIds: number[] = [];
 
   onStatusUpdate?.({
     step: 'preparing',
-    message: `Batch Creation: Validating ${total} recipient contracts & trustlines...`,
+    message: `Batch Creation: Validating ${total} recipient contracts on ${networkMode === 'mainnet' ? 'Stellar Mainnet' : 'Stellar Testnet'}...`,
   });
   await new Promise((res) => setTimeout(res, 700));
 
@@ -535,9 +564,9 @@ export async function executeBatchCreateEscrows(
   const txHash = Array.from({ length: 64 }, () => Math.floor(Math.random() * 16).toString(16)).join('');
   onStatusUpdate?.({
     step: 'confirmed',
-    message: `Batch Creation Complete! Created ${total} new multi-sig escrow vaults.`,
+    message: `Batch Creation Complete on ${networkMode === 'mainnet' ? 'Stellar Mainnet' : 'Stellar Testnet'}! Created ${total} new multi-sig escrow vaults.`,
     txHash,
-    explorerUrl: `${STELLAR_CONFIG.explorerUrl}/tx/${txHash}`,
+    explorerUrl: `${explorerUrl}/tx/${txHash}`,
   });
 
   return { escrowIds: createdIds, txHash };

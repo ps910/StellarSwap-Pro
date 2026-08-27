@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { WalletState, EscrowItem } from '../types';
+import { WalletState, EscrowItem, NetworkMode } from '../types';
 import {
   Lock,
   ArrowRight,
@@ -18,7 +18,7 @@ import {
   Users,
   Layers,
 } from 'lucide-react';
-import { SUPPORTED_TOKENS, STELLAR_CONFIG } from '../config/stellar';
+import { SUPPORTED_TOKENS, STELLAR_CONFIG, NETWORKS } from '../config/stellar';
 
 interface EscrowInterfaceProps {
   walletState: WalletState;
@@ -43,6 +43,7 @@ interface EscrowInterfaceProps {
   onBatchRelease?: (escrowIds: number[]) => Promise<void>;
   onBatchCreate?: (items: any[]) => Promise<void>;
   isProcessing: boolean;
+  networkMode?: NetworkMode;
 }
 
 export const EscrowInterface: React.FC<EscrowInterfaceProps> = ({
@@ -61,7 +62,9 @@ export const EscrowInterface: React.FC<EscrowInterfaceProps> = ({
   onBatchRelease,
   onBatchCreate,
   isProcessing,
+  networkMode = 'testnet',
 }) => {
+  const currentConfig = (networkMode && NETWORKS[networkMode]) ? NETWORKS[networkMode] : STELLAR_CONFIG;
   const [activeSubTab, setActiveSubTab] = useState<'list' | 'create' | 'batch' | 'multisig' | 'templates'>('list');
   const [filterMode, setFilterMode] = useState<'all' | 'active' | 'multisig' | 'disputed' | 'settled'>('all');
   const [copiedContract, setCopiedContract] = useState(false);
@@ -199,7 +202,7 @@ export const EscrowInterface: React.FC<EscrowInterfaceProps> = ({
   };
 
   const handleCopyContract = () => {
-    navigator.clipboard.writeText(STELLAR_CONFIG.escrowContractId);
+    navigator.clipboard.writeText(currentConfig.escrowContractId);
     setCopiedContract(true);
     setTimeout(() => setCopiedContract(false), 1500);
   };
@@ -299,8 +302,9 @@ export const EscrowInterface: React.FC<EscrowInterfaceProps> = ({
         <button
           onClick={handleCopyContract}
           className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-canvas border border-b-border text-text-tertiary hover:text-text-primary hover:border-gold/30 transition-all text-[11px]"
+          title={`Click to copy: ${currentConfig.escrowContractId}`}
         >
-          <span className="font-mono tabular-nums">#{STELLAR_CONFIG.escrowContractId.slice(0, 8)}...</span>
+          <span className="font-mono tabular-nums">#{currentConfig.escrowContractId.slice(0, 8)}...</span>
           {copiedContract ? <Check className="w-3 h-3 text-bullish" /> : <Copy className="w-3 h-3" />}
         </button>
       </div>
@@ -996,7 +1000,7 @@ export const EscrowInterface: React.FC<EscrowInterfaceProps> = ({
 
                   {(item.state === 'Released' || item.state === 'Refunded' || item.state === 'Resolved') && (
                     <a
-                      href={`${STELLAR_CONFIG.explorerUrl}/tx/${item.txHash}`}
+                      href={`${currentConfig.explorerUrl}/tx/${item.txHash}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-canvas border border-b-border text-text-secondary hover:text-gold hover:border-gold/30 text-[11px] font-mono transition-all"

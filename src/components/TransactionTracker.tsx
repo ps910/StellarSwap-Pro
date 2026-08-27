@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { TxStatus, TxStep } from '../types';
-import { STELLAR_CONFIG } from '../config/stellar';
+import { TxStatus, TxStep, NetworkMode } from '../types';
+import { STELLAR_CONFIG, NETWORKS } from '../config/stellar';
 import { Loader2, CheckCircle2, XCircle, ExternalLink, ShieldCheck, Cpu, Clock } from 'lucide-react';
 
 interface TransactionTrackerProps {
   status: TxStatus;
   onClose: () => void;
+  networkMode?: NetworkMode;
 }
 
 const STEPS: { key: TxStep; label: string; shortLabel: string }[] = [
@@ -15,7 +16,8 @@ const STEPS: { key: TxStep; label: string; shortLabel: string }[] = [
   { key: 'confirmed', label: 'Finalizing Ledger State & Updating Balances', shortLabel: 'Finalized' },
 ];
 
-export const TransactionTracker: React.FC<TransactionTrackerProps> = ({ status, onClose }) => {
+export const TransactionTracker: React.FC<TransactionTrackerProps> = ({ status, onClose, networkMode = 'testnet' }) => {
+  const currentConfig = (networkMode && NETWORKS[networkMode]) ? NETWORKS[networkMode] : STELLAR_CONFIG;
   const [elapsed, setElapsed] = useState(0);
 
   useEffect(() => {
@@ -143,7 +145,7 @@ export const TransactionTracker: React.FC<TransactionTrackerProps> = ({ status, 
                 <div className="pt-2 border-t border-b-border">
                   <span className="text-[10px] text-text-tertiary block mb-1.5">Transaction Hash:</span>
                   <a
-                    href={`${STELLAR_CONFIG.explorerUrl}/tx/${status.txHash}`}
+                    href={`${currentConfig.explorerUrl}/tx/${status.txHash}`}
                     target="_blank"
                     rel="noreferrer"
                     className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-elevated hover:bg-elevated-hover border border-b-border hover:border-gold/30 text-xs font-mono text-gold transition-all group tabular-nums"

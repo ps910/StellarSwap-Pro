@@ -11,13 +11,12 @@
 
 import { Horizon } from '@stellar/stellar-sdk';
 import { STELLAR_CONFIG, NETWORKS } from '../config/stellar';
+import { NetworkMode } from '../types';
 import { analytics } from './analytics';
 
-const getConfig = () => STELLAR_CONFIG || NETWORKS.testnet;
-let _horizonServer: Horizon.Server | null = null;
-function getHorizonServer(): Horizon.Server {
-  if (!_horizonServer) _horizonServer = new Horizon.Server(getConfig().horizonUrl);
-  return _horizonServer;
+function getHorizonServer(networkMode?: NetworkMode): Horizon.Server {
+  const config = (networkMode && NETWORKS[networkMode]) ? NETWORKS[networkMode] : (STELLAR_CONFIG || NETWORKS.testnet);
+  return new Horizon.Server(config.horizonUrl);
 }
 const CACHE_TTL_MS = 5000;
 
@@ -75,21 +74,23 @@ const memoryCache = new Map<string, CacheEntry>();
  */
 export async function fetchAccountBalances(
   publicKey: string,
-  bypassCache = false
+  bypassCache = false,
+  networkMode: NetworkMode = 'testnet'
 ): Promise<AccountBalancesData> {
   if (!publicKey) {
     return getUnfundedFallback(publicKey);
   }
 
+  const cacheKey = `${publicKey}_${networkMode}`;
   // Check cache if not bypassing
   const now = Date.now();
-  const cached = memoryCache.get(publicKey);
+  const cached = memoryCache.get(cacheKey);
   if (!bypassCache && cached && now - cached.timestamp < CACHE_TTL_MS) {
     return cached.data;
   }
 
   try {
-    const account = await getHorizonServer().loadAccount(publicKey);
+    const account = await getHorizonServer(networkMode).loadAccount(publicKey);
     const subentries = account.subentry_count || 0;
     const baseReserve = 0.5; // SDF base reserve per entry
     const xlmReserve = (2 + subentries) * baseReserve;

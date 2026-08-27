@@ -119,10 +119,11 @@ export const AppContent: React.FC = () => {
   // Live Horizon Account Balances State
   const [balancesData, setBalancesData] = useState<AccountBalancesData | null>(null);
 
-  const handleRefreshBalances = async (addressOverride?: string) => {
+  const handleRefreshBalances = async (addressOverride?: string, modeOverride?: NetworkMode) => {
     const targetAddr = addressOverride || walletState.address;
+    const targetMode = modeOverride || networkMode;
     if (!targetAddr) return;
-    const data = await fetchAccountBalances(targetAddr, true);
+    const data = await fetchAccountBalances(targetAddr, true, targetMode);
     setBalancesData(data);
     setWalletState((prev) => ({
       ...prev,
@@ -135,7 +136,7 @@ export const AppContent: React.FC = () => {
     setNetworkMode(mode);
     analytics.track('network_switched', { network: mode });
     if (walletState.address) {
-      handleRefreshBalances(walletState.address);
+      handleRefreshBalances(walletState.address, mode);
     }
   };
 
@@ -261,7 +262,8 @@ export const AppContent: React.FC = () => {
         tokenOut,
         amountIn,
         minAmountOut,
-        setTxStatus
+        setTxStatus,
+        networkMode
       );
 
       analytics.track('swap_executed', { tokenIn, tokenOut, amountIn, txHash, network: networkMode });
@@ -311,10 +313,11 @@ export const AppContent: React.FC = () => {
         walletState.walletId,
         token,
         amount,
-        setTxStatus
+        setTxStatus,
+        networkMode
       );
 
-      analytics.track('deposit_executed', { token, amount, txHash });
+      analytics.track('deposit_executed', { token, amount, txHash, network: networkMode });
 
       const newEvt: ContractEvent = {
         id: `evt-${Date.now()}`,
@@ -363,7 +366,8 @@ export const AppContent: React.FC = () => {
         amount,
         lockupHours,
         description,
-        setTxStatus
+        setTxStatus,
+        networkMode
       );
 
       analytics.track('escrow_created', { escrowId, payee, arbiter, token, amount, network: networkMode });
@@ -414,8 +418,8 @@ export const AppContent: React.FC = () => {
     if (!walletState.address) return;
     setIsProcessingTx(true);
     try {
-      const txHash = await executeFundEscrow(escrowId, walletState.address, setTxStatus);
-      analytics.track('escrow_funded', { escrowId, txHash });
+      const txHash = await executeFundEscrow(escrowId, walletState.address, setTxStatus, networkMode);
+      analytics.track('escrow_funded', { escrowId, txHash, network: networkMode });
 
       setEscrows((prev) =>
         prev.map((e) => (e.id === escrowId ? { ...e, state: 'Funded', txHash } : e))
@@ -443,8 +447,8 @@ export const AppContent: React.FC = () => {
     if (!walletState.address) return;
     setIsProcessingTx(true);
     try {
-      const { txHash, autoReleased } = await executeApproveEscrow(escrowId, role, setTxStatus);
-      analytics.track('escrow_approved', { escrowId, role, autoReleased });
+      const { txHash, autoReleased } = await executeApproveEscrow(escrowId, role, setTxStatus, networkMode);
+      analytics.track('escrow_approved', { escrowId, role, autoReleased, network: networkMode });
 
       setEscrows((prev) =>
         prev.map((e) => {
@@ -483,8 +487,8 @@ export const AppContent: React.FC = () => {
     if (!walletState.address) return;
     setIsProcessingTx(true);
     try {
-      const txHash = await executeReleaseEscrow(escrowId, walletState.address, setTxStatus);
-      analytics.track('escrow_released', { escrowId, txHash });
+      const txHash = await executeReleaseEscrow(escrowId, walletState.address, setTxStatus, networkMode);
+      analytics.track('escrow_released', { escrowId, txHash, network: networkMode });
 
       setEscrows((prev) =>
         prev.map((e) => (e.id === escrowId ? { ...e, state: 'Released', txHash } : e))
@@ -512,8 +516,8 @@ export const AppContent: React.FC = () => {
     if (!walletState.address) return;
     setIsProcessingTx(true);
     try {
-      const txHash = await executeDisputeEscrow(escrowId, setTxStatus);
-      analytics.track('escrow_disputed', { escrowId, txHash });
+      const txHash = await executeDisputeEscrow(escrowId, setTxStatus, networkMode);
+      analytics.track('escrow_disputed', { escrowId, txHash, network: networkMode });
 
       setEscrows((prev) =>
         prev.map((e) => (e.id === escrowId ? { ...e, state: 'Disputed', txHash } : e))
@@ -541,8 +545,8 @@ export const AppContent: React.FC = () => {
     if (!walletState.address) return;
     setIsProcessingTx(true);
     try {
-      const txHash = await executeResolveDispute(escrowId, payeeShareBps, setTxStatus);
-      analytics.track('escrow_dispute_resolved', { escrowId, payeeShareBps, txHash });
+      const txHash = await executeResolveDispute(escrowId, payeeShareBps, setTxStatus, networkMode);
+      analytics.track('escrow_dispute_resolved', { escrowId, payeeShareBps, txHash, network: networkMode });
 
       setEscrows((prev) =>
         prev.map((e) => (e.id === escrowId ? { ...e, state: 'Resolved', txHash } : e))
@@ -570,8 +574,8 @@ export const AppContent: React.FC = () => {
     if (!walletState.address) return;
     setIsProcessingTx(true);
     try {
-      const txHash = await executeRefundEscrow(escrowId, walletState.address, setTxStatus);
-      analytics.track('escrow_refunded', { escrowId, txHash });
+      const txHash = await executeRefundEscrow(escrowId, walletState.address, setTxStatus, networkMode);
+      analytics.track('escrow_refunded', { escrowId, txHash, network: networkMode });
 
       setEscrows((prev) =>
         prev.map((e) => (e.id === escrowId ? { ...e, state: 'Refunded', txHash } : e))
@@ -600,8 +604,8 @@ export const AppContent: React.FC = () => {
     if (!walletState.address) return;
     setIsProcessingTx(true);
     try {
-      const txHashes = await executeBatchFundEscrows(escrowIds, walletState.address, undefined, setTxStatus);
-      analytics.track('batch_escrow_funded', { count: escrowIds.length });
+      const txHashes = await executeBatchFundEscrows(escrowIds, walletState.address, undefined, setTxStatus, networkMode);
+      analytics.track('batch_escrow_funded', { count: escrowIds.length, network: networkMode });
       setEscrows((prev) =>
         prev.map((e) => {
           const idx = escrowIds.indexOf(e.id);
@@ -620,8 +624,8 @@ export const AppContent: React.FC = () => {
     if (!walletState.address) return;
     setIsProcessingTx(true);
     try {
-      const txHashes = await executeBatchApproveEscrows(escrowIds, role, undefined, setTxStatus);
-      analytics.track('batch_escrow_approved', { count: escrowIds.length, role });
+      const txHashes = await executeBatchApproveEscrows(escrowIds, role, undefined, setTxStatus, networkMode);
+      analytics.track('batch_escrow_approved', { count: escrowIds.length, role, network: networkMode });
       setEscrows((prev) =>
         prev.map((e) => {
           const idx = escrowIds.indexOf(e.id);
@@ -647,8 +651,8 @@ export const AppContent: React.FC = () => {
     if (!walletState.address) return;
     setIsProcessingTx(true);
     try {
-      const txHashes = await executeBatchReleaseEscrows(escrowIds, undefined, setTxStatus);
-      analytics.track('batch_escrow_released', { count: escrowIds.length });
+      const txHashes = await executeBatchReleaseEscrows(escrowIds, undefined, setTxStatus, networkMode);
+      analytics.track('batch_escrow_released', { count: escrowIds.length, network: networkMode });
       setEscrows((prev) =>
         prev.map((e) => {
           const idx = escrowIds.indexOf(e.id);
@@ -667,14 +671,16 @@ export const AppContent: React.FC = () => {
     if (!walletState.address) return;
     setIsProcessingTx(true);
     try {
+      const currentEscrowContractId = NETWORKS[networkMode]?.escrowContractId || STELLAR_CONFIG.escrowContractId;
       const { escrowIds, txHash } = await executeBatchCreateEscrows(
-        STELLAR_CONFIG.escrowContractId,
+        currentEscrowContractId,
         walletState.address,
         items,
         undefined,
-        setTxStatus
+        setTxStatus,
+        networkMode
       );
-      analytics.track('batch_escrow_created', { count: items.length });
+      analytics.track('batch_escrow_created', { count: items.length, network: networkMode });
       const newItems: EscrowItem[] = escrowIds.map((id, idx) => {
         const src = items[idx] || items[0];
         return {
@@ -799,6 +805,7 @@ export const AppContent: React.FC = () => {
                       }}
                       onToggleProChart={() => setIsProChartOpen(!isProChartOpen)}
                       isProChartOpen={isProChartOpen}
+                      networkMode={networkMode}
                     />
                   </div>
 
@@ -819,12 +826,13 @@ export const AppContent: React.FC = () => {
                       onBatchRelease={handleBatchRelease}
                       onBatchCreate={handleBatchCreate}
                       isProcessing={isProcessingTx}
+                      networkMode={networkMode}
                     />
                   </div>
                 </div>
 
                 {/* On-Chain Activity Table */}
-                <ActivityTable events={events} />
+                <ActivityTable events={events} networkMode={networkMode} />
               </>
             )}
           </main>
@@ -858,6 +866,7 @@ export const AppContent: React.FC = () => {
       <TransactionTracker
         status={txStatus}
         onClose={() => setTxStatus({ step: 'idle', message: '' })}
+        networkMode={networkMode}
       />
 
       <ErrorModal

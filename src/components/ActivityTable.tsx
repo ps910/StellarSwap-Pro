@@ -1,14 +1,16 @@
 import React, { useState } from 'react';
-import { ContractEvent } from '../types';
-import { STELLAR_CONFIG } from '../config/stellar';
+import { ContractEvent, NetworkMode } from '../types';
+import { STELLAR_CONFIG, NETWORKS } from '../config/stellar';
 import { ExportService } from '../services/exportService';
 import { ExternalLink, RefreshCw, Lock, ArrowUpRight, CheckCircle2, Download, FileJson, FileSpreadsheet } from 'lucide-react';
 
 interface ActivityTableProps {
   events: ContractEvent[];
+  networkMode?: NetworkMode;
 }
 
-export const ActivityTable: React.FC<ActivityTableProps> = ({ events }) => {
+export const ActivityTable: React.FC<ActivityTableProps> = ({ events, networkMode = 'testnet' }) => {
+  const currentConfig = (networkMode && NETWORKS[networkMode]) ? NETWORKS[networkMode] : STELLAR_CONFIG;
   const [filter, setFilter] = useState<'all' | 'swap' | 'escrow'>('all');
   const [exportNotice, setExportNotice] = useState<string | null>(null);
 
@@ -181,7 +183,7 @@ export const ActivityTable: React.FC<ActivityTableProps> = ({ events }) => {
                   <td className="py-3 px-4 text-text-disabled text-[11px]">{evt.timestamp}</td>
                   <td className="py-3 px-4 text-right">
                     <a
-                      href={`${STELLAR_CONFIG.explorerUrl}/tx/${evt.txHash}`}
+                      href={`${currentConfig.explorerUrl}/tx/${evt.txHash}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-gold hover:text-gold-hover inline-flex items-center gap-1 font-mono text-xs transition-colors"
