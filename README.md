@@ -23,7 +23,6 @@
 
 ---
 
-## 📋 Level 6 (Black Belt) Deliverables Matrix
 
 | Requirement | Deliverable | Location & Verification Link |
 |:---|:---|:---|
