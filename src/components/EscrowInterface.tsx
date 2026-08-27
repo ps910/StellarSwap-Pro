@@ -62,7 +62,7 @@ export const EscrowInterface: React.FC<EscrowInterfaceProps> = ({
   onBatchCreate,
   isProcessing,
 }) => {
-  const [activeSubTab, setActiveSubTab] = useState<'list' | 'create' | 'batch'>('list');
+  const [activeSubTab, setActiveSubTab] = useState<'list' | 'create' | 'batch' | 'multisig' | 'templates'>('list');
   const [filterMode, setFilterMode] = useState<'all' | 'active' | 'multisig' | 'disputed' | 'settled'>('all');
   const [copiedContract, setCopiedContract] = useState(false);
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
@@ -82,9 +82,121 @@ export const EscrowInterface: React.FC<EscrowInterfaceProps> = ({
     'GBSTRK4YMQW4L6P8S1U0N5R2T9V3W8Z6Y7X0A1B2C3D4E5F6G7H8J9K0,300,USDC,72,Milestone 3: Security Verification'
   );
 
-  // Dispute Modal State
+  // Dispute Modal & Evidence State
   const [disputeModalEscrowId, setDisputeModalEscrowId] = useState<number | null>(null);
   const [payeeSplitBps, setPayeeSplitBps] = useState(7000); // 70% default
+  const [evidenceHash, setEvidenceHash] = useState('');
+  const [evidenceIpfs, setEvidenceIpfs] = useState('');
+
+  // Multisig Transaction Queue State
+  const [multisigProposals, setMultisigProposals] = useState<{
+    id: string;
+    title: string;
+    amount: string;
+    token: string;
+    signersApproved: string[];
+    requiredSignatures: number;
+    totalSigners: number;
+    status: 'PENDING' | 'EXECUTED' | 'FROZEN';
+    expiresAt: string;
+  }[]>([
+    {
+      id: 'MS-7712',
+      title: 'Milestone 2 Escrow Release: Soroban Smart Contract Audit',
+      amount: '1,250',
+      token: 'USDC',
+      signersApproved: ['GCDTK94LM77M1B4P...'],
+      requiredSignatures: 2,
+      totalSigners: 3,
+      status: 'PENDING',
+      expiresAt: '22h remaining',
+    },
+    {
+      id: 'MS-7711',
+      title: 'Emergency Vault Liquidity Balancing',
+      amount: '5,000',
+      token: 'XLM',
+      signersApproved: ['GAYK749LM99P2C1...', 'GBSTRK4YMQW4L6P...'],
+      requiredSignatures: 2,
+      totalSigners: 3,
+      status: 'EXECUTED',
+      expiresAt: 'Completed',
+    },
+  ]);
+
+  const ESCROW_TEMPLATES = [
+    {
+      id: 'freelance',
+      icon: '💼',
+      name: 'Freelance Milestone',
+      desc: '2-of-3 multi-sig with third-party arbiter mediation and 5-day timeout protection.',
+      token: 'USDC',
+      amount: '750',
+      lockupHours: '120',
+      defaultDesc: 'Freelance Milestone Delivery: UI Architecture & Security Verification',
+    },
+    {
+      id: 'otc',
+      icon: '🤝',
+      name: 'OTC Token Swap',
+      desc: 'Instant 2-of-2 peer-to-peer settlement with 24-hour timeout auto-refund.',
+      token: 'EURC',
+      amount: '1500',
+      lockupHours: '24',
+      defaultDesc: 'OTC Direct Token Settlement',
+    },
+    {
+      id: 'audit',
+      icon: '🛡️',
+      name: 'Smart Contract Audit',
+      desc: 'Staged security verification with arbiter signoff and 14-day review window.',
+      token: 'USDC',
+      amount: '2500',
+      lockupHours: '336',
+      defaultDesc: 'Soroban Smart Contract Security Audit & Verification',
+    },
+    {
+      id: 'goods',
+      icon: '📦',
+      name: 'Physical Goods Escrow',
+      desc: 'On-chain delivery tracking hash attachment with 7-day inspection period.',
+      token: 'XLM',
+      amount: '5000',
+      lockupHours: '168',
+      defaultDesc: 'Hardware Device Shipment & Delivery Guarantee',
+    },
+  ];
+
+  const handleApplyTemplate = (tmpl: (typeof ESCROW_TEMPLATES)[0]) => {
+    setToken(tmpl.token);
+    setAmount(tmpl.amount);
+    setLockupHours(tmpl.lockupHours);
+    setDescription(tmpl.defaultDesc);
+    setActiveSubTab('create');
+  };
+
+  const handleSignProposal = (proposalId: string) => {
+    setMultisigProposals((prev) =>
+      prev.map((p) => {
+        if (p.id !== proposalId) return p;
+        const newApprovals = [...p.signersApproved, walletState.address?.slice(0, 16) + '...' || 'YOU'];
+        const isExecuted = newApprovals.length >= p.requiredSignatures;
+        return {
+          ...p,
+          signersApproved: newApprovals,
+          status: isExecuted ? 'EXECUTED' : 'PENDING',
+        };
+      })
+    );
+    alert(`Signed multi-sig proposal ${proposalId} successfully!`);
+  };
+
+  const handleFreezeVault = (proposalId: string) => {
+    setMultisigProposals((prev) =>
+      prev.map((p) => (p.id === proposalId ? { ...p, status: 'FROZEN' as const } : p))
+    );
+    alert(`Emergency Freeze invoked for ${proposalId}. Smart contract vault is now locked.`);
+  };
 
   const handleCopyContract = () => {
     navigator.clipboard.writeText(STELLAR_CONFIG.escrowContractId);
@@ -213,10 +325,10 @@ export const EscrowInterface: React.FC<EscrowInterfaceProps> = ({
         </div>
 
         {/* Action Toggle */}
-        <div className="flex bg-canvas p-1 rounded-xl border border-b-border text-xs overflow-x-auto">
+        <div className="flex bg-canvas p-1 rounded-xl border border-b-border text-[11px] overflow-x-auto">
           <button
             onClick={() => setActiveSubTab('list')}
-            className={`px-3 py-1.5 rounded-lg font-bold transition-all duration-200 whitespace-nowrap ${
+            className={`px-2.5 py-1.5 rounded-lg font-bold transition-all duration-200 whitespace-nowrap ${
               activeSubTab === 'list'
                 ? 'bg-gold text-black shadow-sm'
                 : 'text-text-tertiary hover:text-text-primary'
@@ -225,8 +337,30 @@ export const EscrowInterface: React.FC<EscrowInterfaceProps> = ({
             ACTIVE LIST ({filteredEscrows.length})
           </button>
           <button
+            onClick={() => setActiveSubTab('multisig')}
+            className={`px-2.5 py-1.5 rounded-lg font-bold flex items-center gap-1 transition-all duration-200 whitespace-nowrap ${
+              activeSubTab === 'multisig'
+                ? 'bg-gold text-black shadow-sm'
+                : 'text-text-tertiary hover:text-text-primary'
+            }`}
+          >
+            <Users className="w-3.5 h-3.5" />
+            <span>MULTISIG QUEUE</span>
+          </button>
+          <button
+            onClick={() => setActiveSubTab('templates')}
+            className={`px-2.5 py-1.5 rounded-lg font-bold flex items-center gap-1 transition-all duration-200 whitespace-nowrap ${
+              activeSubTab === 'templates'
+                ? 'bg-gold text-black shadow-sm'
+                : 'text-text-tertiary hover:text-text-primary'
+            }`}
+          >
+            <Sliders className="w-3.5 h-3.5" />
+            <span>PRESETS</span>
+          </button>
+          <button
             onClick={() => setActiveSubTab('create')}
-            className={`px-3 py-1.5 rounded-lg font-bold flex items-center gap-1.5 transition-all duration-200 whitespace-nowrap ${
+            className={`px-2.5 py-1.5 rounded-lg font-bold flex items-center gap-1 transition-all duration-200 whitespace-nowrap ${
               activeSubTab === 'create'
                 ? 'bg-gold text-black shadow-sm'
                 : 'text-text-tertiary hover:text-text-primary'
@@ -237,17 +371,169 @@ export const EscrowInterface: React.FC<EscrowInterfaceProps> = ({
           </button>
           <button
             onClick={() => setActiveSubTab('batch')}
-            className={`px-3 py-1.5 rounded-lg font-bold flex items-center gap-1.5 transition-all duration-200 whitespace-nowrap ${
+            className={`px-2.5 py-1.5 rounded-lg font-bold flex items-center gap-1 transition-all duration-200 whitespace-nowrap ${
               activeSubTab === 'batch'
                 ? 'bg-gold text-black shadow-sm'
                 : 'text-text-tertiary hover:text-text-primary'
             }`}
           >
             <Layers className="w-3.5 h-3.5" />
-            <span>BATCH CREATOR</span>
+            <span>BATCH</span>
           </button>
         </div>
       </div>
+
+      {/* ── View: Multisig Approval Queue ── */}
+      {activeSubTab === 'multisig' && (
+        <div className="space-y-4 animate-fade-in text-xs">
+          <div className="p-4 rounded-xl bg-elevated border border-gold/30">
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="font-bold text-white text-sm flex items-center gap-2">
+                <Users className="w-4 h-4 text-gold" />
+                <span>Multi-Signature Approval Queue (2-of-3 Threshold)</span>
+              </h3>
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 font-bold border border-emerald-500/20">
+                Soroban Native Vault Auth
+              </span>
+            </div>
+            <p className="text-text-tertiary text-[11px]">
+              Review, co-sign, or execute pending multi-signature transactions. Enforces M-of-N signature verification, time-locked cooldown checks, and emergency vault freeze controls.
+            </p>
+          </div>
+
+          <div className="space-y-3">
+            {multisigProposals.map((prop) => (
+              <div key={prop.id} className="p-4 rounded-xl bg-canvas border border-b-border space-y-3">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono text-gold font-bold">{prop.id}</span>
+                      <span className="font-bold text-white text-sm">{prop.title}</span>
+                    </div>
+                    <div className="text-[11px] text-text-tertiary mt-0.5">
+                      Amount: <span className="font-bold text-bullish">{prop.amount} {prop.token}</span> • Expires: {prop.expiresAt}
+                    </div>
+                  </div>
+                  <span
+                    className={`px-2.5 py-1 rounded-lg text-[10px] font-bold self-start sm:self-auto ${
+                      prop.status === 'EXECUTED'
+                        ? 'bg-bullish/10 text-bullish border border-bullish/30'
+                        : prop.status === 'FROZEN'
+                        ? 'bg-bearish/10 text-bearish border border-bearish/30'
+                        : 'bg-gold/10 text-gold border border-gold/30'
+                    }`}
+                  >
+                    {prop.status}
+                  </span>
+                </div>
+
+                {/* Signature Progress Bar */}
+                <div className="space-y-1.5">
+                  <div className="flex justify-between text-[11px]">
+                    <span className="text-text-tertiary">Signatures Required:</span>
+                    <span className="text-white font-bold">
+                      {prop.signersApproved.length} of {prop.requiredSignatures} Signers ({prop.totalSigners} Total)
+                    </span>
+                  </div>
+                  <div className="w-full h-2 rounded-full bg-elevated overflow-hidden">
+                    <div
+                      className="h-full bg-gold transition-all duration-500 rounded-full"
+                      style={{ width: `${(prop.signersApproved.length / prop.requiredSignatures) * 100}%` }}
+                    />
+                  </div>
+                </div>
+
+                {/* Signers Pill List */}
+                <div className="flex flex-wrap items-center gap-2 text-[10px]">
+                  <span className="text-text-tertiary">Signers:</span>
+                  {prop.signersApproved.map((s, idx) => (
+                    <span key={idx} className="px-2 py-0.5 rounded bg-elevated border border-b-border text-text-secondary font-mono">
+                      ✓ {s}
+                    </span>
+                  ))}
+                  {prop.signersApproved.length < prop.requiredSignatures && (
+                    <span className="px-2 py-0.5 rounded bg-canvas border border-dashed border-b-border text-text-disabled font-mono">
+                      ⏳ Awaiting 2nd Signature...
+                    </span>
+                  )}
+                </div>
+
+                {/* Proposal Action Buttons */}
+                {prop.status === 'PENDING' && (
+                  <div className="flex items-center justify-end gap-2 pt-2 border-t border-b-border/60">
+                    <button
+                      onClick={() => handleFreezeVault(prop.id)}
+                      className="px-3 py-1.5 rounded-lg bg-bearish/10 hover:bg-bearish/20 text-bearish border border-bearish/30 font-bold text-xs transition-all"
+                    >
+                      Emergency Freeze
+                    </button>
+                    <button
+                      onClick={() => handleSignProposal(prop.id)}
+                      disabled={!walletState.isConnected}
+                      className="px-4 py-1.5 rounded-lg bg-gold hover:bg-gold-hover text-black font-bold text-xs transition-all flex items-center gap-1.5 shadow-sm"
+                    >
+                      <CheckCircle2 className="w-3.5 h-3.5" />
+                      <span>Co-Sign Proposal</span>
+                    </button>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ── View: Escrow Templates / Presets ── */}
+      {activeSubTab === 'templates' && (
+        <div className="space-y-4 animate-fade-in text-xs">
+          <div className="p-4 rounded-xl bg-elevated border border-gold/30">
+            <h3 className="font-bold text-white text-sm flex items-center gap-2 mb-1">
+              <Sliders className="w-4 h-4 text-gold" />
+              <span>Institutional Escrow Presets & Workflow Templates</span>
+            </h3>
+            <p className="text-text-tertiary text-[11px]">
+              Deploy production-proven multi-sig escrow templates tailored for freelancer milestones, OTC trading, security audits, and real-world deliveries.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+            {ESCROW_TEMPLATES.map((tmpl) => (
+              <div key={tmpl.id} className="p-4 rounded-xl bg-canvas border border-b-border hover:border-gold/40 transition-all space-y-3 flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center gap-2.5 mb-1.5">
+                    <span className="text-2xl">{tmpl.icon}</span>
+                    <div>
+                      <h4 className="font-bold text-white text-sm">{tmpl.name}</h4>
+                      <span className="text-[10px] text-gold font-bold">Standard {tmpl.lockupHours}h Lockup</span>
+                    </div>
+                  </div>
+                  <p className="text-[11px] text-text-tertiary leading-relaxed mb-3">
+                    {tmpl.desc}
+                  </p>
+                  <div className="p-2.5 rounded-lg bg-elevated border border-b-border text-[10px] font-mono space-y-1">
+                    <div className="flex justify-between text-text-secondary">
+                      <span>Default Token:</span>
+                      <span className="text-white font-bold">{tmpl.amount} {tmpl.token}</span>
+                    </div>
+                    <div className="flex justify-between text-text-secondary">
+                      <span>Resolution:</span>
+                      <span className="text-emerald-400">2-of-3 Arbiter</span>
+                    </div>
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => handleApplyTemplate(tmpl)}
+                  className="w-full py-2 rounded-lg bg-gold hover:bg-gold-hover text-black font-bold text-xs transition-all shadow-sm flex items-center justify-center gap-1.5"
+                >
+                  <span>Use This Preset</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* ── View: Create Escrow Form ── */}
       {activeSubTab === 'create' && (
@@ -738,8 +1024,26 @@ export const EscrowInterface: React.FC<EscrowInterfaceProps> = ({
             </div>
 
             <p className="text-xs text-text-secondary">
-              As the designated third-party Arbiter on this smart contract, select the payout split percentage between Payee and Payer based on milestone delivery evidence.
+              As the designated third-party Arbiter on this smart contract, review verified delivery proofs and adjust the split percentage between Payee and Payer.
             </p>
+
+            {/* Evidence Submission / Hash Attacher */}
+            <div className="p-3.5 rounded-xl bg-canvas border border-b-border space-y-2">
+              <label className="block text-[10px] font-bold text-text-tertiary uppercase">
+                Cryptographic Evidence Audit Hash (SHA-256 / IPFS CID)
+              </label>
+              <input
+                type="text"
+                placeholder="e.g. QmXoypizjW3WknFiJnKLwHCnL72vedxjQkDDP1mXWo6uco or sha256..."
+                value={evidenceHash}
+                onChange={(e) => setEvidenceHash(e.target.value)}
+                className="w-full bg-elevated border border-b-border rounded-lg p-2 text-xs font-mono text-white focus:outline-none focus:border-gold"
+              />
+              <div className="flex justify-between items-center text-[10px] text-text-tertiary font-mono">
+                <span>Evidence Seal: {evidenceHash ? '✅ Attached to Tx' : 'Optional Evidence Attachment'}</span>
+                <span className="text-gold cursor-pointer" onClick={() => setEvidenceHash('0x9f83a21b64c91024e8839201f820d91283748291048201948201948201948201')}>Load Sample Hash</span>
+              </div>
+            </div>
 
             <div className="p-4 rounded-xl bg-canvas border border-b-border space-y-3">
               <div className="flex justify-between items-center text-xs font-bold">

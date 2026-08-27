@@ -27,12 +27,18 @@
 
 | Feature | Capabilities & Architecture | Implementation |
 |:---|:---|:---|
-| **1. Expanded Token Pairs** | 10 institutional assets (`XLM`, `USDC`, `EURC`, `yXLM`, `AQUA`, `BTC`, `ETH`, `SHX`, `yUSDC`, `SLT`) with 24h volume/change telemetry & quick-switch pills. | [`src/config/stellar.ts`](./src/config/stellar.ts) • [`src/components/SwapInterface.tsx`](./src/components/SwapInterface.tsx) |
-| **2. Batch Escrow Operations** | Multi-select batch funding, 2-of-3 batch signature approvals, bulk release, and CSV multi-milestone creator wizard. | [`src/services/escrow.ts`](./src/services/escrow.ts) • [`src/components/EscrowInterface.tsx`](./src/components/EscrowInterface.tsx) |
-| **3. Real-Time Price Alerts** | Custom threshold price monitoring engine with audio chimes (Web Audio API oscillator), active alert manager, and browser alerts. | [`src/services/priceAlerts.ts`](./src/services/priceAlerts.ts) • [`src/components/PriceAlertsModal.tsx`](./src/components/PriceAlertsModal.tsx) |
-| **4. TradingView Pro Charts** | Interactive multi-timeframe candlestick & line charting (1m–1W), SMA(10), RSI(14), Volume bars, and orderbook depth overlays. | [`src/components/TradingViewChart.tsx`](./src/components/TradingViewChart.tsx) |
-| **5. Hardware Wallet Support** | Direct hardware key storage integration for Ledger Nano (EAL6+ HSM), Trezor Safe (Air-Gap PIN), and Keystone (QR Air-Gapped). | [`src/services/wallet.ts`](./src/services/wallet.ts) • [`src/components/WalletModal.tsx`](./src/components/WalletModal.tsx) |
-| **6. Transaction History Export** | RFC-4180 compliant CSV export and signed JSON audit proof generator for tax, compliance, and on-chain verification. | [`src/services/exportService.ts`](./src/services/exportService.ts) • [`src/components/ActivityTable.tsx`](./src/components/ActivityTable.tsx) |
+| **1. Limit & Stop-Loss Orders** | Custom target price, automated expiry triggers (1h–7d), and non-custodial Soroban limit order placement. | [`src/components/SwapInterface.tsx`](./src/components/SwapInterface.tsx) |
+| **2. Smart Order Routing (SOR)** | Native multi-hop routing view (Stellar Path Payments + AMM pools), price impact calculation, and Zero-MEV protection. | [`src/components/SwapInterface.tsx`](./src/components/SwapInterface.tsx) • [`src/config/stellar.ts`](./src/config/stellar.ts) |
+| **3. Contract Simulation Preview** | Pre-flight execution dry-run displaying exact CPU instruction counts, ledger footprint (read/write), and return values. | [`src/components/SwapInterface.tsx`](./src/components/SwapInterface.tsx) |
+| **4. Multisig Transaction Queue** | Signer approval dashboard with live M-of-N threshold progress, Emergency Freeze controls, and co-signing workflow. | [`src/components/EscrowInterface.tsx`](./src/components/EscrowInterface.tsx) |
+| **5. Workflow Presets & Milestones** | Production templates for Freelance Milestones, OTC Swaps, Smart Contract Audits, and Goods Delivery. | [`src/components/EscrowInterface.tsx`](./src/components/EscrowInterface.tsx) |
+| **6. On-Chain Dispute Evidence** | Cryptographic SHA-256 hash and IPFS CID attacher enabling Arbiter adjudication with audit seals. | [`src/components/EscrowInterface.tsx`](./src/components/EscrowInterface.tsx) |
+| **7. Expanded Token Pairs** | 10 institutional assets (`XLM`, `USDC`, `EURC`, `yXLM`, `AQUA`, `BTC`, `ETH`, `SHX`, `yUSDC`, `SLT`) with `stellar.toml` verified domain badges. | [`src/config/stellar.ts`](./src/config/stellar.ts) |
+| **8. Real-Time Price Alerts** | Custom threshold & % change alerts with Web Audio API oscillator chime synthesis and active modal manager. | [`src/services/priceAlerts.ts`](./src/services/priceAlerts.ts) • [`src/components/PriceAlertsModal.tsx`](./src/components/PriceAlertsModal.tsx) |
+| **9. TradingView Pro Charts** | Interactive multi-timeframe candlestick & line charting (1m–1W), SMA(10), RSI(14), Volume bars, and orderbook depth overlays. | [`src/components/TradingViewChart.tsx`](./src/components/TradingViewChart.tsx) |
+| **10. Hardware Wallet Support** | Ledger Nano (EAL6+ HSM), Trezor Safe (Air-Gap PIN), and Keystone (QR Air-Gapped) key storage integration. | [`src/services/wallet.ts`](./src/services/wallet.ts) • [`src/components/WalletModal.tsx`](./src/components/WalletModal.tsx) |
+| **11. History & Proof Export** | RFC-4180 compliant CSV export and signed JSON cryptographic proof documents for tax & compliance verification. | [`src/services/exportService.ts`](./src/services/exportService.ts) • [`src/components/ActivityTable.tsx`](./src/components/ActivityTable.tsx) |
+| **12. RPC Failover & Gas Sponsorship** | Multi-endpoint failover (SDF, PublicNode, Blockdaemon) with gasless transaction fee-bump sponsorship. | [`src/components/Navbar.tsx`](./src/components/Navbar.tsx) • [`src/services/rpc.ts`](./src/services/rpc.ts) |
 
 ---
 

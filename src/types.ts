@@ -193,3 +193,60 @@ export interface CandleData {
 export type TimeFrame = '1m' | '5m' | '15m' | '1H' | '4H' | '1D' | '1W';
 export type ChartType = 'candles' | 'line' | 'area' | 'heikin-ashi';
 export type TechnicalIndicator = 'sma' | 'ema' | 'rsi' | 'macd' | 'bollinger' | 'volume';
+
+// ── Institutional Trading & Multisig Suite Additions ──
+
+export interface LimitOrder {
+  id: string;
+  user: string;
+  tokenIn: string;
+  tokenOut: string;
+  amountIn: string;
+  targetPrice: number;
+  expectedOutput: string;
+  expiryHours: number;
+  createdAt: string;
+  status: 'OPEN' | 'FILLED' | 'CANCELLED';
+  txHash?: string;
+}
+
+export interface SmartRouteHop {
+  step: number;
+  fromToken: string;
+  toToken: string;
+  protocol: 'Soroban AMM Pool' | 'Stellar Native Orderbook' | 'Path Payment Intermediary';
+  feeBps: number;
+  estOutput: string;
+}
+
+export interface OrderBookItem {
+  price: number;
+  amount: number;
+  total: number;
+  depthPercent: number;
+}
+
+export interface MultisigProposal {
+  id: string;
+  title: string;
+  type: 'ESCROW_RELEASE' | 'SPLIT_SETTLEMENT' | 'TREASURY_TRANSFER' | 'EMERGENCY_FREEZE';
+  amount: string;
+  token: string;
+  initiator: string;
+  signersApproved: string[];
+  requiredSignatures: number;
+  totalSigners: number;
+  status: 'PENDING' | 'EXECUTED' | 'FROZEN';
+  createdAt: string;
+  expiresAt: string;
+}
+
+export interface DisputeEvidence {
+  id: string;
+  escrowId: number;
+  submitter: string;
+  title: string;
+  evidenceHash: string;
+  ipfsUri?: string;
+  timestamp: string;
+}

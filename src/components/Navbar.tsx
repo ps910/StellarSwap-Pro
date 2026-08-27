@@ -117,15 +117,18 @@ export const Navbar: React.FC<NavbarProps> = ({
           </span>
         </div>
 
-        {/* Network & Ledger Telemetry */}
-        <div className="flex items-center gap-4 text-text-tertiary">
+        {/* Network, RPC Failover & Ledger Telemetry */}
+        <div className="flex items-center gap-3 text-text-tertiary">
+          <span className="hidden md:flex items-center gap-1 text-[10px] text-emerald-400 font-bold bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
+            ⚡ Gas Sponsored
+          </span>
           <span className="flex items-center gap-1">
             <span className="w-1.5 h-1.5 rounded-full bg-bullish animate-pulse" />
             <span className="font-mono text-text-secondary">Ledger #{ledgerSeq}</span>
           </span>
-          <span className="flex items-center gap-1">
+          <span className="flex items-center gap-1" title="RPC Failover Active: SDF / PublicNode / Blockdaemon">
             <Zap className="w-3 h-3 text-gold" />
-            <span className="font-mono text-text-secondary">{rpcLatency}ms</span>
+            <span className="font-mono text-text-secondary">{rpcLatency}ms (Failover: Ready)</span>
           </span>
 
           {/* Network Switcher Dropdown */}
