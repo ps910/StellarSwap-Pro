@@ -1,5 +1,5 @@
 /**
- * StellarSwap+ Monitoring & Analytics Service
+ * StellEx Pro — Monitoring & Analytics Service
  * Provides lightweight drop-in hooks for Sentry (Error Tracking) & PostHog / Plausible (Product Analytics).
  * Enhanced with session tracking, user identification, and localStorage persistence for submission proof.
  */
@@ -11,8 +11,8 @@ interface AnalyticsEvent {
   sessionId: string;
 }
 
-const SESSION_STORAGE_KEY = 'stellarswap_analytics_events';
-const FEEDBACK_STORAGE_KEY = 'stellarswap_feedback_log';
+const SESSION_STORAGE_KEY = 'stellex_analytics_events';
+const FEEDBACK_STORAGE_KEY = 'stellex_feedback_log';
 
 class AnalyticsService {
   private eventsLog: AnalyticsEvent[] = [];
@@ -30,20 +30,20 @@ class AnalyticsService {
   private generateSessionId(): string {
     const ts = Date.now().toString(36);
     const rand = Math.random().toString(36).substring(2, 8);
-    return `ss-${ts}-${rand}`;
+    return `stellex-${ts}-${rand}`;
   }
 
   private init() {
     // Sentry Drop-in SDK initialization hook
     if (typeof window !== 'undefined' && (window as any).Sentry) {
       this.isSentryInitialized = true;
-      console.log('[Sentry] Monitoring active for StellarSwap+');
+      console.log('[Sentry] Monitoring active for StellEx Pro');
     }
 
     // PostHog / Analytics SDK initialization hook
     if (typeof window !== 'undefined' && (window as any).posthog) {
       this.isPostHogInitialized = true;
-      console.log('[PostHog] Product Analytics active for StellarSwap+');
+      console.log('[PostHog] Product Analytics active for StellEx Pro');
     }
 
     // Persist events on page unload to prevent data loss
@@ -190,8 +190,8 @@ class AnalyticsService {
 
   // ---------- Level 5: Platform Stats & Growth ----------
 
-  private readonly USERS_STORAGE_KEY = 'stellarswap_unique_users';
-  private readonly GROWTH_STORAGE_KEY = 'stellarswap_user_growth';
+  private readonly USERS_STORAGE_KEY = 'stellex_unique_users';
+  private readonly GROWTH_STORAGE_KEY = 'stellex_user_growth';
 
   /**
    * Track a unique user onboarding event for growth metrics

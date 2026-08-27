@@ -1,6 +1,6 @@
-# 🛡️ StellarSwap+ — Smart Contract Security Audit & Risk Assessment
+# 🛡️ StellEx Pro — Smart Contract Security Audit & Risk Assessment
 
-**Project**: StellarSwap+ Protocol  
+**Project**: StellEx Pro Protocol  
 **Audit Type**: Comprehensive Smart Contract & Architecture Security Review  
 **Target Contracts**:
 1. `contracts/escrow_contract` — Multi-Signature & Dispute-Resolution Escrow Vault (`soroban-sdk v22.0.1`)
@@ -12,7 +12,7 @@
 
 ## 📋 Executive Summary
 
-A comprehensive automated and manual security review of the StellarSwap+ Soroban smart contracts was conducted to assess adherence to Stellar/Soroban security best practices, access control integrity, arithmetic safety, storage TTL management, multi-signature threshold guarantees, and token custody safety.
+A comprehensive automated and manual security review of the StellEx Pro Soroban smart contracts was conducted to assess adherence to Stellar/Soroban security best practices, access control integrity, arithmetic safety, storage TTL management, multi-signature threshold guarantees, and token custody safety.
 
 | Category | Severity Level | Finding Count | Resolution Status |
 |---|---|---|---|

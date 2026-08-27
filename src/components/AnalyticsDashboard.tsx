@@ -44,7 +44,7 @@ export const AnalyticsDashboard: React.FC = () => {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `stellarswap-analytics-proof-${new Date().toISOString().split('T')[0]}.json`;
+    a.download = `stellex-pro-analytics-proof-${new Date().toISOString().split('T')[0]}.json`;
     a.click();
     URL.revokeObjectURL(url);
     analytics.track('analytics_proof_exported');

@@ -1,6 +1,6 @@
-# Contributing to StellarSwap+
+# Contributing to StellEx Pro
 
-Thank you for your interest in contributing to StellarSwap+! This guide covers how to set up the project and submit contributions.
+Thank you for your interest in contributing to StellEx Pro! This guide covers how to set up the project and submit contributions.
 
 ---
 

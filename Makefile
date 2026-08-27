@@ -1,5 +1,5 @@
 # ============================================================
-# StellarSwap+ — Soroban Smart Contract Makefile
+# StellEx Pro — Soroban Smart Contract Makefile
 # ============================================================
 # Usage:
 #   make build        — Build both contracts as WASM

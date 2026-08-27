@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { ContractEvent } from '../types';
 import { STELLAR_CONFIG } from '../config/stellar';
-import { ExternalLink, RefreshCw, Lock, ArrowUpRight, CheckCircle2 } from 'lucide-react';
+import { ExportService } from '../services/exportService';
+import { ExternalLink, RefreshCw, Lock, ArrowUpRight, CheckCircle2, Download, FileJson, FileSpreadsheet } from 'lucide-react';
 
 interface ActivityTableProps {
   events: ContractEvent[];
@@ -9,12 +10,25 @@ interface ActivityTableProps {
 
 export const ActivityTable: React.FC<ActivityTableProps> = ({ events }) => {
   const [filter, setFilter] = useState<'all' | 'swap' | 'escrow'>('all');
+  const [exportNotice, setExportNotice] = useState<string | null>(null);
 
   const filteredEvents = events.filter((e) => {
     if (filter === 'swap') return e.type === 'swap' || e.type === 'deposit';
     if (filter === 'escrow') return e.type.startsWith('escrow');
     return true;
   });
+
+  const handleExportCSV = () => {
+    ExportService.exportEventsToCSV(filteredEvents);
+    setExportNotice('Exported CSV successfully');
+    setTimeout(() => setExportNotice(null), 2500);
+  };
+
+  const handleExportJSON = () => {
+    ExportService.exportAuditProofJSON(filteredEvents, []);
+    setExportNotice('Generated Cryptographic Proof JSON');
+    setTimeout(() => setExportNotice(null), 2500);
+  };
 
   const getOperationBadge = (type: ContractEvent['type']) => {
     switch (type) {
@@ -64,40 +78,66 @@ export const ActivityTable: React.FC<ActivityTableProps> = ({ events }) => {
         <div className="flex items-center gap-2">
           <h2 className="text-base font-bold text-text-primary">On-Chain Activity Telemetry</h2>
           <span className="badge-bullish">REAL-TIME RPC</span>
+          {exportNotice && (
+            <span className="badge-gold text-[10px] animate-fadeIn">{exportNotice}</span>
+          )}
         </div>
 
-        {/* Filter Buttons */}
-        <div className="flex bg-canvas p-1 rounded-xl border border-b-border text-xs">
-          <button
-            onClick={() => setFilter('all')}
-            className={`px-3 py-1 rounded-lg font-bold transition-all ${
-              filter === 'all'
-                ? 'bg-gold text-black shadow-sm'
-                : 'text-text-tertiary hover:text-text-primary'
-            }`}
-          >
-            ALL
-          </button>
-          <button
-            onClick={() => setFilter('swap')}
-            className={`px-3 py-1 rounded-lg font-bold transition-all ${
-              filter === 'swap'
-                ? 'bg-gold text-black shadow-sm'
-                : 'text-text-tertiary hover:text-text-primary'
-            }`}
-          >
-            SWAPS
-          </button>
-          <button
-            onClick={() => setFilter('escrow')}
-            className={`px-3 py-1 rounded-lg font-bold transition-all ${
-              filter === 'escrow'
-                ? 'bg-gold text-black shadow-sm'
-                : 'text-text-tertiary hover:text-text-primary'
-            }`}
-          >
-            ESCROW
-          </button>
+        <div className="flex items-center gap-2 flex-wrap">
+          {/* Export Actions (Feature Suite) */}
+          <div className="flex items-center gap-1.5">
+            <button
+              onClick={handleExportCSV}
+              className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-elevated hover:bg-elevated-hover border border-b-border text-text-secondary hover:text-gold text-xs font-bold transition-all shadow-xs"
+              title="Export Transactions as CSV"
+            >
+              <FileSpreadsheet className="w-3.5 h-3.5 text-bullish" />
+              <span>Export CSV</span>
+            </button>
+
+            <button
+              onClick={handleExportJSON}
+              className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-elevated hover:bg-elevated-hover border border-b-border text-text-secondary hover:text-protocol-blue text-xs font-bold transition-all shadow-xs"
+              title="Export Signed Cryptographic JSON Proof"
+            >
+              <FileJson className="w-3.5 h-3.5 text-protocol-blue" />
+              <span>Proof JSON</span>
+            </button>
+          </div>
+
+          {/* Filter Buttons */}
+          <div className="flex bg-canvas p-1 rounded-xl border border-b-border text-xs">
+            <button
+              onClick={() => setFilter('all')}
+              className={`px-3 py-1 rounded-lg font-bold transition-all ${
+                filter === 'all'
+                  ? 'bg-gold text-black shadow-sm'
+                  : 'text-text-tertiary hover:text-text-primary'
+              }`}
+            >
+              ALL
+            </button>
+            <button
+              onClick={() => setFilter('swap')}
+              className={`px-3 py-1 rounded-lg font-bold transition-all ${
+                filter === 'swap'
+                  ? 'bg-gold text-black shadow-sm'
+                  : 'text-text-tertiary hover:text-text-primary'
+              }`}
+            >
+              SWAPS
+            </button>
+            <button
+              onClick={() => setFilter('escrow')}
+              className={`px-3 py-1 rounded-lg font-bold transition-all ${
+                filter === 'escrow'
+                  ? 'bg-gold text-black shadow-sm'
+                  : 'text-text-tertiary hover:text-text-primary'
+              }`}
+            >
+              ESCROW
+            </button>
+          </div>
         </div>
       </div>
 

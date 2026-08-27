@@ -1,5 +1,5 @@
 /**
- * StellarSwap+ Web Vitals & Performance Monitoring Service
+ * StellEx Pro — Web Vitals & Performance Monitoring Service
  *
  * Tracks Core Web Vitals (LCP, FID, CLS, TTFB, INP) via PerformanceObserver,
  * monitors network online/offline status, and records page load timing.

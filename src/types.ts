@@ -7,9 +7,10 @@ export interface WalletState {
   balanceUsdc: string;
   balanceEurc?: string;
   balanceYxlm?: string;
+  isHardware?: boolean;
 }
 
-export type WalletType = 'albedo' | 'demo' | 'freighter' | 'lobstr' | 'xbull' | 'rabet';
+export type WalletType = 'albedo' | 'demo' | 'freighter' | 'lobstr' | 'xbull' | 'rabet' | 'ledger' | 'trezor' | 'keystone';
 
 export interface WalletOption {
   id: WalletType;
@@ -17,6 +18,8 @@ export interface WalletOption {
   icon: string;
   description: string;
   isInstalled: boolean;
+  category?: 'browser' | 'web' | 'hardware';
+  securityBadge?: string;
 }
 
 export type TxStep = 'idle' | 'preparing' | 'signing' | 'submitting' | 'confirmed' | 'failed';
@@ -150,3 +153,43 @@ export interface UserGrowthEntry {
 export type TrustlineStatus = 'exists' | 'missing' | 'unknown';
 
 export type ViewMode = 'simple' | 'pro';
+
+// ── Feature Suite Additions: Price Alerts, Batch Escrows, Pro Charts ──
+
+export type AlertCondition = 'ABOVE' | 'BELOW' | 'PCT_CHANGE_UP' | 'PCT_CHANGE_DOWN';
+
+export interface PriceAlert {
+  id: string;
+  tokenSymbol: string;
+  targetPrice: number;
+  condition: AlertCondition;
+  currentPriceAtCreation: number;
+  createdAt: string;
+  triggered: boolean;
+  triggeredAt?: string;
+  active: boolean;
+  soundEnabled: boolean;
+  notes?: string;
+}
+
+export interface BatchOperationProgress {
+  total: number;
+  completed: number;
+  failed: number;
+  currentId?: number;
+  statusText: string;
+  isProcessing: boolean;
+}
+
+export interface CandleData {
+  time: number;
+  open: number;
+  high: number;
+  low: number;
+  close: number;
+  volume: number;
+}
+
+export type TimeFrame = '1m' | '5m' | '15m' | '1H' | '4H' | '1D' | '1W';
+export type ChartType = 'candles' | 'line' | 'area' | 'heikin-ashi';
+export type TechnicalIndicator = 'sma' | 'ema' | 'rsi' | 'macd' | 'bollinger' | 'volume';

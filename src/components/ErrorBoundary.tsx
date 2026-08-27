@@ -47,6 +47,10 @@ export class ErrorBoundary extends Component<Props, State> {
 
   public render() {
     if (this.state.hasError) {
+      const isChunkLoadError =
+        this.state.error?.message?.includes('Failed to fetch dynamically imported module') ||
+        this.state.error?.message?.includes('Loading chunk');
+
       return (
         <div className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center p-4">
           <div className="max-w-md w-full p-8 rounded-3xl bg-slate-900/90 border border-red-500/40 shadow-2xl backdrop-blur-xl text-center">
@@ -55,16 +59,12 @@ export class ErrorBoundary extends Component<Props, State> {
             </div>
 
             <h2 className="text-2xl font-bold text-white mb-2">
-              {this.state.error?.message?.includes('Failed to fetch dynamically imported module') ||
-              this.state.error?.message?.includes('Loading chunk')
-                ? 'App Update Detected'
-                : 'Something went wrong'}
+              {isChunkLoadError ? 'App Update Detected' : 'Something went wrong'}
             </h2>
             <p className="text-sm text-slate-400 mb-6">
-              {this.state.error?.message?.includes('Failed to fetch dynamically imported module') ||
-              this.state.error?.message?.includes('Loading chunk')
-                ? 'A new version of StellarSwap+ was recently deployed. Reload the page to fetch the latest application updates.'
-                : 'StellarSwap+ encountered an unexpected UI exception. Our automated monitoring (Sentry) has captured the stack trace.'}
+              {isChunkLoadError
+                ? 'A new version of StellEx Pro was recently deployed. Reload the page to fetch the latest application updates.'
+                : 'StellEx Pro encountered an unexpected UI exception. Our automated monitoring (Sentry) has captured the stack trace.'}
             </p>
 
             {this.state.error && (

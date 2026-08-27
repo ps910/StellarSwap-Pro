@@ -1,4 +1,4 @@
-# StellarSwap+ — Pitch Deck (Level 6 Black Belt)
+# StellEx Pro — Pitch Deck (Level 6 Black Belt)
 
 ## 📎 Pitch Deck Links
 
@@ -10,8 +10,8 @@
 ## 🎯 Pitch Deck Outline (9 Slides)
 
 ### Slide 1 — Title & Executive Summary
-- **Title**: StellarSwap+
-- **Subtitle**: Non-Custodial DEX & 2-of-3 Multi-Signature Escrow Vault on Stellar
+- **Title**: StellEx Pro
+- **Subtitle**: Non-Custodial DEX, TradingView Pro Charts & Sovereign Multi-Sig Matrix on Stellar
 - **Badges**: Level 6 Black Belt Submission • Stellar Mainnet + Testnet • Soroban Rust v22 • 52+ Users • Security Audited
 - **Links**: [github.com/ps910/StellarSwap-Pro](https://github.com/ps910/StellarSwap-Pro) • [stellar-swap-pro.vercel.app](https://stellar-swap-pro.vercel.app)
 
@@ -22,7 +22,7 @@ Four critical pain points in the Stellar DeFi ecosystem:
 3. **Wallet Fragmentation**: Single dApps support only 1-2 wallets; users encounter broken flows without Freighter.
 4. **Cryptic Error Handling & Failed Trustlines**: Raw Horizon error codes confuse users when asset trustlines or minimum XLM reserves are missing.
 
-### Slide 3 — Solution: StellarSwap+
+### Slide 3 — Solution: StellEx Pro
 A unified production platform combining:
 - **⚡ Path Payment DEX**: Native orderbook routing for best-rate execution (XLM, USDC, EURC, yXLM) with zero smart contract lockup risk.
 - **🔒 Soroban 2-of-3 Multi-Sig Escrow Vault**: Rust smart contract lifecycle (Create → Fund → Approve → Release/Refund/Dispute) with automated timeout reclaim protection and Arbiter adjudication.

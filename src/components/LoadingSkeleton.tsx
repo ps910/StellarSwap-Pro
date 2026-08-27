@@ -42,7 +42,7 @@ export const PageLoadingSkeleton: React.FC = () => {
     <div className="min-h-screen bg-slate-950 flex items-center justify-center">
       <div className="text-center space-y-4">
         <div className="w-12 h-12 border-2 border-emerald-500/30 border-t-emerald-400 rounded-full animate-spin mx-auto" />
-        <p className="text-sm text-slate-500 font-mono">Loading StellarSwap+...</p>
+        <p className="text-sm text-slate-500 font-mono">Loading StellEx Pro...</p>
       </div>
     </div>
   );

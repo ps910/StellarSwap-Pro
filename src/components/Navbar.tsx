@@ -15,6 +15,7 @@ import {
   Shield,
   Layers,
   Globe,
+  Bell,
 } from 'lucide-react';
 import { STELLAR_CONFIG, NETWORKS } from '../config/stellar';
 
@@ -27,6 +28,10 @@ interface NavbarProps {
   onOpenFeedback: () => void;
   networkMode?: NetworkMode;
   onToggleNetwork?: (mode: NetworkMode) => void;
+  onOpenPriceAlerts?: () => void;
+  isProChartOpen?: boolean;
+  onToggleProChart?: () => void;
+  activeAlertsCount?: number;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -38,6 +43,10 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenFeedback,
   networkMode = 'testnet',
   onToggleNetwork,
+  onOpenPriceAlerts,
+  isProChartOpen = false,
+  onToggleProChart,
+  activeAlertsCount = 0,
 }) => {
   const [ledgerSeq, setLedgerSeq] = useState(584210);
   const [rpcLatency, setRpcLatency] = useState(38);
@@ -74,67 +83,68 @@ export const Navbar: React.FC<NavbarProps> = ({
 
   return (
     <header className="sticky top-0 z-50 w-full select-none">
-      {/* ── Level 6 Institutional Price & Telemetry Strip ── */}
       <div className="bg-canvas border-b border-b-border/60 py-1 px-4 overflow-x-auto text-[11px] flex items-center justify-between gap-6 whitespace-nowrap">
         <div className="flex items-center gap-5">
           <span className="flex items-center gap-1.5">
             <span className="text-gold font-bold">XLM/USDC</span>
             <span className="tabular-nums text-text-primary font-mono font-semibold">$0.1145</span>
-            <span className="tabular-nums text-bullish font-semibold text-[10px] bg-bullish/10 px-1 py-0.2 rounded">+2.4%</span>
+            <span className="tabular-nums text-bullish font-semibold text-[10px] bg-bullish/10 px-1 py-0.2 rounded">+3.4%</span>
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="text-text-secondary font-medium">USDC</span>
-            <span className="tabular-nums text-text-primary font-mono">$1.0000</span>
-            <span className="tabular-nums text-text-tertiary text-[10px]">0.0%</span>
+            <span className="text-text-secondary font-medium">AQUA/XLM</span>
+            <span className="tabular-nums text-text-primary font-mono font-semibold">0.0421</span>
+            <span className="tabular-nums text-bullish font-semibold text-[10px] bg-bullish/10 px-1 py-0.2 rounded">+8.1%</span>
+          </span>
+          <span className="flex items-center gap-1.5">
+            <span className="text-text-secondary font-medium">BTC/XLM</span>
+            <span className="tabular-nums text-text-primary font-mono">$64,250</span>
+            <span className="tabular-nums text-bullish font-semibold text-[10px] bg-bullish/10 px-1 py-0.2 rounded">+2.1%</span>
+          </span>
+          <span className="flex items-center gap-1.5">
+            <span className="text-text-secondary font-medium">ETH/USDC</span>
+            <span className="tabular-nums text-text-primary font-mono">$3,480</span>
+            <span className="tabular-nums text-bullish font-semibold text-[10px] bg-bullish/10 px-1 py-0.2 rounded">+1.8%</span>
           </span>
           <span className="flex items-center gap-1.5">
             <span className="text-text-secondary font-medium">EURC</span>
             <span className="tabular-nums text-text-primary font-mono">$1.0820</span>
-            <span className="tabular-nums text-bullish font-semibold text-[10px] bg-bullish/10 px-1 py-0.2 rounded">+0.1%</span>
+            <span className="tabular-nums text-bullish font-semibold text-[10px] bg-bullish/10 px-1 py-0.2 rounded">+0.2%</span>
           </span>
           <span className="flex items-center gap-1.5">
             <span className="text-text-secondary font-medium">yXLM</span>
             <span className="tabular-nums text-text-primary font-mono">$0.1189</span>
-            <span className="tabular-nums text-bullish font-semibold text-[10px] bg-bullish/10 px-1 py-0.2 rounded">+3.1%</span>
+            <span className="tabular-nums text-bullish font-semibold text-[10px] bg-bullish/10 px-1 py-0.2 rounded">+3.8%</span>
           </span>
         </div>
 
-        <div className="flex items-center gap-4 text-[10px]">
-          {/* Level 6 Black Belt Badge */}
-          <span className="flex items-center gap-1 text-gold bg-gold/10 border border-gold/20 px-2 py-0.5 rounded-full font-bold">
-            <span className="text-[9px]">⚫</span>
-            <span>LEVEL 6 BLACK BELT</span>
-          </span>
-
-          <span className="flex items-center gap-1.5 text-text-tertiary">
-            <Users className="w-3 h-3 text-gold" />
-            <span className="font-semibold text-text-secondary tabular-nums">52 Active Users</span>
-          </span>
-
-          <span className="flex items-center gap-1.5">
+        {/* Network & Ledger Telemetry */}
+        <div className="flex items-center gap-4 text-text-tertiary">
+          <span className="flex items-center gap-1">
             <span className="w-1.5 h-1.5 rounded-full bg-bullish animate-pulse" />
-            <span className="text-bullish font-mono font-medium">
-              Ledger #{ledgerSeq.toLocaleString()} · {rpcLatency}ms
-            </span>
+            <span className="font-mono text-text-secondary">Ledger #{ledgerSeq}</span>
+          </span>
+          <span className="flex items-center gap-1">
+            <Zap className="w-3 h-3 text-gold" />
+            <span className="font-mono text-text-secondary">{rpcLatency}ms</span>
           </span>
 
-          {/* Network Selector Pill */}
+          {/* Network Switcher Dropdown */}
           <div className="relative">
             <button
               onClick={() => setShowNetworkMenu(!showNetworkMenu)}
-              className={`flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold border transition-colors ${
+              className={`flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold transition-all border ${
                 networkMode === 'mainnet'
-                  ? 'bg-bullish/15 border-bullish/40 text-bullish'
-                  : 'bg-gold/10 border-gold/30 text-gold'
+                  ? 'bg-bullish/10 text-bullish border-bullish/30'
+                  : 'bg-gold/10 text-gold border-gold/30'
               }`}
             >
               <Globe className="w-2.5 h-2.5" />
               <span>{networkMode === 'mainnet' ? 'MAINNET' : 'TESTNET'}</span>
-              <ChevronDown className="w-2.5 h-2.5 ml-0.5" />
+              <ChevronDown className="w-2.5 h-2.5" />
             </button>
 
             {showNetworkMenu && (
-              <div className="absolute right-0 mt-1.5 w-44 bg-surface border border-b-border rounded-lg shadow-xl py-1 z-50 text-[11px]">
+              <div className="absolute right-0 top-6 z-50 w-36 py-1 bg-surface border border-b-border rounded-lg shadow-xl text-[11px] animate-fadeIn">
                 <button
                   onClick={() => {
                     onToggleNetwork?.('testnet');
@@ -176,11 +186,13 @@ export const Navbar: React.FC<NavbarProps> = ({
                 onClick={() => onSelectTab('swap')}
                 className="flex items-center gap-1.5 cursor-pointer select-none group"
               >
-                <span className="text-gold text-base font-black">★</span>
+                <div className="w-7 h-7 rounded-lg bg-gold/15 border border-gold/30 flex items-center justify-center text-gold group-hover:scale-105 transition-transform shadow-sm shadow-gold/20">
+                  <span className="text-gold text-sm font-black">⚡</span>
+                </div>
                 <span className="font-extrabold text-lg text-text-primary tracking-tight group-hover:text-gold transition-colors">
-                  StellarSwap
+                  StellEx
                 </span>
-                <span className="badge-gold ml-1.5 text-[9px] font-black tracking-wider uppercase">PRIME</span>
+                <span className="badge-gold ml-0.5 text-[9px] font-black tracking-wider uppercase">PRO</span>
               </div>
 
               {/* Nav Tabs — displayed when wallet is connected */}
@@ -210,7 +222,39 @@ export const Navbar: React.FC<NavbarProps> = ({
             </div>
 
             {/* Right: Actions */}
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2.5">
+              {/* Pro Chart Toggle Button */}
+              {onToggleProChart && (
+                <button
+                  onClick={onToggleProChart}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                    isProChartOpen
+                      ? 'bg-gold text-black shadow-md shadow-gold/20'
+                      : 'bg-elevated text-text-secondary border border-b-border hover:text-text-primary hover:border-gold/30'
+                  }`}
+                  title="Toggle Live TradingView Pro Chart"
+                >
+                  <BarChart3 className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">Pro Chart</span>
+                </button>
+              )}
+
+              {/* Price Alerts Bell Button */}
+              {onOpenPriceAlerts && (
+                <button
+                  onClick={onOpenPriceAlerts}
+                  className="relative p-2 rounded-lg text-text-tertiary hover:text-gold hover:bg-gold/10 border border-transparent hover:border-gold/30 transition-all"
+                  title="Price Alerts Manager"
+                >
+                  <Bell className="w-4 h-4" />
+                  {activeAlertsCount > 0 && (
+                    <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-gold text-black text-[9px] font-black flex items-center justify-center shadow-sm">
+                      {activeAlertsCount}
+                    </span>
+                  )}
+                </button>
+              )}
+
               {/* Feedback Button */}
               {walletState.isConnected && (
                 <button

@@ -9,18 +9,18 @@ interface FeedbackModalProps {
 }
 
 const FEATURE_REQUESTS = [
-  'More token pairs',
-  'Batch escrow operations',
-  'Price alerts',
-  'TradingView Pro Chart',
-  'Hardware wallet support',
-  'Transaction history export',
+  'Cross-Chain Bridge (Ethereum/Solana)',
+  'Soroban Lending & Yield Vaults',
+  'DEX Limit Orders (On-Chain)',
+  'Telegram Trading Bot',
+  'Mobile iOS/Android App',
+  'Decentralized Governance DAO',
 ];
 
 export const FeedbackModal: React.FC<FeedbackModalProps> = ({ isOpen, onClose, onSubmit }) => {
   const [rating, setRating] = useState<number>(5);
   const [hoverRating, setHoverRating] = useState<number>(0);
-  const [npsScore, setNpsScore] = useState<number>(9);
+  const [npsScore, setNpsScore] = useState<number>(10);
   const [comment, setComment] = useState<string>('');
   const [selectedFeatures, setSelectedFeatures] = useState<string[]>([]);
   const [isSubmitted, setIsSubmitted] = useState<boolean>(false);
@@ -51,9 +51,9 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({ isOpen, onClose, o
   };
 
   const handleShare = () => {
-    const text = `I just tested StellarSwap+ — a non-custodial DEX & Escrow vault on Stellar Testnet! 🚀 Check it out: https://stellar-swap-pro.vercel.app`;
+    const text = `I just traded on StellEx Pro — Next-Gen High-Velocity DEX & Sovereign Multi-Sig Matrix on Stellar! 🚀 https://github.com/ps910/StellarSwap-Pro`;
     if (navigator.share) {
-      navigator.share({ title: 'StellarSwap+', text, url: 'https://stellar-swap-pro.vercel.app' });
+      navigator.share({ title: 'StellEx Pro', text, url: 'https://github.com/ps910/StellarSwap-Pro' });
     } else {
       navigator.clipboard.writeText(text);
     }
@@ -82,7 +82,7 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({ isOpen, onClose, o
               className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gold/10 border border-gold/30 text-gold hover:bg-gold/20 text-xs font-bold transition-all"
             >
               <Share2 className="w-3.5 h-3.5" />
-              Share StellarSwap+ with friends
+              Share StellEx Pro with friends
             </button>
           </div>
         ) : (

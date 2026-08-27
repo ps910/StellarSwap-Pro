@@ -1,4 +1,4 @@
-# 🎬 StellarSwap+ — Full Product Demo Video (Level 6 Black Belt)
+# 🎬 StellEx Pro — Full Product Demo Video (Level 6 Black Belt)
 
 ## 📽️ Demo Recordings
 

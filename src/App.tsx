@@ -21,9 +21,14 @@ import {
   executeRefundEscrow,
   executeDisputeEscrow,
   executeResolveDispute,
+  executeBatchFundEscrows,
+  executeBatchApproveEscrows,
+  executeBatchReleaseEscrows,
+  executeBatchCreateEscrows,
 } from './services/escrow';
 import { eventStreamService, INITIAL_EVENTS } from './services/events';
 import { analytics } from './services/analytics';
+import { PriceAlertService } from './services/priceAlerts';
 import { STELLAR_CONFIG, NETWORKS } from './config/stellar';
 import { fetchAccountBalances, AccountBalancesData } from './services/accountBalances';
 import { ErrorBoundary } from './components/ErrorBoundary';
@@ -35,6 +40,8 @@ import { WalletModal } from './components/WalletModal';
 import { TransactionTracker } from './components/TransactionTracker';
 import { ErrorModal } from './components/ErrorModal';
 import { FeedbackModal } from './components/FeedbackModal';
+import { TradingViewChart } from './components/TradingViewChart';
+import { PriceAlertsModal } from './components/PriceAlertsModal';
 
 // Direct static imports for critical landing experience (prevents blank screen)
 import { LandingHero } from './components/LandingHero';
@@ -71,6 +78,9 @@ export const AppContent: React.FC = () => {
     lobstr: false,
     xbull: false,
     rabet: false,
+    ledger: true,
+    trezor: true,
+    keystone: true,
   });
 
   // Modals & Overlay Controls
@@ -96,6 +106,13 @@ export const AppContent: React.FC = () => {
     feeBps: 30,
   });
 
+  // Pro Suite States
+  const [isProChartOpen, setIsProChartOpen] = useState(true);
+  const [isPriceAlertsOpen, setIsPriceAlertsOpen] = useState(false);
+  const [selectedAlertSymbol, setSelectedAlertSymbol] = useState('XLM');
+  const [activeAlertsCount, setActiveAlertsCount] = useState(0);
+  const [alertToast, setAlertToast] = useState<string | null>(null);
+
   // Escrows State (Level 6 Multi-Sig & Dispute items)
   const [escrows, setEscrows] = useState<EscrowItem[]>(INITIAL_ESCROWS);
 
@@ -114,12 +131,20 @@ export const AppContent: React.FC = () => {
     }));
   };
 
-  // 1. Initial Load
+  // 1. Initial Load & Alert Subscriptions
   useEffect(() => {
     checkInstalledWallets().then(setInstalledWallets);
     const activeConfig = NETWORKS[networkMode] || STELLAR_CONFIG;
     fetchPoolReserves(activeConfig.contractId).then(setReserves);
     analytics.track('app_initialized', { network: networkMode });
+
+    // Price Alerts listener
+    setActiveAlertsCount(PriceAlertService.getActiveAlerts().length);
+    const unlistenAlerts = PriceAlertService.onAlertTriggered((alert) => {
+      setAlertToast(`🚨 Price Alert: ${alert.tokenSymbol} reached target of $${alert.targetPrice.toFixed(4)} (${alert.condition})!`);
+      setActiveAlertsCount(PriceAlertService.getActiveAlerts().length);
+      setTimeout(() => setAlertToast(null), 6000);
+    });
 
     const unsubscribe = eventStreamService.subscribe((newEvent) => {
       setEvents((prev) => [newEvent, ...prev.slice(0, 19)]);
@@ -128,6 +153,7 @@ export const AppContent: React.FC = () => {
     eventStreamService.startMockEventStream();
 
     return () => {
+      unlistenAlerts();
       unsubscribe();
       eventStreamService.stop();
     };
@@ -566,6 +592,115 @@ export const AppContent: React.FC = () => {
     }
   };
 
+  // ── Batch Escrow Handlers (Level 6 Institutional Suite) ──
+  const handleBatchFund = async (escrowIds: number[]) => {
+    if (!walletState.address) return;
+    setIsProcessingTx(true);
+    try {
+      const txHashes = await executeBatchFundEscrows(escrowIds, walletState.address, undefined, setTxStatus);
+      analytics.track('batch_escrow_funded', { count: escrowIds.length });
+      setEscrows((prev) =>
+        prev.map((e) => {
+          const idx = escrowIds.indexOf(e.id);
+          return idx >= 0 ? { ...e, state: 'Funded', txHash: txHashes[idx] || txHashes[0] } : e;
+        })
+      );
+    } catch (err: any) {
+      analytics.captureError(err, { operation: 'batch_fund_escrows' });
+      setActiveError(parseWalletError(err));
+    } finally {
+      setIsProcessingTx(false);
+    }
+  };
+
+  const handleBatchApprove = async (escrowIds: number[], role: 'payer' | 'payee' | 'arbiter') => {
+    if (!walletState.address) return;
+    setIsProcessingTx(true);
+    try {
+      const txHashes = await executeBatchApproveEscrows(escrowIds, role, undefined, setTxStatus);
+      analytics.track('batch_escrow_approved', { count: escrowIds.length, role });
+      setEscrows((prev) =>
+        prev.map((e) => {
+          const idx = escrowIds.indexOf(e.id);
+          if (idx < 0) return e;
+          return {
+            ...e,
+            payerApproved: role === 'payer' ? true : e.payerApproved,
+            payeeApproved: role === 'payee' ? true : e.payeeApproved,
+            arbiterApproved: role === 'arbiter' ? true : e.arbiterApproved,
+            txHash: txHashes[idx] || txHashes[0],
+          };
+        })
+      );
+    } catch (err: any) {
+      analytics.captureError(err, { operation: 'batch_approve_escrows' });
+      setActiveError(parseWalletError(err));
+    } finally {
+      setIsProcessingTx(false);
+    }
+  };
+
+  const handleBatchRelease = async (escrowIds: number[]) => {
+    if (!walletState.address) return;
+    setIsProcessingTx(true);
+    try {
+      const txHashes = await executeBatchReleaseEscrows(escrowIds, undefined, setTxStatus);
+      analytics.track('batch_escrow_released', { count: escrowIds.length });
+      setEscrows((prev) =>
+        prev.map((e) => {
+          const idx = escrowIds.indexOf(e.id);
+          return idx >= 0 ? { ...e, state: 'Released', txHash: txHashes[idx] || txHashes[0] } : e;
+        })
+      );
+    } catch (err: any) {
+      analytics.captureError(err, { operation: 'batch_release_escrows' });
+      setActiveError(parseWalletError(err));
+    } finally {
+      setIsProcessingTx(false);
+    }
+  };
+
+  const handleBatchCreate = async (items: { payee: string; amount: string; token: string; lockupHours: number; description: string }[]) => {
+    if (!walletState.address) return;
+    setIsProcessingTx(true);
+    try {
+      const { escrowIds, txHash } = await executeBatchCreateEscrows(
+        STELLAR_CONFIG.escrowContractId,
+        walletState.address,
+        items,
+        undefined,
+        setTxStatus
+      );
+      analytics.track('batch_escrow_created', { count: items.length });
+      const newItems: EscrowItem[] = escrowIds.map((id, idx) => {
+        const src = items[idx] || items[0];
+        return {
+          id,
+          payer: walletState.address || 'G...',
+          payee: src.payee,
+          token: src.token,
+          amount: src.amount,
+          state: 'Created',
+          createdAt: 'Just now',
+          timeoutLedger: 585000 + src.lockupHours * 720,
+          unlockTime: Date.now() + src.lockupHours * 3600 * 1000,
+          lockupHours: src.lockupHours,
+          description: src.description,
+          payerApproved: false,
+          payeeApproved: false,
+          arbiterApproved: false,
+          txHash,
+        };
+      });
+      setEscrows((prev) => [...newItems, ...prev]);
+    } catch (err: any) {
+      analytics.captureError(err, { operation: 'batch_create_escrows' });
+      setActiveError(parseWalletError(err));
+    } finally {
+      setIsProcessingTx(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-canvas text-text-primary font-sans selection:bg-gold selection:text-black bg-tactical-grid">
       {/* Background Radial Gradients */}
@@ -575,6 +710,20 @@ export const AppContent: React.FC = () => {
       </div>
 
       <div className="relative z-10">
+        {/* Real-time Alert Toast Notification */}
+        {alertToast && (
+          <div className="fixed top-16 right-4 z-50 p-4 rounded-xl bg-gold/95 text-black font-extrabold text-xs shadow-2xl flex items-center gap-3 border border-gold animate-slide-up">
+            <span className="text-base">🔔</span>
+            <span>{alertToast}</span>
+            <button
+              onClick={() => setAlertToast(null)}
+              className="ml-2 text-black/70 hover:text-black font-mono font-bold"
+            >
+              ✕
+            </button>
+          </div>
+        )}
+
         {/* Top Navbar */}
         <Navbar
           walletState={walletState}
@@ -585,6 +734,10 @@ export const AppContent: React.FC = () => {
           onOpenFeedback={() => setIsFeedbackModalOpen(true)}
           networkMode={networkMode}
           onToggleNetwork={handleToggleNetwork}
+          onOpenPriceAlerts={() => setIsPriceAlertsOpen(true)}
+          isProChartOpen={isProChartOpen}
+          onToggleProChart={() => setIsProChartOpen(!isProChartOpen)}
+          activeAlertsCount={activeAlertsCount}
         />
 
         {/* Main Content Area */}
@@ -615,6 +768,15 @@ export const AppContent: React.FC = () => {
               </Suspense>
             ) : (
               <>
+                {/* Institutional TradingView Pro Candlestick Chart */}
+                {isProChartOpen && (
+                  <TradingViewChart
+                    defaultBase="XLM"
+                    defaultQuote="USDC"
+                    onClose={() => setIsProChartOpen(false)}
+                  />
+                )}
+
                 {/* Main Grid: Swap (Left) + Escrow / Multi-Sig (Right) */}
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
                   <div className="lg:col-span-6">
@@ -626,6 +788,12 @@ export const AppContent: React.FC = () => {
                       onExecuteSwap={handleExecuteSwap}
                       onExecuteDeposit={handleExecuteDeposit}
                       isProcessing={isProcessingTx}
+                      onOpenPriceAlert={(symbol) => {
+                        setSelectedAlertSymbol(symbol);
+                        setIsPriceAlertsOpen(true);
+                      }}
+                      onToggleProChart={() => setIsProChartOpen(!isProChartOpen)}
+                      isProChartOpen={isProChartOpen}
                     />
                   </div>
 
@@ -641,6 +809,10 @@ export const AppContent: React.FC = () => {
                       onRefundEscrow={handleRefundEscrow}
                       onDisputeEscrow={handleDisputeEscrow}
                       onResolveDispute={handleResolveDispute}
+                      onBatchFund={handleBatchFund}
+                      onBatchApprove={handleBatchApprove}
+                      onBatchRelease={handleBatchRelease}
+                      onBatchCreate={handleBatchCreate}
                       isProcessing={isProcessingTx}
                     />
                   </div>
@@ -665,6 +837,15 @@ export const AppContent: React.FC = () => {
         installedState={installedWallets}
         onSelectWallet={handleSelectWallet}
         isLoading={isConnecting}
+      />
+
+      <PriceAlertsModal
+        isOpen={isPriceAlertsOpen}
+        onClose={() => {
+          setIsPriceAlertsOpen(false);
+          setActiveAlertsCount(PriceAlertService.getActiveAlerts().length);
+        }}
+        defaultSymbol={selectedAlertSymbol}
       />
 
       <TransactionTracker

@@ -38,6 +38,10 @@ interface EscrowInterfaceProps {
   onRefundEscrow: (escrowId: number) => Promise<void>;
   onDisputeEscrow: (escrowId: number) => Promise<void>;
   onResolveDispute: (escrowId: number, payeeShareBps: number) => Promise<void>;
+  onBatchFund?: (escrowIds: number[]) => Promise<void>;
+  onBatchApprove?: (escrowIds: number[], role: 'payer' | 'payee' | 'arbiter') => Promise<void>;
+  onBatchRelease?: (escrowIds: number[]) => Promise<void>;
+  onBatchCreate?: (items: any[]) => Promise<void>;
   isProcessing: boolean;
 }
 
@@ -52,11 +56,16 @@ export const EscrowInterface: React.FC<EscrowInterfaceProps> = ({
   onRefundEscrow,
   onDisputeEscrow,
   onResolveDispute,
+  onBatchFund,
+  onBatchApprove,
+  onBatchRelease,
+  onBatchCreate,
   isProcessing,
 }) => {
-  const [activeSubTab, setActiveSubTab] = useState<'list' | 'create'>('list');
+  const [activeSubTab, setActiveSubTab] = useState<'list' | 'create' | 'batch'>('list');
   const [filterMode, setFilterMode] = useState<'all' | 'active' | 'multisig' | 'disputed' | 'settled'>('all');
   const [copiedContract, setCopiedContract] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<number[]>([]);
 
   // Form State
   const [payeeAddress, setPayeeAddress] = useState('');
@@ -65,6 +74,13 @@ export const EscrowInterface: React.FC<EscrowInterfaceProps> = ({
   const [amount, setAmount] = useState('500');
   const [lockupHours, setLockupHours] = useState('24');
   const [description, setDescription] = useState('');
+
+  // Batch Form State
+  const [batchCsvText, setBatchCsvText] = useState(
+    'GCDTK94LM77M1B4P7M8N28AZX99AA11BB22CC33DD44EE55FF66GG77HH,250,USDC,24,Milestone 1: Frontend Architecture\n' +
+    'GAYK749LM99P2C1R4M6Z99QAA11BB22CC33DD44EE55FF66GG77HH11,500,USDC,48,Milestone 2: Soroban Smart Contract\n' +
+    'GBSTRK4YMQW4L6P8S1U0N5R2T9V3W8Z6Y7X0A1B2C3D4E5F6G7H8J9K0,300,USDC,72,Milestone 3: Security Verification'
+  );
 
   // Dispute Modal State
   const [disputeModalEscrowId, setDisputeModalEscrowId] = useState<number | null>(null);
@@ -197,10 +213,10 @@ export const EscrowInterface: React.FC<EscrowInterfaceProps> = ({
         </div>
 
         {/* Action Toggle */}
-        <div className="flex bg-canvas p-1 rounded-xl border border-b-border text-xs">
+        <div className="flex bg-canvas p-1 rounded-xl border border-b-border text-xs overflow-x-auto">
           <button
             onClick={() => setActiveSubTab('list')}
-            className={`px-3 py-1.5 rounded-lg font-bold transition-all duration-200 ${
+            className={`px-3 py-1.5 rounded-lg font-bold transition-all duration-200 whitespace-nowrap ${
               activeSubTab === 'list'
                 ? 'bg-gold text-black shadow-sm'
                 : 'text-text-tertiary hover:text-text-primary'
@@ -210,7 +226,7 @@ export const EscrowInterface: React.FC<EscrowInterfaceProps> = ({
           </button>
           <button
             onClick={() => setActiveSubTab('create')}
-            className={`px-3 py-1.5 rounded-lg font-bold flex items-center gap-1.5 transition-all duration-200 ${
+            className={`px-3 py-1.5 rounded-lg font-bold flex items-center gap-1.5 transition-all duration-200 whitespace-nowrap ${
               activeSubTab === 'create'
                 ? 'bg-gold text-black shadow-sm'
                 : 'text-text-tertiary hover:text-text-primary'
@@ -218,6 +234,17 @@ export const EscrowInterface: React.FC<EscrowInterfaceProps> = ({
           >
             <PlusCircle className="w-3.5 h-3.5" />
             <span>NEW ESCROW</span>
+          </button>
+          <button
+            onClick={() => setActiveSubTab('batch')}
+            className={`px-3 py-1.5 rounded-lg font-bold flex items-center gap-1.5 transition-all duration-200 whitespace-nowrap ${
+              activeSubTab === 'batch'
+                ? 'bg-gold text-black shadow-sm'
+                : 'text-text-tertiary hover:text-text-primary'
+            }`}
+          >
+            <Layers className="w-3.5 h-3.5" />
+            <span>BATCH CREATOR</span>
           </button>
         </div>
       </div>
@@ -346,9 +373,175 @@ export const EscrowInterface: React.FC<EscrowInterfaceProps> = ({
         </form>
       )}
 
+      {/* ── View: Batch Escrow Creator ── */}
+      {activeSubTab === 'batch' && (
+        <div className="space-y-4 text-xs animate-fade-in">
+          <div className="p-4 rounded-xl bg-canvas border border-b-border space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="font-bold text-text-primary flex items-center gap-1.5">
+                <Layers className="w-4 h-4 text-gold" />
+                Bulk Milestone / Multi-Recipient Escrow Generator
+              </span>
+              <span className="badge-gold text-[9px]">CSV Import Ready</span>
+            </div>
+            <p className="text-[11px] text-text-secondary leading-relaxed">
+              Define multiple escrow vaults simultaneously using CSV format or milestone presets. Deploy all conditional escrows in a single atomic transaction sequence.
+            </p>
+          </div>
+
+          <div>
+            <label className="block text-text-tertiary mb-1.5 font-bold uppercase tracking-wider text-[10px]">
+              CSV / Milestone Batch Definition (Format: PayeeAddress, Amount, Token, LockupHours, MilestoneDescription)
+            </label>
+            <textarea
+              rows={5}
+              value={batchCsvText}
+              onChange={(e) => setBatchCsvText(e.target.value)}
+              className="w-full bg-elevated border border-b-border rounded-xl p-3 font-mono text-[11px] text-text-primary focus:outline-none focus:border-gold custom-scrollbar"
+            />
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                setBatchCsvText(
+                  'GCDTK94LM77M1B4P7M8N28AZX99AA11BB22CC33DD44EE55FF66GG77HH,250,USDC,24,Milestone 1: Prototype UI\n' +
+                  'GAYK749LM99P2C1R4M6Z99QAA11BB22CC33DD44EE55FF66GG77HH11,500,USDC,48,Milestone 2: Rust Smart Contract\n' +
+                  'GBSTRK4YMQW4L6P8S1U0N5R2T9V3W8Z6Y7X0A1B2C3D4E5F6G7H8J9K0,300,USDC,72,Milestone 3: Mainnet Verification'
+                );
+              }}
+              className="px-2.5 py-1 rounded-lg bg-elevated hover:bg-elevated-hover text-text-tertiary text-[10px] border border-b-border"
+            >
+              Load Milestone Template
+            </button>
+          </div>
+
+          {!walletState.isConnected ? (
+            <button
+              type="button"
+              onClick={onOpenWalletModal}
+              className="w-full py-3.5 rounded-xl bg-elevated hover:bg-elevated-hover border border-b-border text-text-primary font-bold text-xs transition-all"
+            >
+              CONNECT WALLET TO DEPLOY BATCH
+            </button>
+          ) : (
+            <button
+              type="button"
+              disabled={isProcessing || !batchCsvText.trim()}
+              onClick={async () => {
+                const lines = batchCsvText.trim().split('\n').filter((l) => l.trim().length > 0);
+                const items = lines.map((line) => {
+                  const parts = line.split(',').map((p) => p.trim());
+                  return {
+                    payee: parts[0] || 'GCDTK94LM77M1B4P7M8N28A',
+                    amount: parts[1] || '100',
+                    token: parts[2] || 'USDC',
+                    lockupHours: parseInt(parts[3] || '24', 10),
+                    description: parts[4] || 'Batch Milestone Agreement',
+                  };
+                });
+                if (onBatchCreate) {
+                  await onBatchCreate(items);
+                } else {
+                  for (const it of items) {
+                    await onCreateEscrow(it.payee, undefined, it.token, it.amount, it.lockupHours, it.description);
+                  }
+                }
+                setActiveSubTab('list');
+              }}
+              className="w-full py-3.5 rounded-xl bg-gold hover:bg-gold-hover text-black font-black text-xs shadow-lg shadow-gold/15 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+            >
+              <Layers className="w-4 h-4 text-black" />
+              <span>DEPLOY BATCH ESCROW VAULTS ({batchCsvText.trim().split('\n').filter((l) => l.trim().length > 0).length} AGREEMENTS)</span>
+            </button>
+          )}
+        </div>
+      )}
+
       {/* ── View: Escrows List ── */}
       {activeSubTab === 'list' && (
         <div className="space-y-3 text-xs">
+          {/* Batch Selection Action Bar (Appears when items are selected) */}
+          {filteredEscrows.length > 0 && (
+            <div className="p-3 rounded-xl bg-canvas border border-b-border flex flex-wrap items-center justify-between gap-3 text-xs">
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  checked={selectedIds.length === filteredEscrows.length && filteredEscrows.length > 0}
+                  onChange={(e) => {
+                    if (e.target.checked) {
+                      setSelectedIds(filteredEscrows.map((i) => i.id));
+                    } else {
+                      setSelectedIds([]);
+                    }
+                  }}
+                  className="rounded accent-gold w-4 h-4 cursor-pointer"
+                />
+                <span className="text-text-secondary font-semibold">
+                  {selectedIds.length > 0 ? `${selectedIds.length} Selected` : 'Select All'}
+                </span>
+              </div>
+
+              {selectedIds.length > 0 && (
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      if (onBatchFund) await onBatchFund(selectedIds);
+                      else {
+                        for (const id of selectedIds) await onFundEscrow(id);
+                      }
+                      setSelectedIds([]);
+                    }}
+                    disabled={isProcessing}
+                    className="px-2.5 py-1 rounded-lg bg-gold text-black font-bold text-[11px] hover:bg-gold-hover transition-all"
+                  >
+                    Batch Fund ({selectedIds.length})
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      if (onBatchApprove) await onBatchApprove(selectedIds, 'payer');
+                      else {
+                        for (const id of selectedIds) await onApproveEscrow(id, 'payer');
+                      }
+                      setSelectedIds([]);
+                    }}
+                    disabled={isProcessing}
+                    className="px-2.5 py-1 rounded-lg bg-bullish text-black font-bold text-[11px] hover:bg-bullish/90 transition-all"
+                  >
+                    Batch Approve ({selectedIds.length})
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      if (onBatchRelease) await onBatchRelease(selectedIds);
+                      else {
+                        for (const id of selectedIds) await onReleaseEscrow(id);
+                      }
+                      setSelectedIds([]);
+                    }}
+                    disabled={isProcessing}
+                    className="px-2.5 py-1 rounded-lg bg-protocol-blue text-white font-bold text-[11px] hover:bg-protocol-blue/90 transition-all"
+                  >
+                    Batch Release ({selectedIds.length})
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setSelectedIds([])}
+                    className="px-2 py-1 rounded-lg bg-elevated text-text-tertiary text-[10px]"
+                  >
+                    Clear
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+
           {filteredEscrows.length === 0 ? (
             <div className="p-8 text-center bg-canvas rounded-xl border border-b-border">
               <AlertCircle className="w-8 h-8 text-text-disabled mx-auto mb-2" />
@@ -364,11 +557,27 @@ export const EscrowInterface: React.FC<EscrowInterfaceProps> = ({
             filteredEscrows.map((item) => (
               <div
                 key={item.id}
-                className="p-4 rounded-xl bg-elevated border border-b-border hover:border-b-border-light transition-all space-y-3"
+                className={`p-4 rounded-xl border transition-all space-y-3 ${
+                  selectedIds.includes(item.id)
+                    ? 'bg-elevated border-gold/50 shadow-md shadow-gold/5'
+                    : 'bg-elevated border-b-border hover:border-b-border-light'
+                }`}
               >
                 {/* Header & Status */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                   <div className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={selectedIds.includes(item.id)}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setSelectedIds((prev) => [...prev, item.id]);
+                        } else {
+                          setSelectedIds((prev) => prev.filter((id) => id !== item.id));
+                        }
+                      }}
+                      className="rounded accent-gold w-4 h-4 cursor-pointer"
+                    />
                     <span className="text-xs font-bold text-text-primary font-mono">ESCROW #{item.id}</span>
                     {getStatusBadge(item.state)}
                     {item.arbiter && (

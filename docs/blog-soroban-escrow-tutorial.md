@@ -1,6 +1,6 @@
 # 🛠️ Tutorial: Building a Scalable 2-of-3 Multi-Signature Escrow on Soroban (Stellar)
 
-*By the StellarSwap+ Core Team | Ecosystem Contribution for Level 6 Black Belt*
+*By the StellEx Pro Core Team | Ecosystem Contribution for Level 6 Black Belt*
 
 ---
 
@@ -14,7 +14,7 @@ Smart contract escrows are the cornerstone of trustless commerce, freelance mile
 4. **Dispute Resolution**: Adjudicating contested agreements with custom basis-point fund splits.
 5. **Real Token Custody**: Transferring Stellar Asset Contract (SAC) tokens seamlessly.
 
-In this tutorial, we will break down the production architecture powering **StellarSwap+**.
+In this tutorial, we will break down the production architecture powering **StellEx Pro**.
 
 ---
 

@@ -13,11 +13,22 @@ interface SwapInterfaceProps {
   onExecuteSwap: (tokenIn: string, tokenOut: string, amountIn: string, minAmountOut: string) => void;
   onExecuteDeposit: (token: string, amount: string) => void;
   isProcessing: boolean;
+  onOpenPriceAlert?: (symbol: string) => void;
+  onToggleProChart?: () => void;
+  isProChartOpen?: boolean;
 }
 
 const TOKEN_ICONS: Record<string, { bg: string; char: string }> = {
   XLM: { bg: 'bg-gradient-to-br from-[#0E76FD] to-[#1B4DFF]', char: '✦' },
   USDC: { bg: 'bg-gradient-to-br from-[#2775CA] to-[#1A5BB5]', char: '$' },
+  EURC: { bg: 'bg-gradient-to-br from-[#0052FF] to-[#0A2F8D]', char: '€' },
+  yXLM: { bg: 'bg-gradient-to-br from-[#F5B800] to-[#E65100]', char: '📈' },
+  AQUA: { bg: 'bg-gradient-to-br from-[#00D2FF] to-[#0094FF]', char: '🌊' },
+  BTC: { bg: 'bg-gradient-to-br from-[#F7931A] to-[#D67400]', char: '₿' },
+  ETH: { bg: 'bg-gradient-to-br from-[#627EEA] to-[#3C57B8]', char: 'Ξ' },
+  SHX: { bg: 'bg-gradient-to-br from-[#10B981] to-[#047857]', char: '🛡️' },
+  yUSDC: { bg: 'bg-gradient-to-br from-[#8B5CF6] to-[#6D28D9]', char: '💎' },
+  SLT: { bg: 'bg-gradient-to-br from-[#EC4899] to-[#BE185D]', char: '🏙️' },
 };
 
 export const SwapInterface: React.FC<SwapInterfaceProps> = ({
@@ -28,6 +39,9 @@ export const SwapInterface: React.FC<SwapInterfaceProps> = ({
   onExecuteSwap,
   onExecuteDeposit,
   isProcessing,
+  onOpenPriceAlert,
+  onToggleProChart,
+  isProChartOpen,
 }) => {
   const [activeTab, setActiveTab] = useState<'swap' | 'deposit'>('swap');
   const [tokenIn, setTokenIn] = useState('XLM');
@@ -39,13 +53,14 @@ export const SwapInterface: React.FC<SwapInterfaceProps> = ({
   const [showSlippageSettings, setShowSlippageSettings] = useState(false);
   const [customSlippage, setCustomSlippage] = useState('');
 
-  const numericAmountIn = parseFloat(amountIn) || 0;
-  const estimatedOutput =
-    tokenIn === 'XLM'
-      ? (numericAmountIn * 0.0992).toFixed(4)
-      : (numericAmountIn * 10.05).toFixed(4);
+  const tokenInObj = SUPPORTED_TOKENS.find((t) => t.symbol === tokenIn) || SUPPORTED_TOKENS[0];
+  const tokenOutObj = SUPPORTED_TOKENS.find((t) => t.symbol === tokenOut) || SUPPORTED_TOKENS[1];
 
-  const minReceived = (parseFloat(estimatedOutput) * (1 - parseFloat(slippage) / 100)).toFixed(4);
+  const rate = tokenOutObj.priceUsd > 0 ? tokenInObj.priceUsd / tokenOutObj.priceUsd : 1;
+  const numericAmountIn = parseFloat(amountIn) || 0;
+  const estimatedOutput = (numericAmountIn * rate).toFixed(tokenOutObj.priceUsd < 0.1 ? 6 : 4);
+
+  const minReceived = (parseFloat(estimatedOutput) * (1 - parseFloat(slippage) / 100)).toFixed(tokenOutObj.priceUsd < 0.1 ? 6 : 4);
   const priceImpact = numericAmountIn > 5000 ? '0.12' : numericAmountIn > 1000 ? '0.04' : '<0.01';
 
   const handleSwapTokens = () => {
@@ -54,8 +69,19 @@ export const SwapInterface: React.FC<SwapInterfaceProps> = ({
     setTokenOut(temp);
   };
 
+  const handleSelectQuickPair = (base: string, quote: string) => {
+    setTokenIn(base);
+    setTokenOut(quote);
+  };
+
   const handlePercentClick = (pct: number) => {
-    const bal = tokenIn === 'XLM' ? walletState.balanceXlm : walletState.balanceUsdc;
+    let bal = '0.00';
+    if (tokenIn === 'XLM') bal = walletState.balanceXlm;
+    else if (tokenIn === 'USDC') bal = walletState.balanceUsdc;
+    else if (tokenIn === 'EURC') bal = walletState.balanceEurc || '100.00';
+    else if (tokenIn === 'yXLM') bal = walletState.balanceYxlm || '500.00';
+    else bal = '1000.00';
+
     const numBal = parseFloat(bal.replace(/,/g, '')) || 0;
     setAmountIn((numBal * pct / 100).toFixed(2));
   };
@@ -138,28 +164,68 @@ export const SwapInterface: React.FC<SwapInterfaceProps> = ({
         </div>
       )}
 
-      {/* ── Tab Switcher ── */}
-      <div className="flex p-1 mb-5 rounded-xl bg-canvas border border-b-border text-xs">
-        <button
-          onClick={() => setActiveTab('swap')}
-          className={`flex-1 py-2 rounded-lg font-bold transition-all duration-200 ${
-            activeTab === 'swap'
-              ? 'bg-gold text-black shadow-sm'
-              : 'text-text-tertiary hover:text-text-primary'
-          }`}
-        >
-          TOKEN SWAP
-        </button>
-        <button
-          onClick={() => setActiveTab('deposit')}
-          className={`flex-1 py-2 rounded-lg font-bold transition-all duration-200 ${
-            activeTab === 'deposit'
-              ? 'bg-gold text-black shadow-sm'
-              : 'text-text-tertiary hover:text-text-primary'
-          }`}
-        >
-          ADD LIQUIDITY
-        </button>
+      {/* ── Tab Switcher & Quick Action Row ── */}
+      <div className="flex items-center gap-2 mb-4">
+        <div className="flex-1 flex p-1 rounded-xl bg-canvas border border-b-border text-xs">
+          <button
+            onClick={() => setActiveTab('swap')}
+            className={`flex-1 py-2 rounded-lg font-bold transition-all duration-200 ${
+              activeTab === 'swap'
+                ? 'bg-gold text-black shadow-sm'
+                : 'text-text-tertiary hover:text-text-primary'
+            }`}
+          >
+            TOKEN SWAP
+          </button>
+          <button
+            onClick={() => setActiveTab('deposit')}
+            className={`flex-1 py-2 rounded-lg font-bold transition-all duration-200 ${
+              activeTab === 'deposit'
+                ? 'bg-gold text-black shadow-sm'
+                : 'text-text-tertiary hover:text-text-primary'
+            }`}
+          >
+            ADD LIQUIDITY
+          </button>
+        </div>
+
+        {onOpenPriceAlert && (
+          <button
+            onClick={() => onOpenPriceAlert(tokenIn)}
+            className="p-2.5 rounded-xl bg-canvas border border-b-border text-text-tertiary hover:text-gold hover:border-gold/40 transition-all"
+            title="Set Price Alert for this asset"
+          >
+            <span className="text-xs">🔔</span>
+          </button>
+        )}
+      </div>
+
+      {/* ── Quick Pair Shortcuts (More Token Pairs) ── */}
+      <div className="flex items-center gap-1.5 overflow-x-auto pb-1 mb-4 text-[10px] whitespace-nowrap custom-scrollbar">
+        <span className="text-text-disabled font-semibold">Pairs:</span>
+        {[
+          ['XLM', 'USDC'],
+          ['AQUA', 'XLM'],
+          ['BTC', 'XLM'],
+          ['ETH', 'USDC'],
+          ['EURC', 'USDC'],
+          ['yXLM', 'XLM'],
+          ['SHX', 'XLM'],
+          ['yUSDC', 'USDC'],
+        ].map(([b, q]) => (
+          <button
+            key={`${b}-${q}`}
+            type="button"
+            onClick={() => handleSelectQuickPair(b, q)}
+            className={`px-2 py-1 rounded-lg border font-bold transition-all ${
+              tokenIn === b && tokenOut === q
+                ? 'bg-gold/15 text-gold border-gold/40 shadow-xs'
+                : 'bg-canvas text-text-tertiary border-b-border/70 hover:text-text-primary hover:border-b-border'
+            }`}
+          >
+            {b}/{q}
+          </button>
+        ))}
       </div>
 
       {activeTab === 'swap' ? (

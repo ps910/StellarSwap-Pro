@@ -1,5 +1,5 @@
 /**
- * StellarSwap+ RPC Resilience Service
+ * StellEx Pro — RPC Resilience Service
  *
  * Provides exponential backoff retry wrapper for Soroban RPC calls,
  * request timeout handling, and network health check utilities.

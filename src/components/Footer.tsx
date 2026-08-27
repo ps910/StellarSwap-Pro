@@ -10,14 +10,14 @@ export const Footer: React.FC = () => {
         <div className="space-y-1.5 text-center md:text-left">
           <div className="flex items-center gap-2 justify-center md:justify-start">
             <span className="font-extrabold text-sm text-text-primary font-sans">
-              Stellar<span className="text-gold">Swap+</span>
+              StellEx <span className="text-gold">Pro</span>
             </span>
             <span className="badge-gold">
               Level 6 Black Belt
             </span>
           </div>
           <p className="text-text-disabled text-[11px]">
-            Institutional-grade path payment DEX & Soroban automated escrow engine on Stellar.
+            Institutional-grade DEX, 2-of-3 multi-sig escrows, TradingView Pro charts & hardware security on Stellar.
           </p>
         </div>
 
@@ -86,7 +86,7 @@ export const Footer: React.FC = () => {
       </div>
 
       <div className="max-w-7xl mx-auto border-t border-b-border/60 mt-6 pt-6 text-center text-text-disabled text-[10px]">
-        © 2026 StellarSwap+ • Open Source MIT License • Deployed on Stellar Testnet • Level 6 Black Belt Submission
+        © 2026 StellEx Pro • Open Source MIT License • Deployed on Stellar Mainnet & Testnet • Level 6 Black Belt Final
       </div>
     </footer>
   );

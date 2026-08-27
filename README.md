@@ -1,5 +1,5 @@
-# ⚡ StellarSwap Prime
-### Next-Gen High-Velocity DEX & Sovereign 2-of-3 Multi-Sig Settlement Matrix on Stellar
+# ⚡ StellEx Pro
+### Next-Gen High-Velocity DEX, TradingView Pro Charts & Sovereign Multi-Sig Matrix on Stellar
 
 [![CI — Smart Contracts](https://img.shields.io/badge/CI-Smart%20Contracts%20Passing-2ea44f?style=for-the-badge&logo=githubactions&logoColor=white)](https://github.com/ps910/StellarSwap-Pro/actions/workflows/ci-contracts.yml)
 [![CI — Frontend](https://img.shields.io/badge/CI-Frontend%20(React%20%2B%20Vite)-2ea44f?style=for-the-badge&logo=githubactions&logoColor=white)](https://github.com/ps910/StellarSwap-Pro/actions/workflows/ci-frontend.yml)
@@ -14,7 +14,7 @@
 
 ## Executive Summary
 
-**StellarSwap Prime** is a non-custodial, institutional-grade decentralized finance platform purpose-built for the **Stellar Ecosystem (Level 6 / Black Belt Final Certification)**. Engineered with high-frequency trading ergonomics, it combines native Stellar Path Payment orderbook aggregation with a **high-throughput Soroban Rust 2-of-3 Multi-Signature Escrow Vault**, SAC token transfers, Arbiter dispute resolution, persistent TTL state management, trustline pre-flight checks, 4-stage transaction tracking, and continuous CI/CD deployment.
+**StellEx Pro** is a non-custodial, institutional-grade decentralized finance platform purpose-built for the **Stellar Ecosystem (Level 6 / Black Belt Final Certification)**. Engineered with high-frequency trading ergonomics, it combines native Stellar Path Payment orderbook aggregation with an interactive **TradingView Pro Candlestick Engine**, **Batch Multi-Sig Escrow Operations**, **Real-Time Threshold Price Alerts**, **Hardware Key Storage (Ledger, Trezor, Keystone)**, **10+ Token Pairs**, and **Cryptographic JSON/CSV History Exports**.
 
 - 🌐 **Live Web Application**: [https://stellar-swap-pro.vercel.app](https://stellar-swap-pro.vercel.app)
 - 📦 **Source Repository**: [https://github.com/ps910/StellarSwap-Pro](https://github.com/ps910/StellarSwap-Pro)
@@ -23,6 +23,20 @@
 
 ---
 
+## 🚀 Core Institutional Feature Suite
+
+| Feature | Capabilities & Architecture | Implementation |
+|:---|:---|:---|
+| **1. Expanded Token Pairs** | 10 institutional assets (`XLM`, `USDC`, `EURC`, `yXLM`, `AQUA`, `BTC`, `ETH`, `SHX`, `yUSDC`, `SLT`) with 24h volume/change telemetry & quick-switch pills. | [`src/config/stellar.ts`](./src/config/stellar.ts) • [`src/components/SwapInterface.tsx`](./src/components/SwapInterface.tsx) |
+| **2. Batch Escrow Operations** | Multi-select batch funding, 2-of-3 batch signature approvals, bulk release, and CSV multi-milestone creator wizard. | [`src/services/escrow.ts`](./src/services/escrow.ts) • [`src/components/EscrowInterface.tsx`](./src/components/EscrowInterface.tsx) |
+| **3. Real-Time Price Alerts** | Custom threshold price monitoring engine with audio chimes (Web Audio API oscillator), active alert manager, and browser alerts. | [`src/services/priceAlerts.ts`](./src/services/priceAlerts.ts) • [`src/components/PriceAlertsModal.tsx`](./src/components/PriceAlertsModal.tsx) |
+| **4. TradingView Pro Charts** | Interactive multi-timeframe candlestick & line charting (1m–1W), SMA(10), RSI(14), Volume bars, and orderbook depth overlays. | [`src/components/TradingViewChart.tsx`](./src/components/TradingViewChart.tsx) |
+| **5. Hardware Wallet Support** | Direct hardware key storage integration for Ledger Nano (EAL6+ HSM), Trezor Safe (Air-Gap PIN), and Keystone (QR Air-Gapped). | [`src/services/wallet.ts`](./src/services/wallet.ts) • [`src/components/WalletModal.tsx`](./src/components/WalletModal.tsx) |
+| **6. Transaction History Export** | RFC-4180 compliant CSV export and signed JSON audit proof generator for tax, compliance, and on-chain verification. | [`src/services/exportService.ts`](./src/services/exportService.ts) • [`src/components/ActivityTable.tsx`](./src/components/ActivityTable.tsx) |
+
+---
+
+## 📋 Level 6 (Black Belt) Deliverables Matrix
 
 | Requirement | Deliverable | Location & Verification Link |
 |:---|:---|:---|

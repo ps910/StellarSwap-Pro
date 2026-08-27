@@ -68,10 +68,10 @@ export const OnboardingHub: React.FC<OnboardingHubProps> = ({ onConnectWallet, i
       <div className="text-center mb-12">
         <span className="badge-gold mb-3">TESTNET COMMUNITY ECOSYSTEM</span>
         <h2 className="text-3xl sm:text-4xl font-black text-text-primary mt-2 mb-3">
-          Join the <span className="text-gold">StellarSwap+</span> Community
+          Join the <span className="text-gold">StellEx Pro</span> Community
         </h2>
         <p className="text-sm text-text-secondary max-w-2xl mx-auto leading-relaxed">
-          Connect your wallet, try swaps and escrows on Testnet, and submit feedback to be counted as an official verified tester. Help us scale to 100+ active users!
+          Connect your wallet, trade across 10 token pairs, create multi-sig escrows, and submit feedback to be counted as an official verified trader.
         </p>
       </div>
 
@@ -189,7 +189,7 @@ export const OnboardingHub: React.FC<OnboardingHubProps> = ({ onConnectWallet, i
                 frameBorder={0}
                 marginHeight={0}
                 marginWidth={0}
-                title="StellarSwap+ User Onboarding Sheet"
+                title="StellEx Pro User Onboarding Sheet"
                 className="w-full"
                 style={{ background: '#0B0E11' }}
               >

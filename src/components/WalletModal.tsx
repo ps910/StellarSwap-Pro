@@ -52,48 +52,107 @@ export const WalletModal: React.FC<WalletModalProps> = ({
           </p>
         </div>
 
-        {/* Wallet Options List */}
-        <div className="mt-3.5 space-y-2 max-h-[340px] overflow-y-auto pr-1 custom-scrollbar">
-          {wallets.map((wallet) => {
-            const isInstalled = installedState[wallet.id] ?? wallet.isInstalled;
-            return (
-              <button
-                key={wallet.id}
-                onClick={() => onSelectWallet(wallet.id)}
-                disabled={isLoading}
-                className="w-full flex items-center justify-between p-3 rounded-xl bg-elevated border border-b-border hover:border-gold/40 hover:bg-elevated-hover transition-all duration-200 group text-left"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-canvas border border-b-border flex items-center justify-center text-xl group-hover:scale-105 transition-transform">
-                    {wallet.icon}
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="font-semibold text-text-primary text-sm group-hover:text-gold transition-colors">
-                        {wallet.name}
-                      </span>
-                      {isInstalled ? (
-                        <span className="badge-bullish text-[9px] py-0">
-                          <CheckCircle2 className="w-2.5 h-2.5" /> Ready
-                        </span>
-                      ) : (
-                        <span className="badge-gold text-[9px] py-0">
-                          Web / Install
-                        </span>
-                      )}
-                    </div>
-                    <p className="text-[11px] text-text-tertiary mt-0.5 line-clamp-1">
-                      {wallet.description}
-                    </p>
-                  </div>
-                </div>
+        {/* Wallet Options List (Grouped by Category) */}
+        <div className="mt-3.5 space-y-3 max-h-[360px] overflow-y-auto pr-1 custom-scrollbar">
+          {/* Hardware Security Category */}
+          <div>
+            <div className="flex items-center justify-between text-[10px] uppercase font-bold text-gold tracking-wider mb-1.5 px-1">
+              <span>Hardware Key Storage (EAL6+ HSM)</span>
+              <span className="text-[9px] text-text-disabled">WebHID / Air-Gapped</span>
+            </div>
+            <div className="space-y-1.5">
+              {wallets
+                .filter((w) => w.category === 'hardware')
+                .map((wallet) => {
+                  const isInstalled = installedState[wallet.id] ?? wallet.isInstalled;
+                  return (
+                    <button
+                      key={wallet.id}
+                      onClick={() => onSelectWallet(wallet.id)}
+                      disabled={isLoading}
+                      className="w-full flex items-center justify-between p-3 rounded-xl bg-elevated border border-b-border hover:border-gold/50 hover:bg-elevated-hover transition-all duration-200 group text-left shadow-xs"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-canvas border border-b-border flex items-center justify-center text-xl group-hover:scale-105 transition-transform">
+                          {wallet.icon}
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span className="font-semibold text-text-primary text-sm group-hover:text-gold transition-colors">
+                              {wallet.name}
+                            </span>
+                            {wallet.securityBadge && (
+                              <span className="badge-gold text-[9px] py-0">
+                                {wallet.securityBadge}
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-[11px] text-text-tertiary mt-0.5 line-clamp-1">
+                            {wallet.description}
+                          </p>
+                        </div>
+                      </div>
 
-                <div className="text-text-tertiary group-hover:text-gold group-hover:translate-x-0.5 transition-all">
-                  <ArrowUpRight className="w-4 h-4" />
-                </div>
-              </button>
-            );
-          })}
+                      <div className="text-text-tertiary group-hover:text-gold group-hover:translate-x-0.5 transition-all">
+                        <ArrowUpRight className="w-4 h-4" />
+                      </div>
+                    </button>
+                  );
+                })}
+            </div>
+          </div>
+
+          {/* Web & Browser Extension Wallets */}
+          <div>
+            <div className="flex items-center justify-between text-[10px] uppercase font-bold text-text-secondary tracking-wider mb-1.5 px-1">
+              <span>Browser & Web Wallets</span>
+              <span className="text-[9px] text-text-disabled">Instant Connect</span>
+            </div>
+            <div className="space-y-1.5">
+              {wallets
+                .filter((w) => w.category !== 'hardware')
+                .map((wallet) => {
+                  const isInstalled = installedState[wallet.id] ?? wallet.isInstalled;
+                  return (
+                    <button
+                      key={wallet.id}
+                      onClick={() => onSelectWallet(wallet.id)}
+                      disabled={isLoading}
+                      className="w-full flex items-center justify-between p-3 rounded-xl bg-elevated border border-b-border hover:border-gold/40 hover:bg-elevated-hover transition-all duration-200 group text-left"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-canvas border border-b-border flex items-center justify-center text-xl group-hover:scale-105 transition-transform">
+                          {wallet.icon}
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span className="font-semibold text-text-primary text-sm group-hover:text-gold transition-colors">
+                              {wallet.name}
+                            </span>
+                            {isInstalled ? (
+                              <span className="badge-bullish text-[9px] py-0">
+                                <CheckCircle2 className="w-2.5 h-2.5" /> Ready
+                              </span>
+                            ) : (
+                              <span className="badge-gold text-[9px] py-0">
+                                Web / Install
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-[11px] text-text-tertiary mt-0.5 line-clamp-1">
+                            {wallet.description}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="text-text-tertiary group-hover:text-gold group-hover:translate-x-0.5 transition-all">
+                        <ArrowUpRight className="w-4 h-4" />
+                      </div>
+                    </button>
+                  );
+                })}
+            </div>
+          </div>
         </div>
 
         {/* Footer Note */}
