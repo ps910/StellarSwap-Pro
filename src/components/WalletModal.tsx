@@ -1,7 +1,7 @@
 import React from 'react';
-import { WalletOption, WalletType } from '../types';
-import { X, CheckCircle2, ArrowUpRight, Shield, Info } from 'lucide-react';
-import { STELLAR_CONFIG } from '../config/stellar';
+import { WalletOption, WalletType, NetworkMode } from '../types';
+import { X, CheckCircle2, ArrowUpRight, Shield, Info, Globe } from 'lucide-react';
+import { NETWORKS } from '../config/stellar';
 
 interface WalletModalProps {
   isOpen: boolean;
@@ -10,6 +10,8 @@ interface WalletModalProps {
   installedState: Record<WalletType, boolean>;
   onSelectWallet: (walletId: WalletType) => void;
   isLoading: boolean;
+  networkMode?: NetworkMode;
+  onToggleNetwork?: (mode: NetworkMode) => void;
 }
 
 export const WalletModal: React.FC<WalletModalProps> = ({
@@ -19,8 +21,12 @@ export const WalletModal: React.FC<WalletModalProps> = ({
   installedState,
   onSelectWallet,
   isLoading,
+  networkMode = 'testnet',
+  onToggleNetwork,
 }) => {
   if (!isOpen) return null;
+
+  const currentNetwork = NETWORKS[networkMode] || NETWORKS.testnet;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-canvas/85 backdrop-blur-lg animate-fadeIn">
@@ -33,7 +39,7 @@ export const WalletModal: React.FC<WalletModalProps> = ({
             </div>
             <div>
               <h3 className="text-base font-bold text-text-primary">Connect Stellar Wallet</h3>
-              <p className="text-[10px] text-text-tertiary">Select network endpoint ({STELLAR_CONFIG.name})</p>
+              <p className="text-[10px] text-text-tertiary">Target Network: {currentNetwork.name}</p>
             </div>
           </div>
           <button
@@ -42,6 +48,42 @@ export const WalletModal: React.FC<WalletModalProps> = ({
           >
             <X className="w-5 h-5" />
           </button>
+        </div>
+
+        {/* Network Selector Pill Bar */}
+        <div className="mt-3.5 p-2 rounded-xl bg-canvas border border-b-border space-y-1.5">
+          <div className="flex items-center justify-between text-[10px] uppercase font-bold text-text-tertiary px-1">
+            <span>Choose Network Endpoint</span>
+            <span className={networkMode === 'mainnet' ? 'text-bullish' : 'text-gold'}>
+              {networkMode === 'mainnet' ? '● Mainnet Live' : '● Testnet Sandbox'}
+            </span>
+          </div>
+          <div className="grid grid-cols-2 gap-1.5">
+            <button
+              type="button"
+              onClick={() => onToggleNetwork?.('testnet')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold text-center border transition-all flex items-center justify-center gap-1.5 ${
+                networkMode === 'testnet'
+                  ? 'bg-gold text-black border-gold shadow-sm font-extrabold'
+                  : 'bg-elevated text-text-tertiary border-b-border hover:text-white'
+              }`}
+            >
+              <Globe className="w-3 h-3" />
+              <span>Stellar Testnet</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => onToggleNetwork?.('mainnet')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold text-center border transition-all flex items-center justify-center gap-1.5 ${
+                networkMode === 'mainnet'
+                  ? 'bg-bullish text-black border-bullish shadow-sm font-extrabold'
+                  : 'bg-elevated text-text-tertiary border-b-border hover:text-white'
+              }`}
+            >
+              <Globe className="w-3 h-3" />
+              <span>Stellar Mainnet</span>
+            </button>
+          </div>
         </div>
 
         {/* Tip Box */}

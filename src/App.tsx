@@ -131,6 +131,14 @@ export const AppContent: React.FC = () => {
     }));
   };
 
+  const handleToggleNetwork = (mode: NetworkMode) => {
+    setNetworkMode(mode);
+    analytics.track('network_switched', { network: mode });
+    if (walletState.address) {
+      handleRefreshBalances(walletState.address);
+    }
+  };
+
   // 1. Initial Load & Alert Subscriptions
   useEffect(() => {
     checkInstalledWallets().then(setInstalledWallets);
@@ -213,11 +221,6 @@ export const AppContent: React.FC = () => {
       balanceXlm: '0.00',
       balanceUsdc: '0.00',
     });
-  };
-
-  const handleToggleNetwork = (mode: NetworkMode) => {
-    setNetworkMode(mode);
-    analytics.track('network_switched', { mode });
   };
 
   // Handle Soroban Token Swap Execution
@@ -759,6 +762,8 @@ export const AppContent: React.FC = () => {
               walletState={walletState}
               balancesData={balancesData}
               onRefreshBalances={() => handleRefreshBalances()}
+              networkMode={networkMode}
+              onToggleNetwork={handleToggleNetwork}
             />
 
             {/* Tab Content */}
@@ -837,6 +842,8 @@ export const AppContent: React.FC = () => {
         installedState={installedWallets}
         onSelectWallet={handleSelectWallet}
         isLoading={isConnecting}
+        networkMode={networkMode}
+        onToggleNetwork={handleToggleNetwork}
       />
 
       <PriceAlertsModal

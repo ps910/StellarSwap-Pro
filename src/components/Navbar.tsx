@@ -280,6 +280,36 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <span>Explorer</span>
               </a>
 
+              {/* Prominent Network Mode Switcher (Mainnet / Testnet) */}
+              <div className="flex items-center bg-canvas p-0.5 rounded-xl border border-b-border shadow-inner">
+                <button
+                  type="button"
+                  onClick={() => onToggleNetwork?.('testnet')}
+                  className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all ${
+                    networkMode === 'testnet'
+                      ? 'bg-gold text-black shadow-sm font-black'
+                      : 'text-text-tertiary hover:text-text-secondary'
+                  }`}
+                  title="Switch to Stellar Testnet (SDF)"
+                >
+                  <span className={`w-1.5 h-1.5 rounded-full ${networkMode === 'testnet' ? 'bg-black' : 'bg-gold/60'}`} />
+                  <span>Testnet</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onToggleNetwork?.('mainnet')}
+                  className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all ${
+                    networkMode === 'mainnet'
+                      ? 'bg-bullish text-black shadow-sm font-black'
+                      : 'text-text-tertiary hover:text-text-secondary'
+                  }`}
+                  title="Switch to Stellar Public Mainnet"
+                >
+                  <span className={`w-1.5 h-1.5 rounded-full ${networkMode === 'mainnet' ? 'bg-black' : 'bg-bullish/60'}`} />
+                  <span>Mainnet</span>
+                </button>
+              </div>
+
               {/* Wallet Button */}
               {walletState.isConnected ? (
                 <div className="relative">
@@ -299,7 +329,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
                   {/* Wallet Dropdown */}
                   {showWalletDropdown && (
-                    <div className="absolute right-0 mt-2 w-60 bg-surface border border-b-border rounded-xl shadow-2xl shadow-canvas/80 animate-fade-in z-50">
+                    <div className="absolute right-0 mt-2 w-64 bg-surface border border-b-border rounded-xl shadow-2xl shadow-canvas/80 animate-fade-in z-50 overflow-hidden">
                       <div className="p-3 border-b border-b-border">
                         <div className="flex items-center justify-between mb-1">
                           <span className="text-[10px] text-text-tertiary uppercase font-bold">
@@ -313,6 +343,47 @@ export const Navbar: React.FC<NavbarProps> = ({
                           {walletState.address}
                         </p>
                       </div>
+
+                      {/* Network Switcher inside Dropdown */}
+                      <div className="p-2.5 border-b border-b-border bg-canvas/40">
+                        <div className="flex items-center justify-between mb-1.5 px-0.5">
+                          <span className="text-[10px] text-text-tertiary uppercase font-bold">Stellar Network</span>
+                          <span className={`text-[9px] font-bold px-1.5 py-0.2 rounded ${networkMode === 'mainnet' ? 'bg-bullish/15 text-bullish' : 'bg-gold/15 text-gold'}`}>
+                            {networkMode === 'mainnet' ? '🟢 Mainnet Active' : '🟡 Testnet Active'}
+                          </span>
+                        </div>
+                        <div className="grid grid-cols-2 gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              onToggleNetwork?.('testnet');
+                              setShowWalletDropdown(false);
+                            }}
+                            className={`px-2 py-1.5 rounded-lg text-xs font-bold text-center border transition-all ${
+                              networkMode === 'testnet'
+                                ? 'bg-gold text-black border-gold shadow-sm'
+                                : 'bg-elevated text-text-tertiary border-b-border hover:text-white'
+                            }`}
+                          >
+                            Testnet (SDF)
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              onToggleNetwork?.('mainnet');
+                              setShowWalletDropdown(false);
+                            }}
+                            className={`px-2 py-1.5 rounded-lg text-xs font-bold text-center border transition-all ${
+                              networkMode === 'mainnet'
+                                ? 'bg-bullish text-black border-bullish shadow-sm'
+                                : 'bg-elevated text-text-tertiary border-b-border hover:text-white'
+                            }`}
+                          >
+                            Mainnet (Public)
+                          </button>
+                        </div>
+                      </div>
+
                       <div className="p-2 space-y-1">
                         <button
                           onClick={handleCopy}

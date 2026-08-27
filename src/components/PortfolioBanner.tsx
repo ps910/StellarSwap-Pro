@@ -1,18 +1,22 @@
 import React, { useState } from 'react';
-import { WalletState } from '../types';
+import { WalletState, NetworkMode } from '../types';
 import { AccountBalancesData, fundWithFriendbot } from '../services/accountBalances';
-import { Wallet, TrendingUp, AlertCircle, RefreshCw, Zap, ShieldCheck } from 'lucide-react';
+import { Wallet, TrendingUp, AlertCircle, RefreshCw, Zap, ShieldCheck, Globe } from 'lucide-react';
 
 interface PortfolioBannerProps {
   walletState: WalletState;
   balancesData?: AccountBalancesData | null;
   onRefreshBalances?: () => void;
+  networkMode?: NetworkMode;
+  onToggleNetwork?: (mode: NetworkMode) => void;
 }
 
 export const PortfolioBanner: React.FC<PortfolioBannerProps> = ({
   walletState,
   balancesData,
   onRefreshBalances,
+  networkMode = 'testnet',
+  onToggleNetwork,
 }) => {
   const [isFunding, setIsFunding] = useState(false);
   const [friendbotMsg, setFriendbotMsg] = useState<string | null>(null);
@@ -55,10 +59,27 @@ export const PortfolioBanner: React.FC<PortfolioBannerProps> = ({
   return (
     <div className="card-surface p-6 sm:p-7 mb-6 animate-fade-in">
       {/* Section Header */}
-      <div className="flex items-center justify-between border-b border-b-border pb-3.5 mb-5">
+      <div className="flex items-center justify-between border-b border-b-border pb-3.5 mb-5 flex-wrap gap-2">
         <div className="flex items-center gap-2">
           <span className="text-gold font-bold text-xs tracking-wider">01 // PORTFOLIO TELEMETRY</span>
           <span className="badge-gold">LIVE</span>
+
+          {/* Interactive Network Switcher Badge */}
+          {onToggleNetwork && (
+            <button
+              onClick={() => onToggleNetwork(networkMode === 'mainnet' ? 'testnet' : 'mainnet')}
+              className={`flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold border transition-all hover:scale-105 shadow-sm ${
+                networkMode === 'mainnet'
+                  ? 'bg-bullish/15 text-bullish border-bullish/40 hover:bg-bullish/25'
+                  : 'bg-gold/15 text-gold border-gold/40 hover:bg-gold/25'
+              }`}
+              title="Click to toggle between Stellar Mainnet and Testnet"
+            >
+              <Globe className="w-3 h-3" />
+              <span>{networkMode === 'mainnet' ? 'Stellar Mainnet (Public)' : 'Stellar Testnet (SDF)'}</span>
+              <span className="text-[9px] opacity-70">⇄ Switch</span>
+            </button>
+          )}
         </div>
         <div className="flex items-center gap-3 text-text-tertiary text-xs">
           {onRefreshBalances && (
