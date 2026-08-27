@@ -300,7 +300,7 @@ export const SwapInterface: React.FC<SwapInterfaceProps> = ({
             <div className="p-3.5 rounded-xl bg-canvas border border-b-border space-y-2 text-xs font-mono">
               <div className="text-text-tertiary flex justify-between">
                 <span>Contract:</span>
-                <span className="text-gold truncate max-w-[200px]">CD32CDHJPR...423S</span>
+                <span className="text-gold truncate max-w-[200px]" title="CAG5LRYQ5JVEUI5TEID72EYOVX44TTUJT5BQR2J6J77FH65PCCFAJDDH">CAG5LRYQ5J...JDDH</span>
               </div>
               <div className="text-text-tertiary flex justify-between">
                 <span>Function:</span>

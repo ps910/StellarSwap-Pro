@@ -17,9 +17,10 @@
 **StellEx Pro** is a non-custodial, institutional-grade decentralized finance platform purpose-built for the **Stellar Ecosystem (Level 6 / Black Belt Final Certification)**. Engineered with high-frequency trading ergonomics, it combines native Stellar Path Payment orderbook aggregation with an interactive **TradingView Pro Candlestick Engine**, **Batch Multi-Sig Escrow Operations**, **Real-Time Threshold Price Alerts**, **Hardware Key Storage (Ledger, Trezor, Keystone)**, **10+ Token Pairs**, and **Cryptographic JSON/CSV History Exports**.
 
 - 🌐 **Live Web Application**: [https://stellar-swap-pro.vercel.app](https://stellar-swap-pro.vercel.app)
+- 🌐 **Live Web Application**: [https://stellar-swap-pro.vercel.app](https://stellar-swap-pro.vercel.app)
 - 📦 **Source Repository**: [https://github.com/ps910/StellarSwap-Pro](https://github.com/ps910/StellarSwap-Pro)
-- 🔒 **Mainnet Verified Escrow**: [`CC9X7K4YMQW4L6P8S1U0N5R2T9V3W8Z6Y7X0A1B2C3D4E5F6G7H8J9K0`](https://stellar.expert/explorer/public/contract/CC9X7K4YMQW4L6P8S1U0N5R2T9V3W8Z6Y7X0A1B2C3D4E5F6G7H8J9K0)
-- ⚡ **Mainnet Verified AMM**: [`CD32CDHJPRITTOX53LSKONEOTPC2QR55MLWGQET3X46O2EQNFOZK423S`](https://stellar.expert/explorer/public/contract/CD32CDHJPRITTOX53LSKONEOTPC2QR55MLWGQET3X46O2EQNFOZK423S)
+- 🔒 **Mainnet Verified Escrow Vault**: [`CA4HEQTL2WPEUYKYKCDOHCDNIV4QHNJ7EL4J4NQ6VADP7SYHVRYZ7AW2`](https://stellar.expert/explorer/public/contract/CA4HEQTL2WPEUYKYKCDOHCDNIV4QHNJ7EL4J4NQ6VADP7SYHVRYZ7AW2)
+- ⚡ **Mainnet Verified AMM Router**: [`CAG5LRYQ5JVEUI5TEID72EYOVX44TTUJT5BQR2J6J77FH65PCCFAJDDH`](https://stellar.expert/explorer/public/contract/CAG5LRYQ5JVEUI5TEID72EYOVX44TTUJT5BQR2J6J77FH65PCCFAJDDH)
 
 ---
 
@@ -56,29 +57,30 @@
 | **Feedback Data Sheets** | Google Sheets live responses + exported submission Excel spreadsheet | [Google Sheets](https://docs.google.com/spreadsheets/d/1rwjibmRmoN6Qp0fkED-tAXiDno5CZB-bnLlBET3puHg/edit?usp=sharing) • [`docs/user-feedback-responses.xlsx`](./docs/user-feedback-responses.xlsx) |
 | **Pitch Deck Deliverables** | 9-slide presentation in PowerPoint (.pptx), interactive Web HTML, and Markdown guide | [`docs/pitch-deck.pptx`](./docs/pitch-deck.pptx) • [HTML Deck](./docs/pitch-deck.html) • [Deck Guide](./docs/pitch-deck.md) |
 | **Demo Walkthrough Video** | 6-part full product walkthrough covering swaps, multi-sig escrow, analytics & mobile | [`docs/demo-video.md`](./docs/demo-video.md) • [Demo Section](#-product-demo-recordings) |
-| **Git Commit Standard** | Minimum 30+ meaningful commits (**56+ total commits**) | [`git log --oneline`](https://github.com/ps910/StellarSwap-Pro/commits/main) |
+| **Git Commit Standard** | Minimum 30+ meaningful commits (**57+ total commits**) | [`git log --oneline`](https://github.com/ps910/StellarSwap-Pro/commits/main) |
 
 ---
 
 ## 📜 Deployed Smart Contracts
 
-StellarSwap+ smart contracts are deployed and operational on both **Stellar Mainnet** and **Stellar Testnet**:
+StellEx Pro smart contracts are deployed and operational on both **Stellar Mainnet** and **Stellar Testnet**:
 
 ```
 +----------------------------------------------------------------------------------------------------+
 | CONTRACT ROLE           | IDENTIFIER / ADDRESS                                                     |
 +----------------------------------------------------------------------------------------------------+
-| Mainnet Escrow Vault   | CC9X7K4YMQW4L6P8S1U0N5R2T9V3W8Z6Y7X0A1B2C3D4E5F6G7H8J9K0                 |
-| Mainnet Swap Pool      | CD32CDHJPRITTOX53LSKONEOTPC2QR55MLWGQET3X46O2EQNFOZK423S                 |
-| Testnet Escrow Vault   | CC9X7K4YMQW4L6P8S1U0N5R2T9V3W8Z6Y7X0A1B2C3D4E5F6G7H8J9K0                 |
-| Testnet Swap Pool      | CD32CDHJPRITTOX53LSKONEOTPC2QR55MLWGQET3X46O2EQNFOZK423S                 |
-| Deployment Tx Hash     | da8e93d45fc05ad4b7450b9873b7d72b12c4d5945afeda06f483e3657e4a45a0         |
+| Mainnet Escrow Vault   | CA4HEQTL2WPEUYKYKCDOHCDNIV4QHNJ7EL4J4NQ6VADP7SYHVRYZ7AW2                 |
+| Mainnet Swap AMM       | CAG5LRYQ5JVEUI5TEID72EYOVX44TTUJT5BQR2J6J77FH65PCCFAJDDH                 |
+| Testnet Escrow Vault   | CDP3HMUH6SMS3S7NPGNDJLULCOXXEPSHY4JKUKMBNQMATHDHWXRRJTBY                 |
+| Testnet Swap AMM       | CCJUD55AG6W5HAI5LRVNKAE5WDP5XGZBUDS5WNTIVDU7O264UZZE7BRD                 |
+| Deployment Tx Hash     | 18051456816b66f12e773a56f77c5794fac1b1fb7ab6e22d4fad5a412770f73e         |
 +----------------------------------------------------------------------------------------------------+
 ```
 
-- 🔗 **Mainnet Escrow Explorer**: [StellarExpert Mainnet Escrow](https://stellar.expert/explorer/public/contract/CC9X7K4YMQW4L6P8S1U0N5R2T9V3W8Z6Y7X0A1B2C3D4E5F6G7H8J9K0)
-- 🔗 **Mainnet AMM Pool Explorer**: [StellarExpert Mainnet Swap](https://stellar.expert/explorer/public/contract/CD32CDHJPRITTOX53LSKONEOTPC2QR55MLWGQET3X46O2EQNFOZK423S)
-- 🔗 **Testnet Contract Explorer**: [StellarExpert Testnet Escrow](https://stellar.expert/explorer/testnet/contract/CC9X7K4YMQW4L6P8S1U0N5R2T9V3W8Z6Y7X0A1B2C3D4E5F6G7H8J9K0)
+- 🔗 **Mainnet Escrow Explorer**: [StellarExpert Mainnet Escrow](https://stellar.expert/explorer/public/contract/CA4HEQTL2WPEUYKYKCDOHCDNIV4QHNJ7EL4J4NQ6VADP7SYHVRYZ7AW2)
+- 🔗 **Mainnet AMM Router Explorer**: [StellarExpert Mainnet Swap](https://stellar.expert/explorer/public/contract/CAG5LRYQ5JVEUI5TEID72EYOVX44TTUJT5BQR2J6J77FH65PCCFAJDDH)
+- 🔗 **Testnet Escrow Explorer**: [StellarExpert Testnet Escrow](https://stellar.expert/explorer/testnet/contract/CDP3HMUH6SMS3S7NPGNDJLULCOXXEPSHY4JKUKMBNQMATHDHWXRRJTBY)
+- 🔗 **Testnet AMM Router Explorer**: [StellarExpert Testnet Swap](https://stellar.expert/explorer/testnet/contract/CCJUD55AG6W5HAI5LRVNKAE5WDP5XGZBUDS5WNTIVDU7O264UZZE7BRD)
 
 ---
 
